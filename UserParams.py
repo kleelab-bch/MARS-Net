@@ -1,0 +1,769 @@
+'''
+    Author : Junbong Jang
+    Created in 3/9/2020
+    
+    Class to define user constants for cropping, training, prediction (segmentation), and evaluation
+'''
+
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = '1'
+import argparse
+import numpy as np
+import random
+
+
+class UserParams:
+    def __init__(self, mode):
+        """
+        mode must be crop, train, predict, or eval
+        """
+        if mode not in ['crop', 'train', 'predict', 'eval']:
+            print('UserParams: mode is not crop, train, predict, or eval')
+            exit()
+
+        np.random.seed(seed=42)
+        random.seed(42)
+
+        self.round_num = 1 # [1,1,1,1] # [1,1,1,1,1,1] # [1,1,1,1,1,1,1,1,1]  # [1,2]
+        self.strategy_type = 'cryptic_VGG19_dropout_overfit' #'cryptic_VGG16' # ['specialist_unet', 'generalist_unet', 'specialist_VGG19_dropout', 'generalist_VGG19_dropout']  # ['VGG19_dropout_input64', 'VGG19_dropout_input80', 'VGG19_dropout_input96', 'VGG19_dropout', 'VGG19_dropout_input192', 'VGG19_dropout_input256_crop200'] # 'one_generalist_VGG19_dropout_feature_extractor_big_orig' # ['mDia_raw_unet', 'mDia_raw_VGG19_dropout'] # ['paxillin_TIRF_normalize_cropped_unet_patience_10', 'paxillin_TIRF_normalize_cropped_VGG19_dropout_patience_10'] # ['unet', 'VGG16', 'VGG19', 'VGG16_dropout', 'VGG19_dropout', 'Res50V2', 'EFF_B7_no_preprocessing'] # ['VGG19_dropout', 'VGG19_dropout_input256_crop200'] # ['unet', 'VGG16_no_pretrain', 'VGG19_no_pretrain', 'VGG16', 'VGG19', 'VGG16_batchnorm', 'VGG19_batchnorm', 'VGG16_dropout', 'VGG19_dropout'] # ['paxillin_TIRF_normalize', 'paxillin_TIRF_normalize_2.5']  # '2.5_2frame'
+        self.self_training_type = None
+        self.final_round_num = 2
+        self.dataset_folder = '../assets/'
+        self.img_format = '.png'
+        self.crop_split_constant = 3
+        self.REPEAT_MAX = 0
+
+        if self.self_training_type is not None:
+            self.strategy_type = self.strategy_type + '_' + self.self_training_type
+
+        # dataset are ordered as follows E, D, C, B, A
+        #self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03', '040119_PtK1_S01_01_phase_2_DMSO_nd_02', '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2','040119_PtK1_S01_01_phase']
+        #self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']  # you can choose these names
+        #self.frame_list = [1,2,6,10,22,34]
+        self.img_folder = '/img/'
+        self.mask_folder = '/mask_fixed/'
+
+        print('UserParams Status: ', mode, self.round_num, self.strategy_type)
+        # ------------------------------------------------------
+
+        if mode in ['crop','train']:
+            if self.round_num == 1:
+                self.crop_split_constant = 1
+                self.img_folder = '/img/'
+
+                if 'generalist' in str(self.strategy_type):
+                    if mode == 'train':  # don't crop since I manually move cropped files
+                        self.dataset_folder = '../assets/train_generalist/'
+                        self.img_folder = '/img/'
+                        self.mask_folder = '/mask/'
+                        self.frame_list = [2]
+                        self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03', '040119_PtK1_S01_01_phase_2_DMSO_nd_02',
+                                              '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2',
+                                              '040119_PtK1_S01_01_phase', '1121-1', '1121-3', '1121-4', '1121-5', '1121-6',
+                                              'Paxilin-HaloTMR-TIRF3', 'Paxilin-HaloTMR-TIRF4', 'Paxilin-HaloTMR-TIRF5',
+                                               'Paxilin-HaloTMR-TIRF6', 'Paxilin-HaloTMR-TIRF7', 'Paxilin-HaloTMR-TIRF8']
+                        self.model_names = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P']
+                        if 'one_generalist' in str(self.strategy_type):
+                            self.model_names = ['All']
+                        self.REPEAT_MAX = 2
+
+                elif "mDia" in str(self.strategy_type):
+                    self.dataset_folder = '../assets/mDia_chauncey/'
+                    self.frame_list = [1,2,6,10,22,34]
+                    self.dataset_names = ['1121-1', '1121-3', '1121-4', '1121-5', '1121-6']
+                    self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
+                    self.mask_folder = '/mask/'
+                    self.REPEAT_MAX = 1
+                    if "mDia_blurred" in str(self.strategy_type):
+                        self.img_folder = '/blurred/'
+                    if "mDia_denoised" in str(self.strategy_type):
+                        self.img_folder = '/img_denoised/'
+                    elif "mDia_raw" in str(self.strategy_type):
+                        self.img_folder = '/raw/'
+
+                elif "paxillin_TIRF" in str(self.strategy_type):
+                    self.frame_list = [1,2,6,10,22]
+                    self.dataset_names = ['Paxilin-HaloTMR-TIRF3', 'Paxilin-HaloTMR-TIRF4', 'Paxilin-HaloTMR-TIRF5',
+                                    'Paxilin-HaloTMR-TIRF6', 'Paxilin-HaloTMR-TIRF7', 'Paxilin-HaloTMR-TIRF8']
+                    self.model_names = ['ABCDE', 'ABCDF', 'ABCEF', 'ABDEF', 'ACDEF', 'BCDEF']
+                    self.mask_folder = '/mask/'
+
+                    if "_cropped" in str(self.strategy_type):
+                        self.img_folder = '/img_cropped/'
+                        self.mask_folder = '/mask_cropped/'
+
+                    self.REPEAT_MAX = 1
+
+                elif "paxillin_WF" in str(self.strategy_type):
+                    self.dataset_folder = '../../assets/'
+                    self.frame_list = [1,2,6,10,22]
+                    self.dataset_names = ['Paxilin-HaloTMR-TIRF3-WF_TMR_M', 'Paxilin-HaloTMR-TIRF4-WF_TMR_M', 'Paxilin-HaloTMR-TIRF5-WF_TMR_M',
+                                    'Paxilin-HaloTMR-TIRF6-WF_TMR_M', 'Paxilin-HaloTMR-TIRF7-WF_TMR_M', 'Paxilin-HaloTMR-TIRF8-WF_TMR_M']
+                    self.model_names = ['ABCDE', 'ABCDF', 'ABCEF', 'ABDEF', 'ACDEF', 'BCDEF']
+                    self.mask_folder = '/mask/'
+                    self.REPEAT_MAX = 1
+
+                elif "mask_denoising" == str(self.strategy_type):
+                    '''
+                    self.dataset_folder = '../../../HeeJune/Image_Data/PtK1_CyD/Windowing/111017/'
+                    self.img_folder = '/SegmentationPackage/masks/masks_for_channel_1/'
+                    self.img_format = '.tif'
+                    '''
+                    self.dataset_folder = '../../../HeeJune/Image_Data/PtK1_CyD/PtK1_CyD_Pair/Windowing_whole_3px'
+                    self.img_folder = '/images_png/masks_for_channel_1_png/'
+                    self.frame_list = [2]
+                    self.dataset_names = self.get_datasets_in_path(self.dataset_folder, ['etc', 'Video_mask_thumbnails_051920', 'Video_thumbnails'])
+                    self.model_names = [self.strategy_type]
+                    self.mask_folder = '/SegmentationPackage/refined_masks/refined_masks_for_channel_1/'
+                
+                elif "cryptic" in str(self.strategy_type):
+                    self.img_folder = '/img/'
+                    self.mask_folder = '/mask/'
+                    self.dataset_folder = '../assets/Cryptic Lamellipodia/CellMask-05152014-Control-1/'
+                    self.frame_list = [10]
+                    self.dataset_names = ['101018_part_E', '101018_part_D', '101018_part_C', '101018_part_B', '101018_part_A']
+                    self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
+                    if 'cryptic_1b' == str(self.strategy_type):
+                        self.mask_folder = '/mask_i/'
+                    self.REPEAT_MAX = 1
+
+                elif self.strategy_type == 6:
+                    self.img_folder = '/img_unlabelled/'
+                    self.frame_list = [2]
+                    self.dataset_names = ['040119_PtK1_S01_01_phase_2_DMSO_nd_02', '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2','040119_PtK1_S01_01_phase']
+                    self.model_names = ['ABCD']
+                    
+                elif self.strategy_type == 'dice' or self.strategy_type == 'l2' or self.strategy_type == "VGG16_input256" or self.strategy_type == "VGG16_dac_input256" or self.strategy_type == "VGG16_spp_input256":
+                    self.img_folder = '/img/'
+                    self.frame_list = [2]
+                    self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03', '040119_PtK1_S01_01_phase_2_DMSO_nd_02', '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2','040119_PtK1_S01_01_phase']
+                    self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
+
+                elif self.strategy_type == 'VGG19_dropout_input256_crop200':
+                    self.img_folder = '/img/'
+                    self.frame_list = [1, 2, 6, 10, 22]
+                    self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03',
+                                          '040119_PtK1_S01_01_phase_2_DMSO_nd_02',
+                                          '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2',
+                                          '040119_PtK1_S01_01_phase']
+                    self.model_names = ['ABCD', 'ABCE', 'ABDE', 'ACDE', 'BCDE']
+                    self.REPEAT_MAX = 1
+
+                elif 'VGG16' in self.strategy_type or 'VGG19' in self.strategy_type or self.strategy_type == 'movie3' or self.strategy_type == 'unet' or \
+                     self.strategy_type == 'Res50V2' or self.strategy_type == 'Dense201' or self.strategy_type == 'deeplabv3' or self.strategy_type == 'EFF_B7' or \
+                     self.strategy_type == 'EFF_B7_no_preprocessing' or self.strategy_type == 'InceptionResV2':
+                    self.img_folder = '/img/'
+                    self.frame_list = [10]
+                    self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03', '040119_PtK1_S01_01_phase_2_DMSO_nd_02', '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2','040119_PtK1_S01_01_phase']
+                    self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
+                    self.REPEAT_MAX = 5
+
+            elif self.round_num == 2:  # self-training
+                self.img_folder = '/img_all/'
+
+                if "paxillin_TIRF_normalize_2.5" == str(self.strategy_type):
+                    self.frame_list = [200]
+                    self.dataset_names = ['Paxilin-HaloTMR-TIRF4', 'Paxilin-HaloTMR-TIRF5',
+                                    'Paxilin-HaloTMR-TIRF6', 'Paxilin-HaloTMR-TIRF7', 'Paxilin-HaloTMR-TIRF8']
+                    self.model_names = ['ABCDE']
+                    self.REPEAT_MAX = 1
+                    self.crop_split_constant = 3
+
+                elif "cryptic" in str(self.strategy_type):
+                    self.dataset_names = ['101018_part_E', '101018_part_D', '101018_part_C', '101018_part_B', '101018_part_A']
+                    self.frame_list = [110]
+                    self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
+                    self.dataset_folder = '../../../HeeJune/Segmentation_Image/Cryptic Lamellipodia/CellMask-05152014-Control-1/'
+                
+                elif self.self_training_type == 2:
+                    self.img_folder = '/img/'
+                    self.crop_split_constant = 1
+                    self.dataset_names = ['040119_PtK1_S01_01_phase_2_DMSO_nd_02', '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2', '040119_PtK1_S01_01_phase']
+                    self.frame_list = [34]
+                    self.model_names = ['ABCD']
+
+                elif self.self_training_type == 2.5:
+                    self.crop_split_constant = 1
+                    self.frame_list = [1,2,6,10,22,34]
+                    self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03', '040119_PtK1_S01_01_phase_2_DMSO_nd_02', '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2','040119_PtK1_S01_01_phase']
+                    self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
+                
+                elif self.self_training_type in [5,6]:
+                    self.frame_list = [2,6,10,22,34,70]
+                    self.dataset_names = ['040119_PtK1_S01_01_phase_2_DMSO_nd_02', '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2','040119_PtK1_S01_01_phase']
+                    self.model_names = ['ABCD']
+
+                elif self.self_training_type in [1,3]:
+                    self.crop_split_constant = 5
+                    self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03']
+                    self.frame_list = [200]
+                    self.model_names = ['ABCD']
+                    
+                elif self.strategy_type == 'movie3' or self.strategy_type == 'movie3_loss' or self.strategy_type == 'movie3_proc':
+                    self.frame_list = [34]
+                    self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03', '040119_PtK1_S01_01_phase_2_DMSO_nd_02', '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2','040119_PtK1_S01_01_phase']
+                    self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']  # TODO: reduce model names to ABCD?
+
+            elif self.round_num == 3:  # self-training
+                self.img_folder = '/img_all/'
+                
+                if self.self_training_type == 2:
+                    self.frame_list = [34,70,110]
+                    self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03']
+                    self.model_names = ['ABCD']
+                elif self.self_training_type == 5:
+                    self.frame_list = [34,70]
+                    # for cropping and training
+                    # self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03', '040119_PtK1_S01_01_phase_2_DMSO_nd_02', '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2', '040119_PtK1_S01_01_phase']
+                    
+                    # for prediction
+                    self.img_folder = '/img/'
+                    self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03']
+                    self.model_names = ['ABCD']
+        
+        elif mode in ['predict']:
+            self.img_folder = '/img/'
+            if self.round_num == 1:
+
+                if 'generalist' in str(self.strategy_type) or 'specialist' in str(self.strategy_type):
+                    if 'feature_extractor_big_orig' in str(self.strategy_type):
+                        self.dataset_folder = '../assets/test_feature_extractor_big_orig/'
+                    elif 'feature_extractor_big' in str(self.strategy_type):
+                        self.dataset_folder = '../assets/test_feature_extractor_big/'
+                    elif 'feature_extractor_small' in str(self.strategy_type):
+                        self.dataset_folder = '../assets/test_feature_extractor_small/'
+                    else:
+                        self.dataset_folder = '../assets/test_generalist/'
+                    self.img_folder = '/img_all_cropped/'
+                    self.mask_folder = '/mask/'
+                    self.frame_list = [2]
+                    self.dataset_names = ['Paxilin-HaloTMR-TIRF3']
+                    self.model_names = ['K']
+                    # self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03',
+                    #                       '040119_PtK1_S01_01_phase_2_DMSO_nd_02',
+                    #                       '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2',
+                    #                       '040119_PtK1_S01_01_phase', '1121-1', '1121-3', '1121-4', '1121-5', '1121-6',
+                    #                       'Paxilin-HaloTMR-TIRF3', 'Paxilin-HaloTMR-TIRF4', 'Paxilin-HaloTMR-TIRF5',
+                    #                       'Paxilin-HaloTMR-TIRF6', 'Paxilin-HaloTMR-TIRF7', 'Paxilin-HaloTMR-TIRF8']
+                    # self.model_names = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P']
+                    if 'one_generalist' in str(self.strategy_type):
+                        self.model_names = ['All']
+                    self.REPEAT_MAX = 1
+
+
+                elif "cryptic" in str(self.strategy_type):
+                    self.img_folder = '/img/'
+                    self.mask_folder = '/mask/'
+                    self.dataset_folder = '../assets/Cryptic Lamellipodia/CellMask-05152014-Control-1/'
+                    self.frame_list = [10]
+                    self.dataset_names = ['101018_part_E', '101018_part_D', '101018_part_C', '101018_part_B', '101018_part_A']
+                    self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
+                    if 'cryptic_1b' == str(self.strategy_type):
+                        self.mask_folder = '/mask_i/'
+                    self.REPEAT_MAX = 1
+
+                elif "mDia" in str(self.strategy_type):
+                    self.dataset_folder = '../assets/mDia_chauncey/'
+                    self.frame_list = [1,2,6,10,22,34]
+                    self.dataset_names = ['1121-1', '1121-3', '1121-4', '1121-5', '1121-6']
+                    self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
+                    self.mask_folder = '/mask/'
+                    self.REPEAT_MAX = 1
+                    if "mDia_blurred" in str(self.strategy_type):
+                        self.img_folder = '/blurred/'
+                    if "mDia_denoised" in str(self.strategy_type):
+                        self.img_folder = '/img_denoised/'
+                    elif "mDia_raw" in str(self.strategy_type):
+                        self.img_folder = '/raw/'
+
+                elif "paxillin_TIRF_normalize_2.5" == self.strategy_type:
+                    self.img_folder = '/img_all/'
+                    self.frame_list = [2]
+                    self.dataset_names = ['Paxilin-HaloTMR-TIRF4', 'Paxilin-HaloTMR-TIRF5',
+                                    'Paxilin-HaloTMR-TIRF6', 'Paxilin-HaloTMR-TIRF7', 'Paxilin-HaloTMR-TIRF8']
+                    self.model_names = ['ABCDE']
+                    self.REPEAT_MAX = 1
+
+                elif "paxillin_TIRF" in str(self.strategy_type):
+                    self.frame_list = [1,2,6,10,22]
+                    self.dataset_names = ['Paxilin-HaloTMR-TIRF3', 'Paxilin-HaloTMR-TIRF4', 'Paxilin-HaloTMR-TIRF5',
+                                    'Paxilin-HaloTMR-TIRF6', 'Paxilin-HaloTMR-TIRF7', 'Paxilin-HaloTMR-TIRF8']
+                    self.model_names = ['ABCDE', 'ABCDF', 'ABCEF', 'ABDEF', 'ACDEF', 'BCDEF']
+
+                    # self.frame_list = [22]
+                    # self.dataset_names = ['Paxilin-HaloTMR-TIRF5']
+                    # self.model_names = ['ABCEF']
+                    # self.REPEAT_MAX = 1
+                    # self.img_folder = '/img_all/'
+
+                    if "_cropped" in str(self.strategy_type):
+                        self.img_folder = '/img_cropped/'
+                        self.mask_folder = '/mask_cropped/'
+
+                elif "paxillin_WF" in str(self.strategy_type):
+                    self.dataset_folder = '../../assets/'
+                    self.frame_list = [1, 2, 3, 4]
+                    self.dataset_names = ['Paxilin-HaloTMR-TIRF3-WF_TMR_M', 'Paxilin-HaloTMR-TIRF4-WF_TMR_M',
+                                    'Paxilin-HaloTMR-TIRF5-WF_TMR_M',
+                                    'Paxilin-HaloTMR-TIRF6-WF_TMR_M', 'Paxilin-HaloTMR-TIRF7-WF_TMR_M',
+                                    'Paxilin-HaloTMR-TIRF8-WF_TMR_M']
+                    self.model_names = ['ABCDE', 'ABCDF', 'ABCEF', 'ABDEF', 'ACDEF', 'BCDEF']
+                    self.REPEAT_MAX = 1
+
+                elif self.strategy_type == 'VGG19_dropout_input256_crop200':
+                    self.frame_list = [1, 2, 6, 10, 22]
+                    self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03',
+                                          '040119_PtK1_S01_01_phase_2_DMSO_nd_02',
+                                          '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2',
+                                          '040119_PtK1_S01_01_phase']
+                    self.model_names = ['ABCD', 'ABCE', 'ABDE', 'ACDE', 'BCDE']
+                    self.REPEAT_MAX = 1
+
+                elif self.strategy_type == "VGG16_input256" or self.strategy_type == "VGG16_dac_input256" or self.strategy_type == "VGG16_spp_input256" or self.strategy_type == 'dice' or self.strategy_type == 'l2':
+                    self.frame_list = [2]
+                    self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03', '040119_PtK1_S01_01_phase_2_DMSO_nd_02', '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2','040119_PtK1_S01_01_phase']
+                    self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
+                    self.REPEAT_MAX = 1
+
+                elif 'VGG16' in self.strategy_type or 'VGG19' in self.strategy_type or self.strategy_type == 'movie3' or self.strategy_type == 'unet' or \
+                     self.strategy_type == 'Res50V2' or self.strategy_type == 'Dense201' or self.strategy_type == 'deeplabv3' or self.strategy_type == 'EFF_B7' or \
+                     self.strategy_type == 'EFF_B7_no_preprocessing' or self.strategy_type == 'InceptionResV2':
+                    self.img_folder = '/img/'
+                    self.frame_list = [34]
+                    self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03', '040119_PtK1_S01_01_phase_2_DMSO_nd_02', '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2','040119_PtK1_S01_01_phase']
+                    self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
+                    self.REPEAT_MAX = 5
+
+                elif self.strategy_type == 2:
+                    self.dataset_names = ['040119_PtK1_S01_01_phase_2_DMSO_nd_02', '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2','040119_PtK1_S01_01_phase']
+                    self.frame_list = [2]
+                    self.model_names = ['ABCD']
+                    self.REPEAT_MAX = 1
+
+                elif self.strategy_type == 2.5:
+                    self.img_folder = '/img_all/'
+                    self.dataset_names = ['040119_PtK1_S01_01_phase_2_DMSO_nd_02', '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2','040119_PtK1_S01_01_phase']
+                    self.frame_list = [1]
+                    self.model_names = ['ABCD']
+                    self.REPEAT_MAX = 1
+
+            elif self.round_num == 2:
+                if self.strategy_type == 3:
+                    self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03']
+                    self.frame_list = [200]
+                    self.model_names = ['ABCD']
+                if self.strategy_type == 2:
+                    self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03']
+                    self.frame_list = [34]
+                    self.model_names = ['ABCD']
+                elif self.strategy_type == 2.5 or self.strategy_type == 5:
+                    self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03', '040119_PtK1_S01_01_phase_2_DMSO_nd_02', '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2', '040119_PtK1_S01_01_phase']
+                    self.frame_list = [34]
+                    self.model_names = ['ABCD']
+                elif self.strategy_type == 'movie3' or self.strategy_type == 'movie3_loss' or self.strategy_type == 'movie3_proc':
+                    self.frame_list = [34]
+                    self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03', '040119_PtK1_S01_01_phase_2_DMSO_nd_02', '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2','040119_PtK1_S01_01_phase']
+                    self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
+                elif "paxillin_TIRF_normalize_2.5" in str(self.strategy_type):
+                    self.frame_list = [200]
+                    self.dataset_names = ['Paxilin-HaloTMR-TIRF3']
+                    self.model_names = ['ABCDE']
+                    self.REPEAT_MAX = 1
+                    
+            elif self.round_num == 3:
+                if self.strategy_type == 2:
+                    self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03']
+                    self.frame_list = [2,6,10,22,34,70,110]
+                    self.model_names = ['ABCD']
+                    
+        elif mode in ['eval']:
+            self.predict_path_list = ['../../models/results/predict_wholeframe_round{}_{}/'.format(a_round_num, a_strategy_type) for a_strategy_type, a_round_num in zip(self.strategy_type, self.round_num)]
+
+        if mode not in ['eval']:
+            if not self.model_names or not self.dataset_names or not self.frame_list:
+                print('UserParams: Wrong Mode or settings @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+                exit()
+
+            # assert (len(self.model_names) == len(self.dataset_names))
+
+
+    # ------------- helper functions ------------
+
+    def get_crop_args(self):
+        parser = argparse.ArgumentParser()
+
+        if '_even' in str(self.strategy_type):
+            crop_mode = 'even'
+        else:
+            crop_mode = 'random'
+
+        if 'input1024' in str(self.strategy_type):
+            input_size = 1024
+            crop_patches = 12
+            batch_size = 8
+        elif "input256_crop200" in str(self.strategy_type):
+            input_size = 256
+            crop_patches = 200
+            batch_size = 128
+        elif "input256" in str(self.strategy_type):
+            input_size = 256
+            crop_patches = 50
+            batch_size = 32
+        elif "input192" in str(self.strategy_type):
+            input_size = 192
+            crop_patches = 200
+            batch_size = 128
+        elif "input96" in str(self.strategy_type):
+            input_size = 96
+            crop_patches = 200
+            batch_size = 128
+        elif "input80" in str(self.strategy_type):
+            input_size = 80
+            crop_patches = 200
+            batch_size = 128
+        elif "input64" in str(self.strategy_type):
+            input_size = 64
+            crop_patches = 200
+            batch_size = 128
+        else:
+            input_size = 128
+            crop_patches = 200
+            batch_size = 128
+
+        output_size = input_size-60
+
+        augmentation_factor = 50
+        parser.add_argument("--input_size", type = int, default = input_size)
+        parser.add_argument("--output_size", type = int, default = output_size)
+        parser.add_argument("--img_format", type = str, default = self.img_format)
+        parser.add_argument("--crop_mode", type = str, default = crop_mode)
+        parser.add_argument("--crop_patches", type = int, default = crop_patches)
+        parser.add_argument("--batch_size", type = int, default = batch_size)  # how many images to augment at once
+        parser.add_argument("--augmentation_factor", type = int, default = augmentation_factor)
+        parser.add_argument("--img_folder", type = str, default = self.img_folder)
+        
+        args = parser.parse_args()
+    
+        return args
+    
+    
+    def get_train_args(self): 
+        parser = argparse.ArgumentParser() 
+
+        if 'patience_10' in str(self.strategy_type):
+            patience = 10
+            epochs = 300
+        else:
+            patience = 3
+            epochs = 100
+
+        if 'input1024' in str(self.strategy_type):
+            input_size = 1024
+            batch_size = 16
+        elif "input256" in str(self.strategy_type):
+            input_size = 256
+            batch_size = 32
+        elif "input192" in str(self.strategy_type):
+            input_size = 192
+            batch_size = 64
+        elif "input96" in str(self.strategy_type):
+            input_size = 96
+            batch_size = 64
+        elif "input80" in str(self.strategy_type):
+            input_size = 80
+            batch_size = 64
+        elif "input64" in str(self.strategy_type):
+            input_size = 64
+            batch_size = 64
+        else:
+            input_size = 128
+            batch_size = 64
+        
+        parser.add_argument("--input_size", type = int, default = input_size)
+        parser.add_argument("--cropped_boundary", type = int, default = 30)
+        parser.add_argument("--batch_size", type = int, default = batch_size)
+        parser.add_argument("--epochs", type = int, default = epochs)
+        parser.add_argument("--validation_split", type = int, default = 0.2)
+        parser.add_argument("--patience", type = int, default = patience)
+
+        args = parser.parse_args()
+        return args
+    
+    
+    def get_datasets_in_path(self, dataset_folder, exclude_names=['etc']):
+        folder_names_in_path = [name for name in os.listdir(dataset_folder) if os.path.isdir(os.path.join(dataset_folder, name)) ]
+        # Exclude some folders
+        for exclude_name in exclude_names:
+            if exclude_name in folder_names_in_path:
+                folder_names_in_path.remove(exclude_name)
+        
+        return folder_names_in_path
+        
+        
+    def get_mask_folder(self, model_name, dataset_name, frame, repeat_index):
+        # for cropping images in self_training
+        mask_folder_root = '../models/results/predict_wholeframe_round{}_{}/{}_{}/'.format(
+            (self.round_num-1), self.strategy_type, model_name, dataset_name)
+
+        if self.round_num >= 2:
+            if "cryptic" in str(self.strategy_type) or self.self_training_type == 2:
+                self.mask_folder = mask_folder_root + 'frame{}_repeat{}/'.format(frame, repeat_index)
+
+            elif "paxillin_TIRF_normalize_2.5" == self.strategy_type:
+                self.mask_folder = mask_folder_root + 'processed_frame{}_repeat{}/'.format(frame, repeat_index)
+
+            elif self.self_training_type in [1,2.5,3,5,6] or self.strategy_type == 'movie3_proc' or \
+                    self.strategy_type == 'movie3' or self.strategy_type == 'movie3_loss':
+                self.mask_folder = mask_folder_root + 'processed_frame{}_repeat{}/'.format(frame, repeat_index)
+
+        print('get_mask_folder: ' + self.mask_folder)
+        return self.mask_folder
+
+
+    def get_crop_path(self, model_name, dataset_name, frame, split_index, repeat_index):
+        # specify the folder in which to save cropped result
+        root_path = '../crop/crop_results/crop_round{}_{}/'.format(self.round_num, self.strategy_type)
+
+        if self.round_num == 1:
+            if 'cryptic' in str(self.strategy_type):
+                root_path = '../crop/crop_results/crop_round1_cryptic/'
+            if '_input256_crop200' in str(self.strategy_type):
+                root_path = '../crop/crop_results/crop_round1_input256_output196_crop200/'
+            elif '_input256' in str(self.strategy_type):
+                root_path = '../crop/crop_results/crop_round1_input256_output196/'
+            elif self.strategy_type == 2 or self.strategy_type == 'VGG16_tf' or self.strategy_type == 'VGG16_no_pretrain' or \
+                    self.strategy_type == 'VGG16_batchnorm' or self.strategy_type == 'VGG16_dropout' or self.strategy_type == 'VGG16_instancenorm' or \
+                    self.strategy_type == 'VGG19_dropout' or self.strategy_type == 'VGG19' or self.strategy_type == 'VGG19_no_pretrain' or \
+                    self.strategy_type == 'VGG19_batchnorm' or self.strategy_type == 'VGG19_dropout_batchnorm' or \
+                    self.strategy_type == 'Res50V2' or self.strategy_type == 'Dense201' or \
+                    self.strategy_type == 'deeplabv3' or self.strategy_type == 'EFF_B7' or self.strategy_type == 'InceptionResV2' or \
+                    self.strategy_type == 'unet' or self.strategy_type == 'dice' or self.strategy_type == 'l2':
+                root_path = '../crop/crop_results/crop_round1_VGG16/'
+
+            elif 'paxillin_TIRF_normalize_cropped' in self.strategy_type:
+                root_path = '../crop/crop_results/crop_round1_paxillin_TIRF_normalize_cropped/'
+            elif 'paxillin_TIRF_cropped' in self.strategy_type:
+                root_path = '../crop/crop_results/crop_round1_paxillin_TIRF_cropped/'
+            elif 'paxillin_TIRF_normalize' in self.strategy_type:
+                root_path = '../crop/crop_results/crop_round1_paxillin_TIRF_normalize/'
+
+            elif 'mDia_blurred_test' in self.strategy_type:
+                root_path = '../crop/crop_results/crop_round1_mDia_blurred_test/'
+            elif 'mDia_raw_test' in self.strategy_type:
+                root_path = '../crop/crop_results/crop_round1_mDia_raw_test/'
+            elif 'mDia_denoised' in self.strategy_type:
+                root_path = '../crop/crop_results/crop_round1_mDia_denoised/'
+            elif 'mDia_raw' in self.strategy_type:
+                root_path = '../crop/crop_results/crop_round1_mDia_raw/'
+            elif 'mDia' in self.strategy_type:
+                root_path = '../crop/crop_results/crop_round1_mDia/'
+
+            elif 'generalist' in str(self.strategy_type):
+                root_path = '../crop/crop_results/crop_round1_generalist/'
+
+        elif self.round_num == 2:
+            # e.g) put crops inside the folder ABCD_round1, BCDE_round1
+            root_path = root_path + model_name + '/'
+
+        if not os.path.exists(root_path):
+            os.makedirs(root_path)
+
+        save_suffix = '{}_frame{}_split{}_repeat{}_train_mask.npz'.format(dataset_name, frame, split_index, repeat_index)
+        print('get_crop_path: ' + root_path + save_suffix)
+
+        return root_path, save_suffix
+        
+
+    def get_pretrained_weights_path(self, frame, model_name):
+        weights_path = ''  # default is VGG16 imagenet pretrained weight
+        if "VGG16_custom" == str(self.strategy_type) or "VGG16_batchnorm" == str(self.strategy_type) or "VGG16_instancenorm" == str(self.strategy_type)\
+                or "VGG16_dropout" == str(self.strategy_type):
+            weights_path = '../vgg16_weights.h5'
+        elif 'cryptic_VGG19_dropout_sm' == str(self.strategy_type):
+            weights_path = '../models/results/model_round1_VGG19_dropout/model_frame34_ABCD_repeat0.hdf5'
+        elif 'cryptic_VGG19_dropout_mm' == str(self.strategy_type):
+            weights_path = '../models/results/model_round1_generalist_VGG19_dropout/model_frame2_A_repeat0.hdf5'
+        elif "mask_denoising" == str(self.strategy_type):
+            weights_path = 'results/model_round{}_{}/model'.format(self.round_num, self.strategy_type)+str(frame)+'_' + model_name +'.hdf5'
+
+        print('@@@@@ get_pretrained_weights_path: ' + weights_path)
+        return weights_path
+        
+        
+    def get_trained_weights_path(self, frame, model_name, repeat_index, root_path = ''):
+        weights_path = 'results/model_round{}_{}/model_'.format(self.round_num, self.strategy_type)
+
+        # special case for student learning
+        if self.round_num == 1:
+            if self.strategy_type == 2 or self.strategy_type == 2.5 or self.strategy_type == 3 or self.strategy_type == 5:
+                weights_path = 'results/model_round1_VGG16/model_'
+            elif self.strategy_type == 'paxillin_TIRF_normalize_2.5':
+                weights_path = 'results/model_round1_paxillin_TIRF_normalize/model_'
+
+            if 'feature_extractor' in str(self.strategy_type):
+                if 'one_generalist' in str(self.strategy_type):
+                    if 'generalist_unet' in str(self.strategy_type):
+                        weights_path = 'results/model_round1_one_generalist_unet_feature_extractor/model_'
+                    elif 'generalist_VGG19_dropout' in str(self.strategy_type):
+                        weights_path = 'results/model_round1_one_generalist_VGG19_dropout_feature_extractor/model_'
+
+                elif 'generalist_VGG19_dropout' in str(self.strategy_type):
+                    weights_path = 'results/model_round1_generalist_VGG19_dropout/model_'
+                elif 'generalist_unet' in str(self.strategy_type):
+                    weights_path = 'results/model_round1_generalist_unet_feature_extractor/model_'
+                elif 'specialist_VGG19_dropout' in str(self.strategy_type):
+                    weights_path = 'results/model_round1_specialist_VGG19_dropout/model_'
+                elif 'specialist_unet' in str(self.strategy_type):
+                    weights_path = 'results/model_round1_specialist_unet/model_'
+
+        save_suffix = 'frame{}_{}_repeat{}.hdf5'.format(frame, model_name, repeat_index)
+        weights_path = root_path + weights_path + save_suffix
+        print('get_trained_weights_path: ' + weights_path)
+        return weights_path
+
+
+    def get_datasets_for_model(self, model_name):
+        '''
+         This function assumes all model_names and datasets are provided.
+         Also, dataset and model names are arranged in reverse order as follows:
+         dataset = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03', '040119_PtK1_S01_01_phase_2_DMSO_nd_02',
+                         '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2',
+                         '040119_PtK1_S01_01_phase']
+         model_names = ['ABCD', 'ABCE', 'ABDE', 'ACDE', 'BCDE']
+
+         Extract each letter from string 'ABCD' and map it to the dataset A --> dataset, B --> dataset2
+         Then, get a list of datasets used to build the model ABCD
+        '''
+        unique_model_letters = list(set(''.join(self.model_names)))
+        unique_model_letters = sorted(unique_model_letters, key=str.lower)  # e.g) 'A', 'B', 'C', 'D', 'E'
+        assert(len(unique_model_letters) == len(self.model_names))
+
+        dataset_list = []
+        for a_letter in model_name:
+            dataset_index = len(self.dataset_names) - unique_model_letters.index(a_letter) - 1
+            dataset_list.append(self.dataset_names[dataset_index])
+        assert (len(dataset_list)>2)
+        return dataset_list
+
+    # --------------- For evaluation -------------
+
+    def update_eval_config(self, predict_path_index):
+        predict_path = self.predict_path_list[predict_path_index]
+        print('update_eval_config', predict_path_index, predict_path)
+
+        self.img_folder = '/img/'
+
+        if self.round_num[predict_path_index] == 1:
+            if 2 in self.round_num:
+                if "predict_wholeframe_round1_paxillin_TIRF" in str(predict_path):
+                    self.dataset_folder = '../../assets/'
+                    self.mask_folder = '/mask/'
+                    self.model_names = ['ABCDE']
+                    self.dataset_names = ['Paxilin-HaloTMR-TIRF3']
+                    self.frame_list = [2]
+                    self.REPEAT_MAX = 1
+
+                elif "predict_wholeframe_round1_VGG" in str(predict_path) or 'predict_wholeframe_round1_unet' in str(
+                        predict_path):
+                    self.dataset_folder = '../../assets/'
+                    self.mask_folder = '/mask_fixed/'
+                    self.model_names = ['ABCD']
+                    self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03']
+                    self.frame_list = [2]
+                    self.REPEAT_MAX = 1
+
+            else:
+                if 'generalist' in str(self.strategy_type) or 'specialist' in str(self.strategy_type):
+                    self.dataset_folder = '../../assets/test_generalist/'
+                    self.img_folder = '/img/'
+                    self.mask_folder = '/mask/'
+                    self.frame_list = [2]
+
+                    # self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03',
+                    #                       '040119_PtK1_S01_01_phase_2_DMSO_nd_02',
+                    #                       '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2',
+                    #                       '040119_PtK1_S01_01_phase', '1121-1', '1121-3', '1121-4', '1121-5', '1121-6']
+                    # self.model_names = ['A', 'B', 'C', 'D', 'E','F', 'G', 'H', 'I', 'J']
+
+                    # self.dataset_names = ['Paxilin-HaloTMR-TIRF3', 'Paxilin-HaloTMR-TIRF4', 'Paxilin-HaloTMR-TIRF5',
+                    #                       'Paxilin-HaloTMR-TIRF6', 'Paxilin-HaloTMR-TIRF7', 'Paxilin-HaloTMR-TIRF8']
+                    # self.model_names = ['K', 'L', 'M', 'N', 'O', 'P']
+
+                    self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03',
+                                          '040119_PtK1_S01_01_phase_2_DMSO_nd_02',
+                                          '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2',
+                                          '040119_PtK1_S01_01_phase', '1121-1', '1121-3', '1121-4', '1121-5', '1121-6',
+                                          'Paxilin-HaloTMR-TIRF3', 'Paxilin-HaloTMR-TIRF4', 'Paxilin-HaloTMR-TIRF5',
+                                          'Paxilin-HaloTMR-TIRF6', 'Paxilin-HaloTMR-TIRF7', 'Paxilin-HaloTMR-TIRF8']
+                    self.model_names = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P']
+                    if "one_generalist" in str(predict_path):
+                        self.dataset_folder = '../../assets/test_one_generalist/'
+                        self.model_names = ['All']
+                    self.REPEAT_MAX = 1
+
+                elif "predict_wholeframe_round1_mDia" in str(predict_path):
+                    self.dataset_folder = '../../assets/mDia_chauncey/'
+                    self.mask_folder = '/mask/'
+                    self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
+                    self.dataset_names = ['1121-1', '1121-3', '1121-4', '1121-5', '1121-6']
+                    self.frame_list = [1,2,6,10,22,34]
+                    self.REPEAT_MAX = 1
+
+                elif "predict_wholeframe_round1_paxillin_TIRF" in str(predict_path):
+                    self.dataset_folder = '../../assets/'
+                    self.mask_folder = '/mask/'
+                    self.model_names = ['ABCDE', 'ABCDF', 'ABCEF', 'ABDEF', 'ACDEF', 'BCDEF']
+                    self.dataset_names = ['Paxilin-HaloTMR-TIRF3', 'Paxilin-HaloTMR-TIRF4', 'Paxilin-HaloTMR-TIRF5',
+                                    'Paxilin-HaloTMR-TIRF6', 'Paxilin-HaloTMR-TIRF7', 'Paxilin-HaloTMR-TIRF8']
+                    self.frame_list = [1,2,6,10,22]
+                    self.REPEAT_MAX = 1
+
+                    if "_cropped" in str(self.strategy_type):
+                        self.img_folder = '/img_cropped/'
+                        self.mask_folder = '/mask_cropped/'
+
+                elif "predict_wholeframe_round1_paxillin_WF" in str(predict_path):
+                    self.dataset_folder = '../../assets/'
+                    self.mask_folder = '/mask/'
+                    self.model_names = ['ABCDE', 'ABCDF', 'ABCEF', 'ABDEF', 'ACDEF', 'BCDEF']
+                    self.dataset_names = ['Paxilin-HaloTMR-TIRF3-WF_TMR_M', 'Paxilin-HaloTMR-TIRF4-WF_TMR_M',
+                                    'Paxilin-HaloTMR-TIRF5-WF_TMR_M',
+                                    'Paxilin-HaloTMR-TIRF6-WF_TMR_M', 'Paxilin-HaloTMR-TIRF7-WF_TMR_M',
+                                    'Paxilin-HaloTMR-TIRF8-WF_TMR_M']
+                    self.frame_list = [1, 2, 6, 10, 22]
+                    self.REPEAT_MAX = 1
+
+                else:  # phase contrast images
+                    self.dataset_folder = '../../assets/'
+                    self.mask_folder = '/mask_fixed/'
+                    self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03', '040119_PtK1_S01_01_phase_2_DMSO_nd_02',
+                                    '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2',
+                                    '040119_PtK1_S01_01_phase']
+                    self.model_names = ['ABCD', 'ABCE', 'ABDE', 'ACDE', 'BCDE']
+                    self.frame_list = [10]
+                    self.REPEAT_MAX = 5
+
+        elif self.round_num[predict_path_index] == 2:
+            if "predict_wholeframe_round2_paxillin_TIRF" in str(predict_path):
+                self.model_names = ['ABCDE']
+                self.dataset_names = ['Paxilin-HaloTMR-TIRF3']
+                self.frame_list = [200]
+                self.REPEAT_MAX = 1
+
+            elif "predict_wholeframe_round2_VGG" in str(predict_path):
+                self.model_names = ['ABCD']
+                self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03']
+                self.frame_list = [34]
+                self.REPEAT_MAX = 1
+
+
+    def get_eval_folder_name(self):
+        folder_name = ''
+        for index, (a_round_num, a_strategy_type) in enumerate(zip(self.round_num, self.strategy_type)):
+            folder_name = folder_name + 'round' + str(a_round_num) + '_' + a_strategy_type
+            if index < len(self.round_num) - 1:
+                folder_name = folder_name + '_'
+
+        return folder_name
+
+    
