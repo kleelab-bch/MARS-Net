@@ -3,6 +3,7 @@
 **/*.png
 **/*.jpg
 **/*.tif
+**/*.svg
 **/*.DS_Store
 **/*.fig
 **/*.mat
