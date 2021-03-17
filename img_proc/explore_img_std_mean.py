@@ -8,6 +8,7 @@ To see the pixel intensity distribution of images in a dataset folder
 
 import glob
 import cv2
+import os
 import numpy as np
 import matplotlib
 matplotlib.use('Agg') # For running in putty without showing the figure, Must be before importing matplotlib.pyplot or pylab!
@@ -111,6 +112,56 @@ def standardize_img_list(img_list):
     return standardized_img_list
 
 
+def heq_img_list(img_list):
+    new_img_list = np.ndarray(img_list.shape, dtype=np.uint8)
+
+    for img_index in range(img_list.shape[0]):
+        new_img_list[img_index] = cv2.equalizeHist(img_list[img_index])
+
+    return new_img_list
+
+
+def bcet_img_list(img_list):
+    new_img_list = np.ndarray(img_list.shape, dtype=np.uint8)
+
+    for img_index in range(img_list.shape[0]):
+        new_img_list[img_index] = bcet_img(img_list[img_index])
+
+    return new_img_list
+
+
+def bcet_img(a_img):
+    # Balance Contrast Enhancement Technique
+    Lmin = np.amin(a_img)  # MINIMUM OF INPUT IMAGE
+    Lmax = np.amax(a_img)  # MAXIMUM OF INPUT IMAGE
+    Lmean = np.mean(a_img)  # MEAN OF INPUT IMAGE
+    LMssum = np.mean(np.square(a_img))  # MEAN SQUARE SUM OF INPUT IMAGE
+
+    Gmin = 0  # MINIMUM OF OUTPUT IMAGE
+    Gmax = 255  # MAXIMUM OF OUTPUT IMAGE
+    Gmean = 127  # MEAN OF OUTPUT IMAGE
+
+    bnum = Lmax**2 * (Gmean - Gmin) - LMssum * (Gmax - Gmin) + Lmin**2 * (Gmax - Gmean)
+    bden = 2 * (Lmax * (Gmean - Gmin) - Lmean * (Gmax - Gmin) + Lmin * (Gmax - Gmean))
+
+    b = bnum / bden
+    a = (Gmax - Gmin) / ((Lmax - Lmin) * (Lmax + Lmin - 2 * b))
+    c = Gmin - a * (Lmin - b) ** 2
+
+    y = a * np.square(a_img - b) + c # PARABOLIC
+
+    return y
+
+def save_img_list(img_list, img_type):
+    save_path = f'generated/{img_type}'
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+
+    for img_index in range(img_list.shape[0]):
+        cv2.imwrite(f'{save_path}/{img_index}.png', img_list[img_index])
+
+
+
 if __name__ == "__main__":
     # Compare how image preprocessing affects image pixel intensity distribution
     constants = UserParams('crop')
@@ -124,8 +175,8 @@ if __name__ == "__main__":
         # draw_img_histogram(np.ravel(standardized_img_list), 'Z-Score Norm: ' + a_dataset, 'generated/z_score_norm_' + a_dataset + '.png')
 
         # Min Max Normalize the test set images
-        normalized_img_list = normalize_img_list(img_list)
-        draw_img_histogram(np.ravel(normalized_img_list), 'Min Max Norm: ' + a_dataset, 'generated/min_max_norm_' + a_dataset + '.png')
+        # normalized_img_list = normalize_img_list(img_list)
+        # draw_img_histogram(np.ravel(normalized_img_list), 'Min Max Norm: ' + a_dataset, 'generated/min_max_norm_' + a_dataset + '.png')
 
         # Min Max Normalize Clip the test set images
         # normalized_img_list = normalize_clip_img_list(img_list, input_type='original')
@@ -138,7 +189,16 @@ if __name__ == "__main__":
         # draw_img_histogram(np.ravel(normalized_img_list), 'Z-Score And Min Max Norm: ' + a_dataset, 'generated/z_score_min_max_norm' + a_dataset + '.png')
 
         # histogram equalization and then normalize
+        # heq_img_list = heq_img_list(img_list)
+        # normalized_img_list = normalize_img_list(heq_img_list)
+        # draw_img_histogram(np.ravel(normalized_img_list), 'HEQ Norm: ' + a_dataset, 'generated/heq_norm_' + a_dataset + '.png')
+        # save_img_list(heq_img_list, 'heq')
 
+        # bcet
+        # normalized_img_list = normalize_img_list(img_list)
+        bcet_img_list = bcet_img_list(img_list)
+        draw_img_histogram(np.ravel(bcet_img_list), 'BCET Norm: ' + a_dataset, 'generated/bcet_norm_' + a_dataset + '.png')
+        save_img_list(bcet_img_list, 'bcet')
 
 
     # Normalize the test set images with training set's avg and std

@@ -2,7 +2,7 @@ import gc
 import numpy as np
 import time
 
-from train_val_generate_split import data_generate, augment_data, normalize_input, normalize_clip_input, expand_channel_input, preprocess_input, preprocess_output
+from train_val_generate_split import data_generate, augment_data, heq_norm_input, normalize_input, normalize_clip_input, expand_channel_input, preprocess_input, preprocess_output
 import os.path
 from tensorflow.keras import backend as K
 import gc
@@ -49,8 +49,13 @@ def Training_dataset(constants, model_name, dataset_name, frame, repeat_index, i
             train = normalize_clip_input(train, input_size, input_size, mean_value, std_value)
         elif 'normalize' in str(constants.strategy_type):
             train = normalize_input(train, input_size, input_size)
+        elif '_heq' in str(constants.strategy_type):
+            train = heq_norm_input(train, input_size, input_size)
         else:
             train = preprocess_input(train, input_size, input_size, mean_value, std_value)
+
+        print(f'mean: {np.around(np.mean(train), 3)}  std: {np.around(np.std(train), 3)}')
+
         mask = preprocess_output(mask, output_size, output_size)
         edge = preprocess_output(edge, output_size, output_size)
 

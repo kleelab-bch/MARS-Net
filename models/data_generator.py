@@ -9,50 +9,10 @@ import numpy as np
 import glob
 import os, cv2
 from std_mean_from_images import aggregate_std_mean, get_std_mean_from_images
-
-
-def to3channel(imgs):
-    imgs_p = np.repeat(imgs, 3, axis=1)
-    imgs_p = imgs_p.astype('float32')
-    return imgs_p
-
-
-def preprocess_input(imgs, mean, std):
-    print('preprocess_input')
-    imgs_p = to3channel(imgs)
-    imgs_p = imgs_p.astype('float32')
-    imgs_p -= mean
-    imgs_p /= std
-    return imgs_p
-
-
-def normalize_input(imgs):
-    print('normalize_input')
-    imgs_p = to3channel(imgs)
-    imgs_p = imgs_p.astype('float32')
-    imgs_p /= 255.  # scale image to [0, 1]
-    return imgs_p
-
-
-def normalize_clip_input(imgs, mean, std):
-    print('normalize_clip_input')
-    imgs_p = to3channel(imgs)
-    imgs_p = imgs_p.astype('float32')
-
-    max_val = mean + 3 * std
-    min_val = mean - 3 * std
-    if min_val < 0:
-        min_val = 0
-    if max_val > 255:
-        max_val = 255
-    np.clip(imgs_p, min_val, max_val, out=imgs_p)
-    imgs_p = (imgs_p - min_val) / (max_val - min_val)
-
-    return imgs_p
+from data_processor import to3channel, preprocess_input, normalize_input, normalize_clip_input, heq_norm_input
 
 
 class DataGenerator:
-
     def __init__(self, img_path, n_frames_train, input_size, output_size, strategy_type, img_format = '.png'):
         self.n_frames_train = n_frames_train
         self.img_path = img_path
@@ -68,22 +28,22 @@ class DataGenerator:
 
         # ------------------- pre-processing images -------------------
         # std and mean from test set images
-        std_value, mean_value = get_std_mean_from_images(self.img_path, img_format=self.img_format)
+        # std_value, mean_value = get_std_mean_from_images(self.img_path, img_format=self.img_format)
+
         # std and mean from training set images, Don't use it because it yields worse prediction results
         # crop_path, _ = constants.get_crop_path(model_name, dataset_name, str(frame), str(0), str(repeat_index))
         # std_value, mean_value = aggregate_std_mean(constants.dataset_names, dataset_name, frame, repeat_index, crop_path)
 
-        print(mean_value, std_value)
-        imgs = imgs[:, np.newaxis, :, :]
-
         if 'no_preprocessing' in str(self.strategy_type):
-            imgs = imgs
+            imgs = to3channel(imgs)
         elif 'normalize_clip' in str(self.strategy_type):
-            imgs = normalize_clip_input(imgs, mean_value, std_value)
+            imgs = normalize_clip_input(imgs)
         elif 'normalize' in str(self.strategy_type):
             imgs = normalize_input(imgs)
+        elif 'heq' in str(self.strategy_type):
+            imgs = heq_norm_input(imgs)
         else:
-            imgs = preprocess_input(imgs, mean_value, std_value)
+            imgs = preprocess_input(imgs)
         
         return imgs, img_list, image_cols, image_rows, self.col, self.row
 

@@ -183,9 +183,9 @@ def training_curve_per_model(frame_num):
                     ax2.set_xlabel('Epoch')
                     ax2.legend(loc='center right', frameon=False)
             loss_epochs_list.append(len(loss_x_coord))
-            # times_list = times_list + data_dict['times']
+            times_list = times_list + data_dict['times']
             print('Epochs:', len(loss_x_coord))
-            # print('Average number of seconds: ', sum(data_dict['times']) / len(data_dict['times']))
+            print('Average number of seconds: ', sum(data_dict['times']) / len(data_dict['times']))
 
             f.suptitle('Training Curves')
             f.savefig('{}/training_curve_frame{}_{}_repeat{}.png'.format(save_folder, frame_num, model_name,
@@ -194,7 +194,7 @@ def training_curve_per_model(frame_num):
 
     print('------------------------------')
     print('Average number of Epoch: ', sum(loss_epochs_list) / len(loss_epochs_list))
-    # print('Total Average number of seconds: ', sum(times_list) / len(times_list))
+    print('Total Average number of seconds: ', sum(times_list) / len(times_list))
 
 
 def set_plot_aspect_ratio(input_ax):
@@ -217,15 +217,15 @@ def test_open_data():
 
 if __name__ == "__main__":
     # blue, orange, green, yellow, red, skyblue, violet
-    # ['#0071bc', '#d85218', '#76ab2f', '#ecb01f', '#a1132e', '#4cbded', '#7d2e8d']
-    color_list = ['#0071bc', '#d85218']
+    ['#0071bc', '#d85218', '#76ab2f', '#ecb01f', '#a1132e', '#4cbded', '#7d2e8d']
+    # color_list = ['#0071bc', '#d85218']
     ylim_bottom_top = (0.01, 0.12)
     list_max = 100
-    frame_num = 1
+    frame_num = 6
 
     # traning_curve_compare_two_models(color_list, list_max, frame_num, ylim_bottom_top)
-    traning_curve_compare_two_models_aggregate(color_list, list_max, frame_num, ylim_bottom_top)
-    # training_curve_per_model(frame_num)
+    # traning_curve_compare_two_models_aggregate(color_list, list_max, frame_num, ylim_bottom_top)
+    training_curve_per_model(frame_num)
     # test_open_data()
 
     #43.4, 23.76, 21.92, 24.8, 22.4, 28.4

@@ -15,8 +15,8 @@ from data_generator import DataGenerator
 from UserParams import UserParams
 
 
-def prediction(constants, model_name, dataset_name, frame, repeat_index, save_path):
-    img_path = constants.dataset_folder + dataset_name + constants.img_folder
+def prediction(constants, model_name, dataset_folder, dataset_name, frame, repeat_index, save_path):
+    img_path = dataset_folder + dataset_name + constants.img_folder
     
     if constants.self_training_type is None:
         save_path = save_path + '{}/frame{}_{}_repeat{}/'.format(dataset_name, str(frame), model_name, str(repeat_index))
@@ -142,7 +142,7 @@ if __name__ == "__main__":
             else:
                 # In self training, one model trained on 4 datasets predicts those same 4 datasets
                 dataset_names = constants.get_datasets_for_model(model_name)
-            for dataset_name in dataset_names:
+            for dataset_folder, dataset_name in zip(constants.dataset_folders, dataset_names):
                 for frame in constants.frame_list:
-                    prediction(constants, model_name, dataset_name, frame, repeat_index, root_prediciton_path)
+                    prediction(constants, model_name, dataset_folder, dataset_name, frame, repeat_index, root_prediciton_path)
             gc.collect()

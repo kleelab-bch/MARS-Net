@@ -34,15 +34,21 @@
 %root_path_list = {'../img_proc/generated/'};
 %frame_list = {'2'};
 
-dataset = {'Paxilin-HaloTMR-TIRF3'};
-model_names = {'K'};
-root_path_list = {'../models/results/predict_wholeframe_round1_generalist_unet/'};
-frame_list = {'2'};
+%dataset = {'Paxilin-HaloTMR-TIRF3'};
+%model_names = {'K'};
+%root_path_list = {'../models/results/predict_wholeframe_round1_generalist_unet/'};
+%frame_list = {'2'};
 
 %dataset = {'Paxilin-HaloTMR-TIRF5'}
 %model_names = {'ABCEF'}
 %root_path_list = {'../models/results/predict_wholeframe_round1_paxillin_TIRF_normalize_cropped_VGG19_dropout_patience_10/'};
 %frame_list = {'22'};
+
+
+dataset = {'101018_part_A'};
+model_names = {'BCDE'};
+root_path_list = {'../models/results/predict_wholeframe_round1_cryptic_VGG19_dropout_mm_patience_10_overfit/'};
+frame_list = {'10'};
 
 repeat_index = 0;
 for root_path_index = 1 : length(root_path_list)

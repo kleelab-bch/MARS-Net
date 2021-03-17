@@ -29,6 +29,9 @@ end
 
 
 function visualize_boundary_overlay_mask(img, mask)
+    se = strel('diamond',2);
+    mask = imdilate(mask,se);
+
     img_mask = uint8(cat(3, img, img, img));
     img_mask(:, :, 1) = img_mask(:, :, 1) + uint8(mask);
 

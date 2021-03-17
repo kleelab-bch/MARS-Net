@@ -31,16 +31,17 @@ function overlap_compare(prediction_path_list, mask_path, img_path, frame_num, m
             img_predicted_1 = imread([prediction_path_list{1}, image_name]);
             img_predicted_2 = imread([prediction_path_list{2}, image_name]);
 
+            %% cropping the edges of images
+            img = img(30:row, 30:col);
+            mask = mask(30:row, 30:col);
+            img_predicted_1 = img_predicted_1(30:row, 30:col);
+            img_predicted_2 = img_predicted_2(30:row, 30:col);
+
             %% Extracting the Boundary
             mask_edge = extract_edge(mask, 0);
             predicted_edge_1 = extract_edge(img_predicted_1);
             predicted_edge_2 = extract_edge(img_predicted_2);
 
-            %% cropping the edges of images
-            img = img(30:row, 30:col);
-            mask_edge = mask_edge(30:row, 30:col);
-            predicted_edge_1 = predicted_edge_1(30:row, 30:col);
-            predicted_edge_2 = predicted_edge_2(30:row, 30:col);
 
             %% Visualization of prediction
             visualize_boundary_overlay_mask_prediction(img, mask_edge, predicted_edge_1, predicted_edge_2);

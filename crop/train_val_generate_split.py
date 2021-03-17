@@ -43,6 +43,18 @@ def normalize_input(imgs, img_rows, img_cols):
     return imgs_p
 
 
+def heq_norm_input(imgs, img_rows, img_cols):
+    print('heq_norm_input', imgs.shape)
+    imgs_heq = np.ndarray(imgs.shape, dtype=np.uint8)
+    for img_index in range(imgs_heq.shape[0]):
+        imgs_heq[img_index,0] = cv2.equalizeHist(imgs[img_index,0])
+
+    imgs_p = expand_channel_input(imgs_heq, img_rows, img_cols)
+    imgs_p /= 255.  # scale image to [0, 1]
+
+    return imgs_p
+
+
 def normalize_clip_input(imgs, img_rows, img_cols, mean, std):
     print('normalize_clip_input')
     imgs_p = expand_channel_input(imgs, img_rows, img_cols)

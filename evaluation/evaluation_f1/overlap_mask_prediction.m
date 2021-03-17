@@ -93,6 +93,10 @@ end
 
 
 function visualize_boundary_overlay_mask_prediction(img, mask, img_model)
+    se = strel('diamond',2);
+    mask = imdilate(mask,se);
+    img_model = imdilate(img_model,se);
+
     img_gt_model = uint8(cat(3, img, img, img));
     img_gt_model(:, :, 1) = img_gt_model(:, :, 1) + uint8(mask);
     img_gt_model(:, :, 2) = img_gt_model(:, :, 2) + uint8(img_model);
@@ -119,7 +123,7 @@ function new_image_name = convert_image_name(image_name, mask_name, image_format
     % assume image code is the same between original image and mask image
 
     if length(image_name) < 8 && length(mask_name) < 8 % since image names can be 005, 010, 015, ... 200.png
-        new_image_name = image_name;
+        new_image_name = mask_name;
     else
         seq_code = extractBetween(mask_name,length(mask_name)-7,length(mask_name)-4);
         new_image_name = strjoin([extractBetween(image_name,1,length(image_name)-8), seq_code, image_format], '');

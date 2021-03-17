@@ -64,16 +64,23 @@ classdef GlobalConfig
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_generalist_VGG19_dropout/'};
 %        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_generalist_unet/';
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_generalist_VGG19_dropout/'};
-%        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_specialist_unet/';
-%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_generalist_unet/';
-%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_specialist_VGG19_dropout/';
-%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_generalist_VGG19_dropout/'};
+        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_specialist_unet/';
+                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_generalist_unet/';
+                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_specialist_VGG19_dropout/';
+                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_generalist_VGG19_dropout/'};
 
 
-        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_cryptic_VGG19_dropout/';
-                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_cryptic_VGG19_dropout_sm/';
-                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_cryptic_VGG19_dropout_overfit/';
-                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_cryptic_VGG16/';}
+%        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_cryptic_VGG19_dropout/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_cryptic_VGG19_dropout_patience_10/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_cryptic_VGG19_dropout_sm/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_cryptic_VGG19_dropout_mm_patience_10/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_cryptic_VGG19_dropout_mm_patience_10_overfit/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_cryptic_VGG19_dropout_overfit/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_cryptic_VGG16/';}
+
+%        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_cryptic_all_VGG19_dropout_patience_10_overfit/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_cryptic_all_VGG19_dropout_mm_patience_10_overfit/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_cryptic_all_heq_VGG19_dropout_mm_patience_10_overfit/';}
 
 %        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_unet/';
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_VGG19_dropout/';}
@@ -131,9 +138,10 @@ classdef GlobalConfig
 %        display_names = {'Specialist U-Net'; 'Generalist U-Net'};
 %        display_names = {'Specialist VGG19-U-Net';'Generalist VGG19-U-Net'};
 %        display_names = {'Generalist U-Net';'Generalist VGG19-U-Net'};
-%        display_names = {'Specialist U-Net'; 'Generalist U-Net'; 'Specialist VGG19-U-Net'; 'Generalist VGG19-U-Net'};
+        display_names = {'Specialist U-Net'; 'Generalist U-Net'; 'Specialist VGG19-U-Net'; 'Generalist VGG19-U-Net'};
 
-        display_names = {'cryptic VGG19D';'cryptic VGG19D sm';'cryptic VGG19D overfit';'cryptic VGG16'};
+%        display_names = {'cryptic VGG19D'; 'cryptic VGG19D pat10'; 'cryptic VGG19D sm'; 'cryptic VGG19D mm pat10';'cryptic VGG19D mm pat10 overfit';'cryptic VGG19D overfit';'cryptic VGG16'};
+%        display_names = {'cryptic_all VGG19D pat10'; 'cryptic_all VGG19D mm pat10'; 'cryptic_all heq VGG19D mm pat10'};
 %        display_names = {'VGG19 Dropout-U-Net'; 'VGG19 Dropout-U-Net input256'};
 %        display_names = {'U-Net';'VGG19-U-Net Dropout'};
 %        display_names = {'WF norm'; 'TIRF norm'};
@@ -160,8 +168,13 @@ classdef GlobalConfig
 
 %% --------------------------------------------------------------
 %        frame_list = [2;2];
-%        frame_list = [10;10];
-%        frame_list = [2;2;2;2];
+%        frame_list = [10;10;10];
+        frame_list = [2;2;2;2];
+
+%        frame_list =[10;10;10;10];
+%        frame_list =[10];
+
+%        frame_list = [10;10;10;10;10;10;10];
 %        frame_list = [10;10;10;10;10;10];
 %        frame_list =[1,2,6,10,22,34;
 %                    1,2,6,10,22,34];
@@ -169,7 +182,6 @@ classdef GlobalConfig
 %                    1,2,6,10,22];
 %        frame_list = [2 ;
 %                      200];
-        frame_list =[10;10;10;10];
 
 %        frame_list = [10;10;10;10;10;
 %                      10;10;10;10;10];
@@ -231,7 +243,8 @@ classdef GlobalConfig
 
                     % For phase, mDia, Paxillin
                     GlobalConfigObj.dataset_split_list = [5, 10, 16];
-                    GlobalConfigObj.dataset_interval_list = [2,10,1];
+%                    GlobalConfigObj.dataset_interval_list = [2,10,1];  % for violin plot all
+                    GlobalConfigObj.dataset_interval_list = [1,1,1];  % for violin plot individual
                     % For one dataset only
 %                    GlobalConfigObj.dataset_split_list = [length(GlobalConfigObj.dataset_list)];
 %                    GlobalConfigObj.dataset_interval_list = [1];
@@ -244,13 +257,13 @@ classdef GlobalConfig
                                                     [0.4660, 0.6740, 0.1880];];
 
 
-                elseif contains(prediction_path, 'cryptic_')
+                elseif contains(prediction_path, 'cryptic_all')
                     GlobalConfigObj.repeat_max = 1;
                     GlobalConfigObj.img_root_path = '/media/bch_drive/Public/JunbongJang/Segmentation/assets/Cryptic Lamellipodia/CellMask-05152014-Control-1/';
                     GlobalConfigObj.mask_type = '/mask/';
                     GlobalConfigObj.img_type = '/img/';
-                    GlobalConfigObj.dataset_list = {'101018_part_E'; '101018_part_D'; '101018_part_C'; '101018_part_B'; '101018_part_A'; };
-                    GlobalConfigObj.fold_name_list = {'ABCD';'ABCE'; 'ABDE'; 'ACDE'; 'BCDE'};
+                    GlobalConfigObj.dataset_list = {'101018_all'};
+                    GlobalConfigObj.fold_name_list = {'A'};
                     GlobalConfigObj.max_dist_pixel = 5;
                     GlobalConfigObj.dataset_split_list = [length(GlobalConfigObj.dataset_list)];
                     GlobalConfigObj.dataset_interval_list = [1];
@@ -262,6 +275,29 @@ classdef GlobalConfig
                                     [0.8500, 0.3250, 0.0980];
                                     [0.4660, 0.6740, 0.1880];
                                     [0.6350, 0.0780, 0.1840];];
+
+                elseif contains(prediction_path, 'cryptic_')
+                    GlobalConfigObj.repeat_max = 1;
+                    GlobalConfigObj.img_root_path = '/media/bch_drive/Public/JunbongJang/Segmentation/assets/Cryptic Lamellipodia/CellMask-05152014-Control-1/';
+                    GlobalConfigObj.mask_type = '/mask/';
+                    GlobalConfigObj.img_type = '/img/';
+                    GlobalConfigObj.dataset_list = {'101018_part_E'; '101018_part_D'; '101018_part_C'; '101018_part_B'; '101018_part_A'; };
+                    GlobalConfigObj.fold_name_list = {'ABCD';'ABCE'; 'ABDE'; 'ACDE'; 'BCDE'};
+                    GlobalConfigObj.max_dist_pixel = 5;
+                    GlobalConfigObj.dataset_split_list = [length(GlobalConfigObj.dataset_list)];
+                    GlobalConfigObj.dataset_interval_list = [1];
+
+                    % blue, pink, skyblue, red, green, light yellow, gray, yellow, orange, violet
+                    GlobalConfigObj.graph_colors = [[0, 0.4470, 0.7410];
+                                    [247,129,191]/255;
+                                    [0.3010, 0.7450, 0.9330];
+                                    [0.6350, 0.0780, 0.1840];
+                                    [0.4660, 0.6740, 0.1880];
+                                    [255,255,153]/255;
+                                    [153,153,153]/255;
+                                    [0.9290, 0.6940, 0.1250];
+                                    [0.8500, 0.3250, 0.0980];
+                                    [0.4940, 0.1840, 0.5560]];
 
                 elseif contains(prediction_path, '_paxillin_WF')
                     GlobalConfigObj.repeat_max = 1;
