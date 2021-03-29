@@ -13,18 +13,17 @@ from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras import backend as K
+import tensorflow as tf
 
-K.set_image_data_format('channels_first')
-# K.set_image_dim_ordering('th')  # Theano dimension ordering in this code
-
+K.set_image_data_format('channels_last')
 
 def expand_channel_input(imgs, img_rows, img_cols):
-    imgs_p = np.ndarray((imgs.shape[0], 3, img_rows, img_cols), dtype=np.uint8)
+    imgs_p = np.ndarray((imgs.shape[0], img_rows, img_cols, 3), dtype=np.uint8)
 
     for i in range(imgs.shape[0]):
-        imgs_p[i, 0] = cv2.resize(imgs[i, 0], (img_cols, img_rows), interpolation=cv2.INTER_CUBIC)
-        imgs_p[i, 1] = cv2.resize(imgs[i, 0], (img_cols, img_rows), interpolation=cv2.INTER_CUBIC)
-        imgs_p[i, 2] = cv2.resize(imgs[i, 0], (img_cols, img_rows), interpolation=cv2.INTER_CUBIC)
+        imgs_p[i, :, :, 0] = cv2.resize(imgs[i, :, :, 0], (img_cols, img_rows), interpolation=cv2.INTER_CUBIC)
+        imgs_p[i, :, :, 1] = cv2.resize(imgs[i, :, :, 0], (img_cols, img_rows), interpolation=cv2.INTER_CUBIC)
+        imgs_p[i,:, :,  2] = cv2.resize(imgs[i, :, :, 0], (img_cols, img_rows), interpolation=cv2.INTER_CUBIC)
 
     return imgs_p
 
@@ -211,18 +210,28 @@ class data_generate:
         return imgs_r, masks_r
 
     def crop(self):
-        image, mask, framenames = self.r_img_mask()
+        images, masks, framenames = self.r_img_mask()
 
         if self.crop_mode == 'random':
-            imgs_train, masks_train = self.crop_random(image, mask)
+            imgs_train, masks_train = self.crop_random(images, masks)
         elif self.crop_mode == 'even':
-            imgs_train, masks_train = self.crop_even(image, mask)
+            imgs_train, masks_train = self.crop_even(images, masks)
         else:
             print('Crop Mode Error:', self.crop_mode)
             exit()
 
         return imgs_train, masks_train, framenames
 
+    def adjust_brightness(self, augmented_images, repeat_index):
+        '''
+        Not used due to brightness can make the image pixel negative or invisible
+        
+        '''
+        for index in range(augmented_images.shape[0]):
+            # change brightness
+            # https://www.tensorflow.org/api_docs/python/tf/image/stateless_random_brightness
+            augmented_images[index] = tf.image.stateless_random_brightness(augmented_images[index], max_delta=10,
+                                                                           seed=(repeat_index, index))
     # ==================================================================================
     # ==================================================================================
     def augment_data(self, orig_imgs, orig_masks, repeat_index, crop_patches, augmentation_factor):
@@ -232,36 +241,39 @@ class data_generate:
             height_shift_range=0.1,
             shear_range=0.1,
             zoom_range=0.1,
-            # brightness_range=[0.5,0.6],
             horizontal_flip=True,
             vertical_flip=True,
+            data_format='channels_last',
             fill_mode='reflect')
-        print('Augment Data ...')
 
-        orig_imgs = orig_imgs[:, np.newaxis, :, :]
-        orig_masks = orig_masks[:, np.newaxis, :, :]
+        orig_imgs = orig_imgs[:, :, :, np.newaxis]
+        orig_masks = orig_masks[:, :, :, np.newaxis]
+        print('Augment Data ...', orig_imgs.shape, orig_masks.shape)
 
         for img_counter in tqdm(range(self.total_frames)):
             for iteration in range(augmentation_factor):
-                for augmented_img in datagen.flow(orig_imgs[img_counter * crop_patches:(img_counter + 1) * crop_patches], batch_size=crop_patches, seed=repeat_index):
+                for augmented_images in datagen.flow(orig_imgs[img_counter * crop_patches:(img_counter + 1) * crop_patches], batch_size=crop_patches, seed=repeat_index):
                     break
-                for augmented_mask in datagen.flow(orig_masks[img_counter * crop_patches:(img_counter + 1) * crop_patches], batch_size=crop_patches, seed=repeat_index):
+                for augmented_masks in datagen.flow(orig_masks[img_counter * crop_patches:(img_counter + 1) * crop_patches], batch_size=crop_patches, seed=repeat_index):
                     break
 
                 if iteration > 0:
-                    all_augmented_img = np.vstack([all_augmented_img, augmented_img])
-                    all_augmented_mask = np.vstack([all_augmented_mask, augmented_mask])
+                    all_augmented_images = np.vstack([all_augmented_images, augmented_images])
+                    all_augmented_masks = np.vstack([all_augmented_masks, augmented_masks])
                 else:
-                    all_augmented_img = augmented_img
-                    all_augmented_mask = augmented_mask
+                    all_augmented_images = augmented_images
+                    all_augmented_masks = augmented_masks
+                print('aug', augmented_images.shape)
 
             if img_counter > 0:
-                imgs = np.vstack([imgs, orig_imgs[img_counter * crop_patches:(img_counter + 1) * crop_patches], augmented_img])
-                masks = np.vstack([masks, orig_masks[img_counter * crop_patches:(img_counter + 1) * crop_patches], augmented_mask])
+                imgs = np.vstack([imgs, orig_imgs[img_counter * crop_patches:(img_counter + 1) * crop_patches], all_augmented_images])
+                masks = np.vstack([masks, orig_masks[img_counter * crop_patches:(img_counter + 1) * crop_patches], all_augmented_masks])
             else:
-                imgs = np.vstack([orig_imgs[img_counter * crop_patches:(img_counter + 1) * crop_patches], augmented_img])
-                masks = np.vstack([orig_masks[img_counter * crop_patches:(img_counter + 1) * crop_patches], augmented_mask])
+                imgs = np.vstack([orig_imgs[img_counter * crop_patches:(img_counter + 1) * crop_patches], all_augmented_images])
+                masks = np.vstack([orig_masks[img_counter * crop_patches:(img_counter + 1) * crop_patches], all_augmented_masks])
 
-        masks = masks[:, :, 30:orig_imgs.shape[2] - 30, 30:orig_imgs.shape[2] - 30]
+            print('imgs', imgs.shape)
+
+        masks = masks[:, 30:orig_imgs.shape[2] - 30, 30:orig_imgs.shape[2] - 30, :]
 
         return imgs, masks

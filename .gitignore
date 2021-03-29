@@ -17,4 +17,5 @@
 **/*.roi
 **/*.rtf
 **/*.db
+**/*.pickle
 **/extended-berkeley-segmentation-benchmark-master-linux

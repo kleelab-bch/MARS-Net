@@ -134,6 +134,36 @@ def crop_for_windowing():
         crop_images(model_predict_path, img_format, 'mask', model_save_path, expand_rotate, left, top, right, bottom,
                     rotate_angle_clockwise)
 
+def crop_cryptic():
+    dataset_names = ['101018_part_A', '101018_part_E']
+    img_format = '.png'
+
+    for dataset_name in dataset_names:
+        print('dataset_name:', dataset_name)
+        img_path = f"../assets/Cryptic Lamellipodia/CellMask-05152014-Control-1/{dataset_name}/img/"
+        mask_path = f"../assets/Cryptic Lamellipodia/CellMask-05152014-Control-1/{dataset_name}/mask/"
+
+        img_save_path = f"generated/{dataset_name}/img_cropped/"
+        if not os.path.exists(img_save_path):
+            os.makedirs(img_save_path)
+
+        mask_save_path = f"generated/{dataset_name}/mask_cropped/"
+        if not os.path.exists(mask_save_path):
+            os.makedirs(mask_save_path)
+
+        expand_rotate = 0
+        rotate_angle_clockwise = 0
+        if dataset_name == '101018_part_A':
+            left, top, right, bottom = 0, 132, -1, -1
+
+        elif dataset_name == '101018_part_E':
+            left, top, right, bottom = 0, 0, 237, -1
+
+        crop_images(img_path, img_format, 'img', img_save_path, expand_rotate, left, top, right, bottom,
+                    rotate_angle_clockwise)
+        crop_images(mask_path, img_format, 'mask', mask_save_path, expand_rotate, left, top, right, bottom,
+                    rotate_angle_clockwise)
+
 
 def crop_for_paxillin():
     # dataset_names = ['Paxilin-HaloTMR-TIRF1', 'Paxilin-HaloTMR-TIRF2', 'Paxilin-HaloTMR-TIRF3', 'Paxilin-HaloTMR-TIRF4',
@@ -191,6 +221,7 @@ def crop_for_paxillin():
 
 
 if __name__ == "__main__":
-    crop_for_windowing()
+    crop_cryptic()
+    # crop_for_windowing()
     # crop_for_paxillin()
 

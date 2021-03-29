@@ -1,6 +1,7 @@
 function violinplot_two_models(model1, model2, ylim_vector, saved_path, metric_type, title_suffix, condition_one, condition_two)
     figure
     set(gcf,'Visible','off');
+    
     label = [ones(length(model1), 1); 2*ones(length(model2), 1)];
     vs = violinplot([model1, model2], label);
     
@@ -14,7 +15,6 @@ function violinplot_two_models(model1, model2, ylim_vector, saved_path, metric_t
     %% Text decorations
     ylabel(metric_type, 'fontsize', 14);
     ylim(ylim_vector);
-    
     xticklabels({condition_one, condition_two});
     set(gca,'XTickLabel', get(gca,'XTickLabel') ,'fontsize',14, 'fontname', 'Arial')
 
@@ -24,7 +24,7 @@ function violinplot_two_models(model1, model2, ylim_vector, saved_path, metric_t
     str = [condition_one, ' mean: ', num2str( round(mean(model1), 3) ), newline, ...
         condition_two, ' mean: ', num2str( round(mean(model2), 3) ), newline, ...
         'Wilcoxon test: ', num2str(p), ' signedrank: ', num2str( round(stats.signedrank, 3) ), newline, ...
-        'ks test: ', num2str(kstest_p), ' ', num2str(kstest_k), newline, ...
+        'ks test: ', num2str(kstest_p), ' k:', num2str(kstest_k), newline, ...
         't-test: ', num2str(ttest_p), '  normality test: ', num2str(lillie_p), ' ', num2str(shaprio_p)];
     annotation('textbox',dim,'String',str,'FitBoxToText','on', 'EdgeColor','none');
 

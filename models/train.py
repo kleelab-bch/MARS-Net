@@ -33,13 +33,19 @@ def train_model(constants, model_index, frame, repeat_index, history_path):
     print(' round_num:', constants.round_num, ' model name:', model_name, ' frame:', frame, ' repeat_index:', repeat_index)
     args = constants.get_train_args()  # get hyper parameters
 
+    # leave-one-movie-out cross validation, don't use test movie
     train_val_dataset_names = [x for i, x in enumerate(constants.dataset_names) if i != model_index]
-    print(train_val_dataset_names)
+    print('train_val_dataset_names:', train_val_dataset_names)
 
-    dataset_train_generator, dataset_validation_generator = get_dataset_generators(constants.round_num, train_val_dataset_names, model_name, frame, repeat_index, constants.img_format, args.batch_size, history_path)
+    if 'paxillin_TIRF' in train_val_dataset_names[0]:
+        process_type = 'normalize'
+    else:
+        process_type = 'standardize'
+    # dataset_train_generator, dataset_validation_generator = get_dataset_generators(constants.round_num, train_val_dataset_names,
+    #             model_name, frame, repeat_index, constants.img_format, args.batch_size, process_type, args.augmentation_factor, history_path)
+
     # ------------------- Model Creation ---------------------------
     pretrained_weights_path = constants.get_pretrained_weights_path(frame, model_name)
-
     if "Res50V2" == str(constants.strategy_type):
         model = ResNet50V2Keras(args.input_size, args.input_size, args.cropped_boundary, 0, 0,
                                 weights_path=pretrained_weights_path)
@@ -197,7 +203,7 @@ def train_model(constants, model_index, frame, repeat_index, history_path):
     hist = model.fit(dataset_train_generator,
                 epochs=args.epochs,
                 verbose=1,
-                workers=8,
+                workers=1,
                 validation_data=dataset_validation_generator,
                 callbacks=[model_checkpoint, earlyStopping, time_callback])
 

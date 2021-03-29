@@ -59,15 +59,9 @@ classdef GlobalConfig
         max_dist_pixel = 3  % 3 for phase-contrast, 5 for paxillin
 %% --------------------------------------------------------------
 %        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_specialist_unet/';
-%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_generalist_unet/'}
-%        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_specialist_VGG19_dropout/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_generalist_unet/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_specialist_VGG19_dropout/';
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_generalist_VGG19_dropout/'};
-%        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_generalist_unet/';
-%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_generalist_VGG19_dropout/'};
-        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_specialist_unet/';
-                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_generalist_unet/';
-                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_specialist_VGG19_dropout/';
-                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_generalist_VGG19_dropout/'};
 
 
 %        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_cryptic_VGG19_dropout/';
@@ -84,6 +78,9 @@ classdef GlobalConfig
 
 %        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_unet/';
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_VGG19_dropout/';}
+        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_VGG19_dropout/';
+                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_single_micro_VGG19_dropout/'};
+
 %        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_VGG19_dropout_input64/';
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_VGG19_dropout_input80/';
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_VGG19_dropout_input96/';
@@ -119,9 +116,6 @@ classdef GlobalConfig
 %                                 '../../models/results/predict_wholeframe_round1_Res50V2/';
 %                                 '../../models/results/predict_wholeframe_round1_EFF_B7_no_preprocessing/'};
 %% --------------------------------------------------------------
-%        dice_folder_name = 'round1_specialist_unet_round1_generalist_unet';
-%        dice_folder_name = 'round1_specialist_VGG19_dropout_round1_generalist_VGG19_dropout';
-%        dice_folder_name = 'round1_generalist_unet_round1_generalist_VGG19_dropout';
 %        dice_folder_name = 'round1_specialist_unet_round1_generalist_unet_round1_specialist_VGG19_dropout_round1_generalist_VGG19_dropout';
 
 %        dice_folder_name = 'round1_paxillin_TIRF_normalize_cropped_unet_patience_10_round1_paxillin_TIRF_normalize_cropped_VGG19_dropout_patience_10';
@@ -134,15 +128,12 @@ classdef GlobalConfig
 %         dice_folder_name = 'round1_unet_round1_VGG16_round1_VGG19_round1_VGG16_dropout_round1_VGG19_dropout_round1_Res50V2_round1_EFF_B7_no_preprocessing';
 
 %% --------------------------------------------------------------
-
-%        display_names = {'Specialist U-Net'; 'Generalist U-Net'};
-%        display_names = {'Specialist VGG19-U-Net';'Generalist VGG19-U-Net'};
-%        display_names = {'Generalist U-Net';'Generalist VGG19-U-Net'};
-        display_names = {'Specialist U-Net'; 'Generalist U-Net'; 'Specialist VGG19-U-Net'; 'Generalist VGG19-U-Net'};
+%        display_names = {'Specialist U-Net'; 'Generalist U-Net'; 'Specialist VGG19-U-Net'; 'Generalist VGG19-U-Net'};
+        display_names = {'VGG19D-U-Net'; 'single_micro VGG19D-U-Net'};
 
 %        display_names = {'cryptic VGG19D'; 'cryptic VGG19D pat10'; 'cryptic VGG19D sm'; 'cryptic VGG19D mm pat10';'cryptic VGG19D mm pat10 overfit';'cryptic VGG19D overfit';'cryptic VGG16'};
 %        display_names = {'cryptic_all VGG19D pat10'; 'cryptic_all VGG19D mm pat10'; 'cryptic_all heq VGG19D mm pat10'};
-%        display_names = {'VGG19 Dropout-U-Net'; 'VGG19 Dropout-U-Net input256'};
+%        display_names = {'VGG19D-U-Net'; 'VGG19D-U-Net input256'};
 %        display_names = {'U-Net';'VGG19-U-Net Dropout'};
 %        display_names = {'WF norm'; 'TIRF norm'};
 %        display_names = {'Teacher TIRF'; 'Student TIRF'};
@@ -167,9 +158,9 @@ classdef GlobalConfig
 %                         'EFF-B7-U-Net'};
 
 %% --------------------------------------------------------------
-%        frame_list = [2;2];
+        frame_list = [2;2];
 %        frame_list = [10;10;10];
-        frame_list = [2;2;2;2];
+%        frame_list = [2;2;2;2];
 
 %        frame_list =[10;10;10;10];
 %        frame_list =[10];
@@ -279,8 +270,8 @@ classdef GlobalConfig
                 elseif contains(prediction_path, 'cryptic_')
                     GlobalConfigObj.repeat_max = 1;
                     GlobalConfigObj.img_root_path = '/media/bch_drive/Public/JunbongJang/Segmentation/assets/Cryptic Lamellipodia/CellMask-05152014-Control-1/';
-                    GlobalConfigObj.mask_type = '/mask/';
-                    GlobalConfigObj.img_type = '/img/';
+                    GlobalConfigObj.mask_type = '/mask_cropped/';
+                    GlobalConfigObj.img_type = '/img_cropped/';
                     GlobalConfigObj.dataset_list = {'101018_part_E'; '101018_part_D'; '101018_part_C'; '101018_part_B'; '101018_part_A'; };
                     GlobalConfigObj.fold_name_list = {'ABCD';'ABCE'; 'ABDE'; 'ACDE'; 'BCDE'};
                     GlobalConfigObj.max_dist_pixel = 5;
@@ -340,7 +331,7 @@ classdef GlobalConfig
                     GlobalConfigObj.dataset_interval_list = [1];
                 
                 elseif contains(prediction_path, '_VGG') || contains(prediction_path, '_unet') || contains(prediction_path, '_Res') || contains(prediction_path, '_Dense') || contains(prediction_path, '_EFF_B7')
-                    GlobalConfigObj.repeat_max = 5;
+                    GlobalConfigObj.repeat_max = 1;
                     GlobalConfigObj.img_root_path = '/media/bch_drive/Public/JunbongJang/Segmentation/assets/';
                     GlobalConfigObj.mask_type = '/mask_fixed/';
                     GlobalConfigObj.img_type = '/img/';
@@ -369,7 +360,6 @@ classdef GlobalConfig
                                     [0.8500, 0.3250, 0.0980];
                                     [0.4940, 0.1840, 0.5560]];
 
-
                     % blue, yellow, pink, orange, green, red
 %                    GlobalConfigObj.graph_colors = [[0, 0.4470, 0.7410];
 %                                    [0.9290, 0.6940, 0.1250];
@@ -377,7 +367,6 @@ classdef GlobalConfig
 %                                    [0.8500, 0.3250, 0.0980];
 %                                    [0.4660, 0.6740, 0.1880];
 %                                    [0.6350, 0.0780, 0.1840];];
-
 
 
                     % orange, green
@@ -410,7 +399,6 @@ classdef GlobalConfig
                     GlobalConfigObj.max_dist_pixel = 5;
                 end
             end
-
 
 
             % --------------------------------- Testing -------------------------------------

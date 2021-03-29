@@ -15,8 +15,8 @@ from data_generator import DataGenerator
 from UserParams import UserParams
 
 
-def prediction(constants, model_name, dataset_folder, dataset_name, frame, repeat_index, save_path):
-    img_path = dataset_folder + dataset_name + constants.img_folder
+def prediction(constants, model_name, dataset_folder, dataset_name, frame, repeat_index, img_folder, save_path):
+    img_path = dataset_folder + dataset_name + img_folder
     
     if constants.self_training_type is None:
         save_path = save_path + '{}/frame{}_{}_repeat{}/'.format(dataset_name, str(frame), model_name, str(repeat_index))
@@ -118,7 +118,17 @@ def prediction(constants, model_name, dataset_folder, dataset_name, frame, repea
             out = segmented_output[f, 0, :, :]
         cv2.imwrite(save_path + namelist[f], out)
     K.clear_session()
-    
+
+
+def get_dataset_name(constants):
+    if 'one_generalist' in str(constants.strategy_type):
+        dataset_names = constants.dataset_names  # one model predicts all datasets
+    elif constants.self_training_type is None or constants.round_num == constants.final_round_num:  # assume round 2 is the last
+        # In Cross Validation, one model predicts one test dataset
+        dataset_names = [constants.dataset_names[model_index]]
+    else:  # In self training, one model trained on 4 datasets predicts those same 4 datasets
+        dataset_names = constants.get_datasets_for_model(model_name)
+
 
 if __name__ == "__main__":
     K.set_image_data_format('channels_first')
@@ -132,17 +142,11 @@ if __name__ == "__main__":
     # for self training, ABCD model predicts for dataset A,B,C,D
     # for test set prediction, ABCD model predicts the dataset E
     for repeat_index in range(constants.REPEAT_MAX):
-        for model_index in range(len(constants.model_names)): # len(constants.model_names)
-            model_name = constants.model_names[model_index]
-            if 'one_generalist' in str(constants.strategy_type):
-                dataset_names = constants.dataset_names  # one model predicts all datasets
-            elif constants.self_training_type is None or constants.round_num == constants.final_round_num:  # assume round 2 is the last
-                # In Cross Validation, one model predicts one test dataset
-                dataset_names = [constants.dataset_names[model_index]]
-            else:
-                # In self training, one model trained on 4 datasets predicts those same 4 datasets
-                dataset_names = constants.get_datasets_for_model(model_name)
-            for dataset_folder, dataset_name in zip(constants.dataset_folders, dataset_names):
-                for frame in constants.frame_list:
-                    prediction(constants, model_name, dataset_folder, dataset_name, frame, repeat_index, root_prediciton_path)
+        for frame in constants.frame_list:
+            for model_index in range(len(constants.model_names)): # len(constants.model_names)
+                model_name = constants.model_names[model_index]
+                dataset_folder = constants.dataset_folders[model_index]
+                dataset_name = constants.dataset_names[model_index]
+                img_folder = constants.img_folders[model_index]
+                prediction(constants, model_name, dataset_folder, dataset_name, frame, repeat_index, img_folder, root_prediciton_path)
             gc.collect()

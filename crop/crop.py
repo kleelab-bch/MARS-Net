@@ -30,7 +30,8 @@ def crop_dataset(round_num, dataset_name, repeat_index, input_size, output_size,
     data_generator = data_generate(dataset_name, input_size, output_size, repeat_index, round_num, img_format, crop_mode, crop_patches, dataset_folder, img_folder, mask_folder)
 
     img_train, mask_train, frame_names = data_generator.crop()
-    img_train, mask_train = data_generator.augment_data(img_train, mask_train, repeat_index, crop_patches, augmentation_factor)
+    if augmentation_factor > 0:
+        img_train, mask_train = data_generator.augment_data(img_train, mask_train, repeat_index, crop_patches, augmentation_factor)
 
     # ---------- Saving ------------
     root_path = '../crop/generated/crop_round{}_{}/'.format(round_num, dataset_name)
@@ -42,12 +43,9 @@ def crop_dataset(round_num, dataset_name, repeat_index, input_size, output_size,
     if not os.path.exists(root_path_mask):
         os.makedirs(root_path_mask)
 
-    # convert from first_channel to last_channel
-    img_train = np.moveaxis(img_train, 1, -1)
-    mask_train = np.moveaxis(mask_train, 1, -1)
     print('img_train shape:', img_train.shape, ' mask_train shape:', mask_train.shape)
 
-    for img_index in tqdm(range(img_train.shape[0])):
+    for img_index in tqdm(range(img_train.shape[0])): # img_train.shape[0]
         frame_index = int(img_index / (crop_patches * (augmentation_factor+1) ) )
         frame_name = frame_names[frame_index]
         crop_index = img_index % crop_patches
@@ -70,7 +68,7 @@ if __name__ == "__main__":
     print(args)
     for repeat_index in range(constants.REPEAT_MAX):
         for dataset_folder, img_folder, mask_folder, dataset_name in zip(constants.dataset_folders, constants.img_folders, constants.mask_folders, constants.dataset_names):
-            augmentation_factor = 1 # args.augmentation_factor
+            augmentation_factor = 0 # args.augmentation_factor
             print('@@-@@', dataset_folder, img_folder, mask_folder, dataset_name )
             crop_dataset(constants.round_num, dataset_name, repeat_index, args.input_size, args.output_size, img_folder, mask_folder, dataset_folder, constants.img_format, args.crop_mode, args.crop_patches, augmentation_factor)
         gc.collect()  # runs garbage collection to free memory
