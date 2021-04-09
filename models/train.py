@@ -13,8 +13,10 @@ import numpy as np
 import time
 import os.path
 import gc
+from datetime import datetime
+
 import tensorflow as tf
-from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, TensorBoard
 from tensorflow.keras import backend as K
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.utils import plot_model
@@ -25,11 +27,16 @@ import loss
 from debugger import *
 from UserParams import UserParams
 from custom_callback import TimeHistory
-from train_preprocess import get_dataset_generators
+from train_data_generator import get_data_generators
 
 
 def train_model(constants, model_index, frame, repeat_index, history_path):
+
     model_name = constants.model_names[model_index]
+    dataset_folder = constants.dataset_folders[model_index]
+    dataset_name = constants.dataset_names[model_index]
+    img_folder = constants.img_folders[model_index]
+    img_path = dataset_folder + dataset_name + img_folder
     print(' round_num:', constants.round_num, ' model name:', model_name, ' frame:', frame, ' repeat_index:', repeat_index)
     args = constants.get_train_args()  # get hyper parameters
 
@@ -37,13 +44,15 @@ def train_model(constants, model_index, frame, repeat_index, history_path):
     train_val_dataset_names = [x for i, x in enumerate(constants.dataset_names) if i != model_index]
     print('train_val_dataset_names:', train_val_dataset_names)
 
-    if 'paxillin_TIRF' in train_val_dataset_names[0]:
+    if 'paxillin_TIRF' in train_val_dataset_names[0] and \
+        ('specialist' in constants.strategy_type or 'single_micro' in constants.strategy_type):
         process_type = 'normalize'
     else:
         process_type = 'standardize'
-    # dataset_train_generator, dataset_validation_generator = get_dataset_generators(constants.round_num, train_val_dataset_names,
-    #             model_name, frame, repeat_index, constants.img_format, args.batch_size, process_type, args.augmentation_factor, history_path)
-
+    # dataset_train_generator, dataset_validation_generator = get_data_generators(constants.round_num, train_val_dataset_names,
+    #             model_name, frame, repeat_index, constants.img_format, args.batch_size, process_type, img_path, history_path)
+    train_x, train_y, valid_x, valid_y = get_data_generators(constants.round_num, train_val_dataset_names,
+                model_name, frame, repeat_index, constants.img_format, args.batch_size, process_type, history_path)
     # ------------------- Model Creation ---------------------------
     pretrained_weights_path = constants.get_pretrained_weights_path(frame, model_name)
     if "Res50V2" == str(constants.strategy_type):
@@ -191,21 +200,33 @@ def train_model(constants, model_index, frame, repeat_index, history_path):
                    show_shapes=True, show_layer_names=True, dpi=144)
 
     # ------------ Fit the Model ------------
-    print('Fit Model...', args.patience)
-    earlyStopping = EarlyStopping(monitor='val_loss', patience=args.patience, verbose=0, mode='auto')
+    print('Fit Model...', args.epochs, args.patience)
+    earlyStopping = EarlyStopping(monitor='val_loss', patience=args.patience, verbose=0, mode='auto')  # args.patience
     model_checkpoint = ModelCheckpoint(
         'results/model_round{}_{}/model_frame{}_{}_repeat{}.hdf5'.format(constants.round_num, constants.strategy_type,
                                                                          str(frame), model_name,
                                                                          str(repeat_index)),
         monitor='val_loss', save_best_only=True)
     time_callback = TimeHistory()
+    logdir = 'results/history_round{}_{}/tensorboard_frame{}_{}_repeat{}_{}'.format(constants.round_num,
+                                                                                constants.strategy_type, str(frame),
+                                                                                model_name,
+                                                                                str(repeat_index),
+                                                        datetime.now().strftime("%Y%m%d-%H%M%S"))
+
     # reference https://github.com/tensorflow/tensorflow/blob/v2.4.1/tensorflow/python/keras/engine/training.py#L1823-L1861
-    hist = model.fit(dataset_train_generator,
-                epochs=args.epochs,
-                verbose=1,
-                workers=1,
-                validation_data=dataset_validation_generator,
-                callbacks=[model_checkpoint, earlyStopping, time_callback])
+    # hist = model.fit(dataset_train_generator,
+    #             epochs=args.epochs,
+    #             verbose=1,
+    #             workers=1,
+    #             validation_data=dataset_validation_generator,
+    #             callbacks=[model_checkpoint, earlyStopping, time_callback, TensorBoard(log_dir=logdir)])
+    hist = model.fit(train_x, train_y,
+                     epochs=args.epochs,
+                     verbose=1,
+                     workers=1,
+                     validation_data=(valid_x, valid_y),
+                     callbacks=[model_checkpoint, earlyStopping, time_callback, TensorBoard(log_dir=logdir)])
 
     # ------------ Save the History ------------
     hist.history['times'] = time_callback.times

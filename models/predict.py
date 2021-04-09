@@ -11,7 +11,7 @@ from tensorflow.keras.utils import plot_model
 import debugger
 from deeplabv3 import Deeplabv3
 from deep_neural_net import *
-from data_generator import DataGenerator
+from predict_data_generator import DataGenerator
 from UserParams import UserParams
 
 
@@ -28,8 +28,8 @@ def prediction(constants, model_name, dataset_folder, dataset_name, frame, repea
 
     # ------------------- Data loading -------------------
     a_strategy = constants.strategy_type
-    # if 'TIRF' in dataset_name:
-    #     a_strategy = constants.strategy_type + '_normalize'
+    if 'TIRF' in dataset_name and 'specialist' in constants.strategy_type:
+        a_strategy = constants.strategy_type + '_normalize'
 
     prediction_data_generator = DataGenerator(img_path, frame, 128, 68, a_strategy, img_format=constants.img_format)
     imgs_val, namelist, image_cols, image_rows, orig_cols, orig_rows = prediction_data_generator.get_expanded_whole_frames()

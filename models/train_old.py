@@ -295,7 +295,8 @@ def train_model(constants, model_index, frame, repeat_index):
         hist = model.fit(comb_train, [comb_mask,[]], batch_size = args.batch_size, epochs = args.epochs, validation_split = args.validation_split,
                          verbose=1, shuffle=True, callbacks=[model_checkpoint, earlyStopping, time_callback])
     else:
-        hist = model.fit(comb_train, comb_mask, batch_size = args.batch_size, epochs = args.epochs, validation_split = args.validation_split, verbose=1, shuffle=True,
+        hist = model.fit(comb_train, comb_mask, batch_size = args.batch_size, epochs = args.epochs,
+                         validation_split = args.validation_split, verbose=1, shuffle=True,
                   callbacks=[model_checkpoint, earlyStopping, time_callback])
 
     # ------------ Save the History ------------

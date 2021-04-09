@@ -162,6 +162,7 @@ classdef GlobalConfig
 %        frame_list = [10;10;10];
 %        frame_list = [2;2;2;2];
 
+%         frame_list = [34;34];
 %        frame_list =[10;10;10;10];
 %        frame_list =[10];
 
@@ -335,8 +336,11 @@ classdef GlobalConfig
                     GlobalConfigObj.img_root_path = '/media/bch_drive/Public/JunbongJang/Segmentation/assets/';
                     GlobalConfigObj.mask_type = '/mask_fixed/';
                     GlobalConfigObj.img_type = '/img/';
-                    GlobalConfigObj.dataset_list = {'040119_PtK1_S01_01_phase_3_DMSO_nd_03'; '040119_PtK1_S01_01_phase_2_DMSO_nd_02'; '040119_PtK1_S01_01_phase_2_DMSO_nd_01'; '040119_PtK1_S01_01_phase_ROI2'; '040119_PtK1_S01_01_phase'};
-                    GlobalConfigObj.fold_name_list = {'ABCD';'ABCE'; 'ABDE'; 'ACDE'; 'BCDE'};
+%                    GlobalConfigObj.dataset_list = {'040119_PtK1_S01_01_phase_3_DMSO_nd_03'; '040119_PtK1_S01_01_phase_2_DMSO_nd_02'; '040119_PtK1_S01_01_phase_2_DMSO_nd_01'; '040119_PtK1_S01_01_phase_ROI2'; '040119_PtK1_S01_01_phase'};
+%                    GlobalConfigObj.fold_name_list = {'ABCD';'ABCE'; 'ABDE'; 'ACDE'; 'BCDE'};
+                    GlobalConfigObj.dataset_list = {'040119_PtK1_S01_01_phase_3_DMSO_nd_03'};
+                    GlobalConfigObj.fold_name_list = {'ABCD'};
+%                    GlobalConfigObj.fold_name_list = {'A'; 'B'; 'C'; 'D'; 'E'};
                     GlobalConfigObj.max_dist_pixel = 3;
 
                     % blue, red, green, yellow, orange, skyblue, violet

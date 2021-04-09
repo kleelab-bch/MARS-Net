@@ -74,9 +74,9 @@ function visualize_boundary_overlay_mask_prediction(img, mask, img_model1, img_m
     width = 100;
     height = 4;
     col_pos = size(img_gt_model,1)-20; % bottom
-    row_pos = size(img_gt_model,2)-(width+10); % right
+%    row_pos = size(img_gt_model,2)-(width+10); % right
 %    row_pos = 10; % left
-%    row_pos = size(img_gt_model,2)/2-width/2; % middle
+    row_pos = size(img_gt_model,2)/2-width/2; % middle
     rectangle('Position',[row_pos,col_pos,width,height],'FaceColor', 'white', 'LineWidth',1,'LineStyle','none')
 
 %    text(10+width/2, size(img_gt_model,1)-30,'\color{white} 32.5 \mum','FontSize',12, 'HorizontalAlignment','center')

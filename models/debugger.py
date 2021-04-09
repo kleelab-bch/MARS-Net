@@ -8,7 +8,7 @@ Contains debugging tools for deep learning research
 import sys
 sys.path.append('..')
 from UserParams import UserParams
-from std_mean_from_images import get_std_mean_from_images
+from data_processor import get_std_mean_from_images
 
 import os
 import cv2

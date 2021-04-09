@@ -18,12 +18,14 @@
 %                    '../models/results/predict_wholeframe_round1_paxillin_TIRF_normalize_cropped_VGG19_dropout_patience_10/';};
 %frame_list = {'1','2','6','10','22'};
 
+%root_path_list = {'../models/results/predict_wholeframe_round1_specialist_unet/';}
+root_path_list = {'../models/results/predict_wholeframe_round1_generalist_VGG19_dropout/'}
+dataset = {'040119_PtK1_S01_01_phase_3_DMSO_nd_03'; '040119_PtK1_S01_01_phase_2_DMSO_nd_02'; '040119_PtK1_S01_01_phase_2_DMSO_nd_01';
+            '040119_PtK1_S01_01_phase_ROI2'; '040119_PtK1_S01_01_phase'; '1121-1'; '1121-3'; '1121-4'; '1121-5'; '1121-6';
+            'Paxilin-HaloTMR-TIRF3'; 'Paxilin-HaloTMR-TIRF4'; 'Paxilin-HaloTMR-TIRF5'; 'Paxilin-HaloTMR-TIRF6'; 'Paxilin-HaloTMR-TIRF7'; 'Paxilin-HaloTMR-TIRF8'};
+model_names = {'A';'B'; 'C'; 'D'; 'E';'F';'G'; 'H'; 'I'; 'J';'K';'L'; 'M'; 'N'; 'O'; 'P'};
+frame_list = {'2'};
 
-%dataset = {'040119_PtK1_S01_01_phase_3_DMSO_nd_03'; '040119_PtK1_S01_01_phase_2_DMSO_nd_02'; '040119_PtK1_S01_01_phase_2_DMSO_nd_01';
-%            '040119_PtK1_S01_01_phase_ROI2'; '040119_PtK1_S01_01_phase'; '1121-1'; '1121-3'; '1121-4'; '1121-5'; '1121-6'};
-%model_names = {'A';'B'; 'C'; 'D'; 'E';'F';'G'; 'H'; 'I'; 'J'};
-%dataset = {'Paxilin-HaloTMR-TIRF3'; 'Paxilin-HaloTMR-TIRF4'; 'Paxilin-HaloTMR-TIRF5'; 'Paxilin-HaloTMR-TIRF6'; 'Paxilin-HaloTMR-TIRF7'; 'Paxilin-HaloTMR-TIRF8'};
-%model_names = {'K';'L'; 'M'; 'N'; 'O'; 'P'};
 %root_path_list = {'../models/results/predict_wholeframe_round1_generalist_VGG19_dropout/';'../models/results/predict_wholeframe_round1_generalist_unet/';
 %            '../models/results/predict_wholeframe_round1_specialist_VGG19_dropout/';'../models/results/predict_wholeframe_round1_specialist_unet/';};
 
@@ -44,11 +46,15 @@
 %root_path_list = {'../models/results/predict_wholeframe_round1_paxillin_TIRF_normalize_cropped_VGG19_dropout_patience_10/'};
 %frame_list = {'22'};
 
+%dataset = {'101018_part_A'};
+%model_names = {'BCDE'};
+%root_path_list = {'../models/results/predict_wholeframe_round1_cryptic_VGG19_dropout_mm_patience_10_overfit/'};
+%frame_list = {'10'};
 
-dataset = {'101018_part_A'};
-model_names = {'BCDE'};
-root_path_list = {'../models/results/predict_wholeframe_round1_cryptic_VGG19_dropout_mm_patience_10_overfit/'};
-frame_list = {'10'};
+root_path_list = {'../models/results/predict_wholeframe_round1_single_micro_VGG19_dropout/'}
+dataset = {'040119_PtK1_S01_01_phase_3_DMSO_nd_03';};
+model_names = {'ABCD'};
+frame_list = {'2'};
 
 repeat_index = 0;
 for root_path_index = 1 : length(root_path_list)
@@ -90,9 +96,9 @@ function process_image(I, save_path)
     I_final = imfill(I_final,'holes'); % fill hole
 
 %   The following image processing can fill up correct background to be foreground so use with caution
-    fill_hole_percentage = ceil(row * col * 0.20);
-    I_final = bwareaopen(~I_final, fill_hole_percentage);
-    I_final = imfill(~I_final,'holes');
+%    fill_hole_percentage = ceil(row * col * 0.20);
+%    I_final = bwareaopen(~I_final, fill_hole_percentage);
+%    I_final = imfill(~I_final,'holes');
 
     imwrite(I_final*255, save_path)
 end

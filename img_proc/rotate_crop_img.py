@@ -40,17 +40,20 @@ def crop_images(img_path, img_format, img_type, save_path, expand_rotate, left, 
 
 def crop_for_windowing():
     # strategy_type = 'generalist_VGG19_dropout'
-    strategy_type = 'generalist_unet'
+    strategy_type = 'specialist_unet'
 
     # dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03', '040119_PtK1_S01_01_phase_2_DMSO_nd_02',
     #                  '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2',
     #                  '040119_PtK1_S01_01_phase']
+    # model_names = ['A', 'B', 'C', 'D', 'E']
     # model_names = ['ABCD', 'ABCE', 'ABDE', 'ACDE', 'BCDE']
+    # frame_num = 2
 
-    # dataset_names = ['Paxilin-HaloTMR-TIRF3','Paxilin-HaloTMR-TIRF4','Paxilin-HaloTMR-TIRF4','Paxilin-HaloTMR-TIRF7','Paxilin-HaloTMR-TIRF8']
-    # model_names = ['K','L','N','O']
-    dataset_names = ['Paxilin-HaloTMR-TIRF3']
-    model_names = ['K']
+    # dataset_names = ['Paxilin-HaloTMR-TIRF3','Paxilin-HaloTMR-TIRF4','Paxilin-HaloTMR-TIRF5','Paxilin-HaloTMR-TIRF6','Paxilin-HaloTMR-TIRF7','Paxilin-HaloTMR-TIRF8']
+    # model_names = ['K','L','M','N','O','P']
+
+    dataset_names = ['Paxilin-HaloTMR-TIRF5']
+    model_names = ['M']
     frame_num = 2
 
     # strategy_type = 'paxillin_TIRF_normalize_cropped_VGG19_dropout_patience_10'
@@ -59,41 +62,40 @@ def crop_for_windowing():
     # frame_num = 22
 
     img_format = '.png'
-    img_folder = 'img'
 
     for dataset_index in range(len(dataset_names)):
         print('dataset:', dataset_names[dataset_index])
-        model_predict_path = f"../models/results/predict_wholeframe_round1_{strategy_type}/{dataset_names[dataset_index]}/processed_frame{frame_num}_{model_names[dataset_index]}_repeat0/"
-
-        model_save_path = f"generated/{dataset_names[dataset_index]}/predict_{strategy_type}/"
-        if not os.path.exists(model_save_path):
-            os.makedirs(model_save_path)
 
         expand_rotate = 0
         rotate_angle_clockwise = 0
 
         if dataset_names[dataset_index] == '040119_PtK1_S01_01_phase_3_DMSO_nd_03':
             left, top, right, bottom = 9, 22, 194, 224
+            img_folder = 'img_all'
 
         elif dataset_names[dataset_index] == '040119_PtK1_S01_01_phase_2_DMSO_nd_02':
             # top, left, bottom, right = 251, 324, 603, 501
             left, top, right, bottom = 228, 322, 800, 608
+            img_folder = 'img_all'
             rotate_angle_clockwise = 35
             expand_rotate = 1
 
         elif dataset_names[dataset_index] == '040119_PtK1_S01_01_phase_2_DMSO_nd_01':
             # top, left, bottom, right = 426, 166, 562, 307
             left, top, right, bottom = 46, 260, 161, 358
+            img_folder = 'img_all'
             rotate_angle_clockwise = 45
 
         elif dataset_names[dataset_index] == '040119_PtK1_S01_01_phase_ROI2':
             # top, left, bottom, right = 160, 433, 507, 589
             # rotate_angle_clockwise = 15
             left, top, right, bottom = 27, 191, 167, 460
+            img_folder = 'img_all'
 
         elif dataset_names[dataset_index] == '040119_PtK1_S01_01_phase':
             # top, left, bottom, right = 10, 84, 238, 452
             left, top, right, bottom = 4, 33, 278, 227
+            img_folder = 'img_all'
 
         elif dataset_names[dataset_index] == 'Paxilin-HaloTMR-TIRF3':
             left, top, right, bottom = 0, 0, 769, -1
@@ -123,15 +125,21 @@ def crop_for_windowing():
             expand_rotate = 1
             img_folder = 'img_all'
 
+        # -------- save path -----------
         img_path = f"../assets/{dataset_names[dataset_index]}/{img_folder}/"
-
-        img_save_path = f"generated/{dataset_names[dataset_index]}/{img_folder}/"
+        img_save_path = f"generated/{strategy_type}/{dataset_names[dataset_index]}/{img_folder}/"
         if not os.path.exists(img_save_path):
             os.makedirs(img_save_path)
 
-        crop_images(img_path, img_format, 'img', img_save_path, expand_rotate, left, top, right, bottom,
-                    rotate_angle_clockwise)
-        crop_images(model_predict_path, img_format, 'mask', model_save_path, expand_rotate, left, top, right, bottom,
+        model_predict_path = f"../models/results/predict_wholeframe_round1_{strategy_type}/{dataset_names[dataset_index]}/processed_frame{frame_num}_{model_names[dataset_index]}_repeat0/"
+        mask_save_path = f"generated/{strategy_type}/{dataset_names[dataset_index]}/predict_{strategy_type}/"
+        if not os.path.exists(mask_save_path):
+            os.makedirs(mask_save_path)
+
+        # crop_images(img_path, img_format, 'img', img_save_path, expand_rotate, left, top, right, bottom,
+        #             rotate_angle_clockwise)
+        print(model_predict_path)
+        crop_images(model_predict_path, img_format, 'mask', mask_save_path, expand_rotate, left, top, right, bottom,
                     rotate_angle_clockwise)
 
 def crop_cryptic():
@@ -221,7 +229,7 @@ def crop_for_paxillin():
 
 
 if __name__ == "__main__":
-    crop_cryptic()
-    # crop_for_windowing()
+    # crop_cryptic()
+    crop_for_windowing()
     # crop_for_paxillin()
 

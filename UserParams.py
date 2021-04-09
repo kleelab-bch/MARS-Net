@@ -82,7 +82,7 @@ class UserParams:
                     self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03', '040119_PtK1_S01_01_phase_2_DMSO_nd_02',
                                           '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2',
                                           '040119_PtK1_S01_01_phase']
-                    self.model_names = ['A','B','C','D','E']
+                    self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
                     self.REPEAT_MAX = 1
 
                 elif "mDia" in str(self.strategy_type):
@@ -289,18 +289,29 @@ class UserParams:
                         self.dataset_folders = '../assets/test_feature_extractor_small/'
                     else:
                         self.dataset_folders = '../assets/test_generalist/'
-                    self.img_folder = '/img_all_cropped/'
-                    self.mask_folder = '/mask/'
+                    self.dataset_folders = ['../assets/', '../assets/', '../assets/', '../assets/', '../assets/',
+                                            '../assets/mDia_chauncey/', '../assets/mDia_chauncey/',
+                                            '../assets/mDia_chauncey/', '../assets/mDia_chauncey/',
+                                            '../assets/mDia_chauncey/',
+                                            '../assets/', '../assets/', '../assets/', '../assets/', '../assets/',
+                                            '../assets/']
+                    self.img_folders = ['/img_all/', '/img_all/', '/img_all/', '/img_all/', '/img_all/',
+                                        '/raw/', '/raw/', '/raw/', '/raw/', '/raw/',
+                                        '/img_all_cropped/', '/img_all_cropped/', '/img_all_cropped/', '/img_all_cropped/',
+                                        '/img_all_cropped/', '/img_all_cropped/']
+                    self.mask_folders = ['/mask_fixed/', '/mask_fixed/', '/mask_fixed/', '/mask_fixed/', '/mask_fixed/',
+                                         '/mask/', '/mask/', '/mask/', '/mask/', '/mask/',
+                                         '/mask_cropped/', '/mask_cropped/', '/mask_cropped/', '/mask_cropped/',
+                                         '/mask_cropped/', '/mask_cropped/']
                     self.frame_list = [2]
-                    self.dataset_names = ['Paxilin-HaloTMR-TIRF3']
-                    self.model_names = ['K']
-                    # self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03',
-                    #                       '040119_PtK1_S01_01_phase_2_DMSO_nd_02',
-                    #                       '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2',
-                    #                       '040119_PtK1_S01_01_phase', '1121-1', '1121-3', '1121-4', '1121-5', '1121-6',
-                    #                       'Paxilin-HaloTMR-TIRF3', 'Paxilin-HaloTMR-TIRF4', 'Paxilin-HaloTMR-TIRF5',
-                    #                       'Paxilin-HaloTMR-TIRF6', 'Paxilin-HaloTMR-TIRF7', 'Paxilin-HaloTMR-TIRF8']
-                    # self.model_names = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P']
+
+                    self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03',
+                                          '040119_PtK1_S01_01_phase_2_DMSO_nd_02',
+                                          '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2',
+                                          '040119_PtK1_S01_01_phase', '1121-1', '1121-3', '1121-4', '1121-5', '1121-6',
+                                          'Paxilin-HaloTMR-TIRF3', 'Paxilin-HaloTMR-TIRF4', 'Paxilin-HaloTMR-TIRF5',
+                                          'Paxilin-HaloTMR-TIRF6', 'Paxilin-HaloTMR-TIRF7', 'Paxilin-HaloTMR-TIRF8']
+                    self.model_names = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P']
                     if 'one_generalist' in str(self.strategy_type):
                         self.model_names = ['All']
                     self.REPEAT_MAX = 1
@@ -335,7 +346,7 @@ class UserParams:
                     self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03', '040119_PtK1_S01_01_phase_2_DMSO_nd_02',
                                           '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2',
                                           '040119_PtK1_S01_01_phase']
-                    self.model_names = ['A','B','C','D','E']
+                    self.model_names = ['ABCD','B','C','D','E']
                     self.REPEAT_MAX = 1
 
                 elif "cryptic_all" in str(self.strategy_type):
@@ -587,8 +598,8 @@ class UserParams:
             patience = 10
             epochs = 300
         else:
-            patience = 3
-            epochs = 100
+            patience = 10
+            epochs = 300
 
         if 'input1024' in str(self.strategy_type):
             input_size = 1024
@@ -618,7 +629,6 @@ class UserParams:
         parser.add_argument("--epochs", type = int, default = epochs)
         parser.add_argument("--validation_split", type = int, default = 0.2)
         parser.add_argument("--patience", type = int, default = patience)
-        parser.add_argument("--augmentation_factor", type = int, default = 21)
 
         args = parser.parse_args()
         return args
@@ -871,6 +881,16 @@ class UserParams:
                                     'Paxilin-HaloTMR-TIRF8-WF_TMR_M']
                     self.frame_list = [1, 2, 6, 10, 22]
                     self.REPEAT_MAX = 1
+
+                elif "predict_wholeframe_round1_single_micro" in str(predict_path):  # phase contrast images
+                    self.dataset_folders = '../../assets/'
+                    self.mask_folder = '/mask_fixed/'
+                    self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03', '040119_PtK1_S01_01_phase_2_DMSO_nd_02',
+                                    '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2',
+                                    '040119_PtK1_S01_01_phase']
+                    self.model_names = ['A', 'B', 'C', 'D', 'E']
+                    self.frame_list = [10]
+                    self.REPEAT_MAX = 3
 
                 else:  # phase contrast images
                     self.dataset_folders = '../../assets/'
