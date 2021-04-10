@@ -30,7 +30,7 @@ In the folder label_tool folder
 1. For parameter searching for canny_multiplider and denoise kernel size
     * python explore_edge_extraction_user_params.py
 1. Specify parameters in 
-    * user_params.py  
+    * UserParams.py  
 1. Edge extraction Step
     * python extract_edge.py  
 1. Manual Fix Step
@@ -50,22 +50,22 @@ In models folder,
     * prediction.py
 
 ### Evaluation
+To replicate the evaluation results such as bar graphs, line graphs, bubble plots, and violin plots,
 In evaluation folder,  
 Before running code, please install [Correspondence Algorithm](https://github.com/davidstutz/extended-berkeley-segmentation-benchmark)  
-and edit parameters GlobalConfig.m
-* F1_constants.m
-* dice_constants.m
-* Evaluation_dice
-* Calculate_dice_coeff_self_training.py
-* For Self-Training result
-* Calculate_dice_coeff_compare.py
-* For Two Model Comparison
-    * Evaluation_f1
-* For Edge evolution and precision, recall, and f1 calculation
-* matlab -nodisplay -nosplash -nodesktop -r "run('draw_overlap_boundary.m');exit;"
+* Edit parameters 
+    * evaluation/GlobalConfig.m
+* To evaluate F1, precision and recall 
+    * evaluation/evaluation_f1/Evaluation_f1.m
+* For Edge evolution
+    * evaluation/evaluation_f1/run_overlap_compare.m
 * Violin Plot
-    * violin_compare.m  
-For reproduction
+    * evaluation/violin_compare.m  
+<!-- end of the list -->
+
+To replicate SEG-Grad-CAM results
+* set appropriate settings in UserParams.py
+* SegGradCAM/main.py
 
 
 ### Morphodynamics
