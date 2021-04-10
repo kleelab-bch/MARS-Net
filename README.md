@@ -7,7 +7,7 @@ To learn more about MARS-Net, read the [paper](https://www.biorxiv.org/content/1
 
 ## Run Demo
 You can quickly segment one of our live cell movie using the demo in Google Colab
-* hi  
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/googlecolab/colabtools/blob/master/notebooks/colab-github-demo.ipynb) 
 <!-- end of the list -->
 To test our pipeline from the scratch, the user needs to crop images, and train the models before running inference to segment movies which can take several hours.  
 This demo allows users to see the segmentation performance of MARS-Net and U-Net already trained on our live cell movies.
@@ -51,16 +51,17 @@ In the folder label_tool folder
 
 
 ### Segmentation Model Training and Prediction
-To train the deep learning model from scratch and segment the live cell movie, 
+This section is for training deep learning models from scratch and segmenting the live cell movies 
+* Put your live cell movies into the assets folder. Our pipeline assumes leave-one-movie-out cross validation so please provide multiple movies.
 * To crop patches, run
     * crop/crop_augment_split.py
 * To Train, run
     * models/train_mars.py
-* To segment live cell movie, run
+* To segment live cell movies, run
     * models/prediction.py
 
 ### Evaluation
-To replicate the evaluation results such as bar graphs, line graphs, bubble plots, and violin plots,
+This section is for replicating our evaluation results including bar graphs, line graphs, and violin plots,
 In evaluation folder,  
 Before running code, please install [Correspondence Algorithm](https://github.com/davidstutz/extended-berkeley-segmentation-benchmark)  
 * Edit parameters in evaluation/GlobalConfig.m
@@ -69,12 +70,21 @@ Before running code, please install [Correspondence Algorithm](https://github.co
     * frame_list
     * root_path
     * img_root_path
-* To evaluate F1, precision and recall 
-    * evaluation/evaluation_f1/Evaluation_f1.m
+* Before visualizing the evaluated results, calculate F1, precision and recall from the segmented movies, run
+    * evaluation/evaluation_f1/run_overlap_mask_prediction.m
+* To draw bar graphs and line graphs across different training frames, run
+    * evaluation/evaluation_f1/visualize_across_frames_datasets.m
 * To draw edge evolution, run
     * evaluation/evaluation_f1/run_overlap_compare.m
 * To draw violin plot, run
     * evaluation/violin_compare.m  
+
+<!-- end of the list -->
+Unlike MATLAB code above, learning curves and bubble plots are drawn using Python
+* To draw learning curve, set UserParams.py with your parameters and run
+    * evaluation/draw_learning_curve.py
+* To draw bubble plot, run
+    * 
 <!-- end of the list -->
 
 To replicate SEG-Grad-CAM results, run
