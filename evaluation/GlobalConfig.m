@@ -158,6 +158,9 @@ classdef GlobalConfig
 %                         'EFF-B7-U-Net'};
 
 %% --------------------------------------------------------------
+% In the frame_list matrix,
+% each column corresponds to different number of traning frames and
+% each row separated by ; corresponds to the different models
         frame_list = [2;2];
 %        frame_list = [10;10;10];
 %        frame_list = [2;2;2;2];
