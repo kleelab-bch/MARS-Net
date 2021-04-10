@@ -1,3 +1,0 @@
-img and mask_smoothd_bin_v2 match extactly.
-
-image_all  vs img are generated at different times. Maybe there are sligtly different.

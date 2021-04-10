@@ -18,6 +18,7 @@ This pipeline has been tested on Ubuntu 16.04
 * Please download Matlab 2019b
     * Other versions might work but we didn't test our pipeline on other versions.
 * [Correspondence Algorithm](https://github.com/davidstutz/extended-berkeley-segmentation-benchmark) developed by University of California Berkeley Segmentation Benchmark for F1, precision and recall evaluation.
+    * Doesn’t work on Windows OS because it was compiled for Linux
 * [Windowing and Protrusion package](https://github.com/DanuserLab/Windowing-Protrusion) developed by Gaudenz Danuser lab (UT Southwestern) for Morphoydynamics profiling.  
 * For training and segmenting the cell boundary, Python v3.6.8, TensorFlow (v1.15 or v2.3), and Keras v2.3.1 .  
     * Tensorflow v2.3 on RTX Titan GPU with CUDA 10.1
@@ -25,9 +26,9 @@ This pipeline has been tested on Ubuntu 16.04
     
 ### Label Tool
 Tool to facilitate labelling raw images semi-automatically
-In the folder label_tool folder,
-* python explore_edge_extraction_user_params.py
-Do parameter searching for canny_multiplider and denoise kernel size
+In the folder label_tool folder
+1. For parameter searching for canny_multiplider and denoise kernel size
+    * python explore_edge_extraction_user_params.py
 1. Specify parameters in 
     * user_params.py  
 1. Edge extraction Step
@@ -40,12 +41,12 @@ Do parameter searching for canny_multiplider and denoise kernel size
 
 ### Segmentation Model Training and Prediction
 In models folder,  
-* Set User parameters for datasets, round_nums, and etc.
+* Set User parameters for datasets and etc. in the
     * UserParams.py
-*Cropping in crop folder
+* Cropping in crop folder
     * crop_augment_split.py
 * Training & Prediction in models folder
-    * train.py
+    * train_mars.py
     * prediction.py
 
 ### Evaluation
@@ -54,17 +55,16 @@ Before running code, please install [Correspondence Algorithm](https://github.co
 and edit parameters GlobalConfig.m
 * F1_constants.m
 * dice_constants.m
-* Evaluation_dice 
+* Evaluation_dice
 * Calculate_dice_coeff_self_training.py
 * For Self-Training result
 * Calculate_dice_coeff_compare.py
-* For Two Model comparison result
-* Evaluation_f1
+* For Two Model Comparison
+    * Evaluation_f1
 * For Edge evolution and precision, recall, and f1 calculation
-* Run in Linux, doesn’t work in Windows 10 because MEX file was compiled for Linux https://www.mathworks.com/help/matlab/matlab_external/platform-compatibility.html
 * matlab -nodisplay -nosplash -nodesktop -r "run('draw_overlap_boundary.m');exit;"
 * Violin Plot
-* violin_compare.m  
+    * violin_compare.m  
 For reproduction
 
 
