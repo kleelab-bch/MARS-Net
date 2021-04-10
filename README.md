@@ -2,7 +2,7 @@
 Deep learning-based segmentation pipeline for profiling cellular morphodynamics from multiple types of live cell microscopy  
 To learn more about MARS-Net, read the [paper](https://www.biorxiv.org/content/10.1101/191858v3)
 
-![MARS-Net Logo](/assets/NARS-Net_logo.png)
+![MARS-Net Logo](/assets/MARS-Net_logo.png)
 
 ## Run Demo
 You can quickly one of our segment live cell movie using the demo in Google Colab:
