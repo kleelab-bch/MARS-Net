@@ -1,16 +1,25 @@
-# MARS-Net
-Deep learning-based segmentation pipeline for profiling cellular morphodynamics from multiple types of live cell microscopy  
-To learn more about MARS-Net, read the [paper](https://www.biorxiv.org/content/10.1101/191858v3)
+# MARS-Net 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=plastic)](https://opensource.org/licenses/MIT) 
+[![Repo Size](https://img.shields.io/github/repo-size/kleelab-bch/MARS-Net?style=plastic)]()
+[![Python Version](https://img.shields.io/pypi/pyversions/kleelab-bch/MARS-Net?style=plastic)]()
+
+**Deep learning-based segmentation pipeline for profiling cellular morphodynamics from multiple types of live cell microscope**  
+by Junbong Jang, Chuangqi Wang, Xitong Zhang, Hee June Choi, Xiang Pan, Bolun Lin, Yudong Yu, Carly Whittle, Madison Ryan, Yenyu Chen, Kwonmoo Lee
+
+To learn more about MARS-Net, please read the [paper](https://www.biorxiv.org/content/10.1101/191858v3)
+
 <div text-align="center">
   <img width="300" src="./assets/MARS-Net_logo.png" alt="MARS-Net Logo">
-</div>
+</div>  
+
+
 
 ## Run Demo
 You can quickly segment one of our live cell movie in this demo  
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kleelab-bch/MARS-Net/blob/master/run_MARS_Net_demo.ipynb) 
 <!-- end of the list -->
-To test our pipeline from the scratch, the user needs to crop images, and train the models before running inference to segment movies which can take several hours.  
-This demo allows users to see the segmentation performance of MARS-Net and U-Net already trained on our live cell movies.
+To test our pipeline from the scratch in the user's local machine, users need to satisfy software requirements and train the models before running inference to segment movies which can take several hours.  
+This demo allows users to see the segmentation performance of MARS-Net and U-Net which are already trained on our live cell movies.
 ## Software Requirements
 MARS-Net pipeline has been tested on Ubuntu 16.04
 * Please download MATLAB 2019b
@@ -89,7 +98,7 @@ Unlike MATLAB code above, learning curves and bubble plots are drawn using Pytho
     * evaluation/bubble_training_curve.ipynb
 <!-- end of the list -->
 
-To replicate SEG-Grad-CAM results, run
+To draw activation maps and replicate SEG-Grad-CAM results, run
 * SegGradCAM/main.py
 
 
