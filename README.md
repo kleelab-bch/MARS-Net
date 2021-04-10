@@ -6,8 +6,8 @@ To learn more about MARS-Net, read the [paper](https://www.biorxiv.org/content/1
 </div>
 
 ## Run Demo
-You can quickly segment one of our live cell movie using the demo in Google Colab
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/googlecolab/colabtools/blob/master/notebooks/colab-github-demo.ipynb) 
+You can quickly segment one of our live cell movie in this demo  
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kleelab-bch/MARS-Net/blob/master/run_MARS_Net_demo.ipynb) 
 <!-- end of the list -->
 To test our pipeline from the scratch, the user needs to crop images, and train the models before running inference to segment movies which can take several hours.  
 This demo allows users to see the segmentation performance of MARS-Net and U-Net already trained on our live cell movies.
@@ -34,6 +34,8 @@ There is no installation procedure except for downloading our code from Github o
     * dataset_names 
     * model_names 
     * REPEAT_MAX
+
+The example phase contrast movie with its labeled mask is in the assets folder.
 
 ### Label Tool
 Tool to facilitate labelling raw images semi-automatically
@@ -81,10 +83,10 @@ Before running code, please install [Correspondence Algorithm](https://github.co
 
 <!-- end of the list -->
 Unlike MATLAB code above, learning curves and bubble plots are drawn using Python
-* To draw learning curve, set UserParams.py with your parameters and run
+* To draw learning curve, run
     * evaluation/draw_learning_curve.py
 * To draw bubble plot, run
-    * 
+    * evaluation/bubble_training_curve.ipynb
 <!-- end of the list -->
 
 To replicate SEG-Grad-CAM results, run
@@ -92,8 +94,10 @@ To replicate SEG-Grad-CAM results, run
 
 
 ### Morphodynamics
+* For single cell cropping the segmented movie, run
+    * rotate_crop_img.py
 * Download [Windowing and Protrusion package](https://github.com/DanuserLab/Windowing-Protrusion)
 * Add directory and sub directory of the downloaded package to the MATLAB path 
 * Type movieSelectorGUI in the command window in MATLAB
 * Create new movie and perform windowing on the segmented movie from the previous step.
-* For details, refer to their Github page.
+* For details, refer to [Windowing and Protrusion package](https://github.com/DanuserLab/Windowing-Protrusion) Github page.
