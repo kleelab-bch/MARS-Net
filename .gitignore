@@ -20,4 +20,5 @@ assets/*
 **/*.db
 **/*.pickle
 **/extended-berkeley-segmentation-benchmark-master-linux
-!assets/040119_PtK1_S01_01_phase_2_DMSO_nd_02/img_all/*.png
+!assets/040119_PtK1_S01_01_phase_2_DMSO_nd_02/img_all/*
+!.gitignore
