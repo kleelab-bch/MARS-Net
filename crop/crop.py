@@ -70,5 +70,5 @@ if __name__ == "__main__":
         for dataset_folder, img_folder, mask_folder, dataset_name in zip(constants.dataset_folders, constants.img_folders, constants.mask_folders, constants.dataset_names):
             augmentation_factor = 0 # args.augmentation_factor
             print('@@-@@', dataset_folder, img_folder, mask_folder, dataset_name )
-            crop_dataset(constants.round_num, dataset_name, repeat_index, args.input_size, args.output_size, img_folder, mask_folder, dataset_folder, constants.img_format, args.crop_mode, args.crop_patches, augmentation_factor)
+            crop_dataset(constants.round_num, dataset_name, repeat_index, args.input_size, args.output_size, img_folder, mask_folder, dataset_folder, args.img_format, args.crop_mode, args.crop_patches, augmentation_factor)
         gc.collect()  # runs garbage collection to free memory

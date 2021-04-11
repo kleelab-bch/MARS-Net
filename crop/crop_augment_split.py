@@ -86,7 +86,6 @@ if __name__ == "__main__":
                 if model_name != constants.model_names[0] and constants.self_training_type is None:
                     print('break:', repeat_index, frame, model_name)
                     break
-                for dataset_name in constants.dataset_names:
-                    mask_folder = constants.get_mask_folder(model_name, dataset_name, frame, repeat_index)
-                    Training_dataset(constants, model_name, dataset_name, frame, repeat_index, args.input_size, args.output_size, args.batch_size, args.augmentation_factor, args.img_folder, mask_folder, constants.dataset_folder, args.img_format, args.crop_mode, args.crop_patches)
+                for dataset_folder, dataset_name, img_folder, mask_folder in zip(constants.dataset_folders, constants.dataset_names, constants.img_folders, constants.mask_folders):
+                    Training_dataset(constants, model_name, dataset_name, frame, repeat_index, args.input_size, args.output_size, args.batch_size, args.augmentation_factor, img_folder, mask_folder, dataset_folder, constants.img_format, args.crop_mode, args.crop_patches)
             gc.collect()  # runs garbage collection to free memory

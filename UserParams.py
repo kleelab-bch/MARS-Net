@@ -26,7 +26,7 @@ class UserParams:
         random.seed(42)
 
         self.round_num = 1 # [1,1,1,1,1,1,3] # [1,1,1,1] # # [1,1,1,1,1,1,1,1,1]  # [1,2]
-        self.strategy_type = 'single_micro_VGG19_dropout' # 'paxillin_TIRF_normalize_cropped_VGG19_dropout' # 'cryptic_VGG19_dropout_mm_patience_10' #'multi_micro_VGG19_dropout' # ['unet', 'VGG16', 'VGG19', 'VGG16_dropout', 'VGG19_dropout', 'Res50V2', 'EFF_B7_no_preprocessing']  #'cryptic_VGG19_dropout_mm_patience_10_overfit'  # ['specialist_unet', 'generalist_unet', 'specialist_VGG19_dropout', 'generalist_VGG19_dropout']  # ['VGG19_dropout_input64', 'VGG19_dropout_input80', 'VGG19_dropout_input96', 'VGG19_dropout', 'VGG19_dropout_input192', 'VGG19_dropout_input256_crop200'] # ['mDia_raw_unet', 'mDia_raw_VGG19_dropout'] # ['paxillin_TIRF_normalize_cropped_unet_patience_10', 'paxillin_TIRF_normalize_cropped_VGG19_dropout_patience_10'] # ['unet', 'VGG16', 'VGG19', 'VGG16_dropout', 'VGG19_dropout', 'Res50V2', 'EFF_B7_no_preprocessing'] # ['VGG19_dropout', 'VGG19_dropout_input256_crop200'] # ['unet', 'VGG16_no_pretrain', 'VGG19_no_pretrain', 'VGG16', 'VGG19', 'VGG16_batchnorm', 'VGG19_batchnorm', 'VGG16_dropout', 'VGG19_dropout'] # ['paxillin_TIRF_normalize', 'paxillin_TIRF_normalize_2.5']  # '2.5_2frame'
+        self.strategy_type = 'generalist_VGG19_dropout' # 'paxillin_TIRF_normalize_cropped_VGG19_dropout' # 'cryptic_VGG19_dropout_mm_patience_10' #'multi_micro_VGG19_dropout' # ['unet', 'VGG16', 'VGG19', 'VGG16_dropout', 'VGG19_dropout', 'Res50V2', 'EFF_B7_no_preprocessing']  #'cryptic_VGG19_dropout_mm_patience_10_overfit'  # ['specialist_unet', 'generalist_unet', 'specialist_VGG19_dropout', 'generalist_VGG19_dropout']  # ['VGG19_dropout_input64', 'VGG19_dropout_input80', 'VGG19_dropout_input96', 'VGG19_dropout', 'VGG19_dropout_input192', 'VGG19_dropout_input256_crop200'] # ['mDia_raw_unet', 'mDia_raw_VGG19_dropout'] # ['paxillin_TIRF_normalize_cropped_unet_patience_10', 'paxillin_TIRF_normalize_cropped_VGG19_dropout_patience_10'] # ['unet', 'VGG16', 'VGG19', 'VGG16_dropout', 'VGG19_dropout', 'Res50V2', 'EFF_B7_no_preprocessing'] # ['VGG19_dropout', 'VGG19_dropout_input256_crop200'] # ['unet', 'VGG16_no_pretrain', 'VGG19_no_pretrain', 'VGG16', 'VGG19', 'VGG16_batchnorm', 'VGG19_batchnorm', 'VGG16_dropout', 'VGG19_dropout'] # ['paxillin_TIRF_normalize', 'paxillin_TIRF_normalize_2.5']  # '2.5_2frame'
         self.self_training_type = None
         self.final_round_num = 2
         self.dataset_folders = '../assets/'
@@ -682,7 +682,8 @@ class UserParams:
                 root_path = '../crop/crop_results/crop_round1_input256_output196/'
             elif self.strategy_type == 2 or self.strategy_type == 'VGG16_tf' or self.strategy_type == 'VGG16_no_pretrain' or \
                     self.strategy_type == 'VGG16_batchnorm' or self.strategy_type == 'VGG16_dropout' or self.strategy_type == 'VGG16_instancenorm' or \
-                    self.strategy_type == 'VGG19_dropout' or self.strategy_type == 'VGG19' or self.strategy_type == 'VGG19_no_pretrain' or \
+                    self.strategy_type == 'VGG19_dropout' or self.strategy_type == 'specialist_VGG19_dropout' or \
+                    self.strategy_type == 'VGG19' or self.strategy_type == 'VGG19_no_pretrain' or \
                     self.strategy_type == 'VGG19_batchnorm' or self.strategy_type == 'VGG19_dropout_batchnorm' or \
                     self.strategy_type == 'Res50V2' or self.strategy_type == 'Dense201' or \
                     self.strategy_type == 'deeplabv3' or self.strategy_type == 'EFF_B7' or self.strategy_type == 'InceptionResV2' or \

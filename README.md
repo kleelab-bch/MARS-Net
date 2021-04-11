@@ -21,30 +21,40 @@ You can quickly segment one of our live cell movie in this demo
 To test our pipeline from the scratch in the user's local machine, users need to satisfy software requirements and train the models before running inference to segment movies which can take several hours.  
 This demo allows users to see the segmentation performance of MARS-Net and U-Net which are already trained on our live cell movies.
 ## Software Requirements
-MARS-Net pipeline has been tested on Ubuntu 16.04
-* Please download MATLAB 2019b
-    * Other versions might work but we didn't test our pipeline on other versions.
-* [Correspondence Algorithm](https://github.com/davidstutz/extended-berkeley-segmentation-benchmark) developed by University of California Berkeley Segmentation Benchmark for F1, precision and recall evaluation.
-* [Windowing and Protrusion package](https://github.com/DanuserLab/Windowing-Protrusion) developed by Gaudenz Danuser lab (UT Southwestern) for Morphoydynamics profiling.  
-* For training and segmenting the cell boundary, Python v3.6.8, TensorFlow (v1.15 or v2.3), and Keras v2.3.1 .  
+MARS-Net pipeline has been tested on Ubuntu 16.04 with anaconda v4.5.11 and Python v3.6
+
+* For evaluation and visualization, we used
+    * MATLAB 2019b
+    * [Correspondence Algorithm](https://github.com/davidstutz/extended-berkeley-segmentation-benchmark) developed by University of California Berkeley Segmentation Benchmark for F1, precision and recall evaluation.
+* For Morphodynamics Profiling, we used
+    * [Windowing and Protrusion package](https://github.com/DanuserLab/Windowing-Protrusion) developed by Gaudenz Danuser lab (UT Southwestern) for Morphoydynamics profiling.  
+* For training the deep learning models and segmenting live cell movies, we used
     * Tensorflow v2.3 on RTX Titan GPU with CUDA 10.1
     * Tensorflow v1.15 on GTX 1080Ti GPU with CUDA 10.0 
+* Other Python dependencies in the Anaconda environment are specified in environment.yml
 
 ## Pipeline
 The pipeline consists of label tool, segmentation modeling, and morphodynamics profiling.    
 There is no installation procedure except for downloading our code from Github or installing the software requirements above.
 
 * Before running the pipeline, please specify the following parameters in UserParams.py
-    * strategy_type
-    * dataset_folders
-    * img_folders
-    * mask_folders
-    * frame_list
-    * dataset_names 
-    * model_names 
-    * REPEAT_MAX
+    * strategy_type (The type of deep learning model. e.g. specialist_unet, or generalist_VGG19_dropout)
+    * dataset_folders  (location where your images and mask are stored)
+    * img_type  (type of image. default is .png)
+    * img_folders  (list of image folder names)
+    * mask_folders  (list of mask folder names)
+    * frame_list  (list of training frames. e.g. [1,2,6,10,22,34])
+    * dataset_names  (list of dataset folder names)
+    * model_names  (list of the model names, necessary since multiple models are created from cross validation)
+    * REPEAT_MAX  (Max number of times to repeat cross validation. e.g. 1 or 5)
 
-The example phase contrast movie with its labeled mask is in the assets folder.
+Other parameters in the UserParams.py file can be ignored.  
+
+### Example Data
+One of the phase contrast movie and models trained on 2 frames per movie in leave-one-movie-out cross validation  
+    * phase contrast movie with its labeled mask is in the assets folder.  
+    * single-microscopy-type U-Net is in models/results/model_round1_specialist_unet/  
+    * multiple-microscopy-type VGG19D-U-Net is in the models/results/model_round1_generalist_VGG19_dropout/
 
 ### Label Tool
 Tool to facilitate labelling raw images semi-automatically

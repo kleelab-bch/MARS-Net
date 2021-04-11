@@ -9,18 +9,18 @@ import os
 from tensorflow.keras import backend as K
 
 from deep_neural_net import *
-from std_mean_from_images import aggregate_std_mean, get_std_mean_from_images
-from data_generator import DataGenerator
+from data_processor import aggregate_std_mean, get_std_mean_from_images
+from predict_data_generator import DataGenerator
 from UserParams import UserParams
 
 from seggradcam import SegGradCAM, BiasRoI, SuperRoI, ClassRoI, PixelRoI
 from visualize_sgc import SegGradCAMplot
 
 
-def run_seggradcam(constants, model_name, dataset_name, frame, repeat_index, root_path):
+def run_seggradcam(constants, dataset_folder, mask_folder, img_folder, model_name, dataset_name, frame, repeat_index, root_path):
 
-    img_path = constants.dataset_folder + dataset_name + constants.img_folder
-    mask_path = constants.dataset_folder + dataset_name + constants.get_mask_folder(model_name, dataset_name, frame, 0)
+    img_path = dataset_folder + dataset_name + constants.img_folder
+    mask_path = dataset_folder + dataset_name + constants.get_mask_folder(model_name, dataset_name, frame, 0)
     print(img_path)
     print(mask_path)
 
@@ -151,11 +151,8 @@ if __name__ == "__main__":
         raise Exception('Length of Dataset names and Model names are not the same')
 
     for repeat_index in range(0,1):# constants.REPEAT_MAX
-        for model_index in range(len(constants.model_names)):  # len(constants.model_names)
-            model_name = constants.model_names[model_index]
-            dataset_names = [constants.dataset_names[model_index]]
-            for dataset_name in dataset_names:
-                for frame in constants.frame_list:
-                    run_seggradcam(constants, model_name, dataset_name, frame, repeat_index, root_path)
+        for model_name, dataset_folder, dataset_name, mask_folder, img_folder in zip(constants.model_names, constants.dataset_folders, constants.dataset_names, constants.mask_folders, constants.img_folders):
+            for frame in constants.frame_list:
+                run_seggradcam(constants, dataset_folder, mask_folder, img_folder, model_name, dataset_name, frame, repeat_index, root_path)
 
             gc.collect()
