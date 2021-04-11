@@ -1,5 +1,6 @@
 assets/*
 assets_expand/*
+models/results/history_*
 **/*.avi
 **/*.mp4
 **/*.png
