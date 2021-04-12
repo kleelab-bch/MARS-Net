@@ -14,7 +14,7 @@ To learn more about MARS-Net, please read the [paper](https://www.biorxiv.org/co
 
 ## Run Demo
 You can quickly segment one of our live cell movie in this demo (Estimated Time: 10 minutes)  
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kleelab-bch/MARS-Net/blob/master/run_MARS_Net_demo.ipynb) 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kleelab-bch/MARS-Net/blob/master/MARS_Net_demo.ipynb) 
 <!-- end of the list -->
 This demo allows users to see the segmentation performance of MARS-Net and U-Net which are already trained on our live cell movies.
 To test MARS-Net pipeline from the scratch in the user's local machine, users need to satisfy software requirements and train the models before segmenting movies.  
