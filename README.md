@@ -1,7 +1,6 @@
 # MARS-Net 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=plastic)](https://opensource.org/licenses/MIT) 
 [![Repo Size](https://img.shields.io/github/repo-size/kleelab-bch/MARS-Net?style=plastic)]()
-[![Github Last Commit](/github/last-commit/kleelab-bch/MARS-Net)]()
 
 **Deep learning-based segmentation pipeline for profiling cellular morphodynamics from multiple types of live cell microscope**  
 by Junbong Jang, Chuangqi Wang, Xitong Zhang, Hee June Choi, Xiang Pan, Bolun Lin, Yudong Yu, Carly Whittle, Madison Ryan, Yenyu Chen, Kwonmoo Lee
@@ -17,7 +16,7 @@ To learn more about MARS-Net, please read the [paper](https://www.biorxiv.org/co
 You can quickly segment one of our live cell movie in this demo  
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kleelab-bch/MARS-Net/blob/master/run_MARS_Net_demo.ipynb) 
 <!-- end of the list -->
-To test our pipeline from the scratch in the user's local machine, users need to satisfy software requirements and train the models before running inference to segment movies which can take several hours.  
+To test MARS-Net pipeline from the scratch in the user's local machine, users need to satisfy software requirements and train the models before segmenting movies which can take several hours.  
 This demo allows users to see the segmentation performance of MARS-Net and U-Net which are already trained on our live cell movies.
 
 ## Software Requirements
@@ -36,9 +35,14 @@ MARS-Net pipeline has been tested on Ubuntu 16.04 with anaconda v4.5.11 and Pyth
 
 ## Pipeline
 The pipeline consists of label tool, segmentation modeling, and morphodynamics profiling.    
-There is no installation procedure except for downloading our code from Github or installing the software requirements above.
 
-* Before running the pipeline, please specify the following parameters in UserParams.py
+### Installation
+Installation depends on your download speed but it should take less than a hour.  
+1. Download MARS-Net pipeline from Github repository and install its software requirements.
+1. Setup Anaconda environment
+    * conda env create --name marsnet --file environment.yml
+    * conda activate marsnet
+1. Before running the pipeline, please specify the following parameters in UserParams.py
     * strategy_type (The type of deep learning model. e.g. specialist_unet, or generalist_VGG19_dropout)
     * dataset_folders  (location where your images and mask are stored)
     * img_type  (type of image. default is .png)
@@ -48,14 +52,12 @@ There is no installation procedure except for downloading our code from Github o
     * dataset_names  (list of dataset folder names)
     * model_names  (list of the model names, necessary since multiple models are created from cross validation)
     * REPEAT_MAX  (Max number of times to repeat cross validation. e.g. 1 or 5)
-
-Other parameters in the UserParams.py file can be ignored.  
+    * Other parameters can be ignored
 
 ### Example Data
-One of the phase contrast movie and models trained on 2 frames per movie in leave-one-movie-out cross validation  
-* phase contrast movie with its labeled mask is in the assets folder.  
-* single-microscopy-type U-Net is in models/results/model_round1_specialist_unet/  
-* multiple-microscopy-type VGG19D-U-Net is in the models/results/model_round1_generalist_VGG19_dropout/
+* phase contrast movie with its labeled mask is in repository's assets folder.  
+* single-microscopy-type U-Net and multiple-microscopy-type VGG19D-U-Net trained on 2 frames per movie in leave-one-movie-out cross validation
+    * https://drive.google.com/drive/folders/1FLP0D-Y9-DHQmhC-LBZChdUSe6W5zyPw?usp=sharing
 
 ### Label Tool
 Tool to facilitate labelling raw images semi-automatically
