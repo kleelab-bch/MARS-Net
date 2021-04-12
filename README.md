@@ -1,7 +1,7 @@
 # MARS-Net 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=plastic)](https://opensource.org/licenses/MIT) 
 [![Repo Size](https://img.shields.io/github/repo-size/kleelab-bch/MARS-Net?style=plastic)]()
-[![Python Version](https://img.shields.io/pypi/pyversions/kleelab-bch/MARS-Net?style=plastic)]()
+[![Github Last Commit](/github/last-commit/:user/:repo)]()
 
 **Deep learning-based segmentation pipeline for profiling cellular morphodynamics from multiple types of live cell microscope**  
 by Junbong Jang, Chuangqi Wang, Xitong Zhang, Hee June Choi, Xiang Pan, Bolun Lin, Yudong Yu, Carly Whittle, Madison Ryan, Yenyu Chen, Kwonmoo Lee
@@ -13,19 +13,20 @@ To learn more about MARS-Net, please read the [paper](https://www.biorxiv.org/co
 </div>  
 
 
-
 ## Run Demo
 You can quickly segment one of our live cell movie in this demo  
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kleelab-bch/MARS-Net/blob/master/run_MARS_Net_demo.ipynb) 
 <!-- end of the list -->
 To test our pipeline from the scratch in the user's local machine, users need to satisfy software requirements and train the models before running inference to segment movies which can take several hours.  
 This demo allows users to see the segmentation performance of MARS-Net and U-Net which are already trained on our live cell movies.
+
 ## Software Requirements
 MARS-Net pipeline has been tested on Ubuntu 16.04 with anaconda v4.5.11 and Python v3.6
 
 * For evaluation and visualization, we used
     * MATLAB 2019b
-    * [Correspondence Algorithm](https://github.com/davidstutz/extended-berkeley-segmentation-benchmark) developed by University of California Berkeley Segmentation Benchmark for F1, precision and recall evaluation.
+    * To read npy files generated from Python, [NPY Reader](https://github.com/kwikteam/npy-matlab)
+    * To calculate F1, precision and recall, [Correspondence Algorithm](https://github.com/davidstutz/extended-berkeley-segmentation-benchmark) developed by University of California Berkeley Segmentation Benchmark
 * For Morphodynamics Profiling, we used
     * [Windowing and Protrusion package](https://github.com/DanuserLab/Windowing-Protrusion) developed by Gaudenz Danuser lab (UT Southwestern) for Morphoydynamics profiling.  
 * For training the deep learning models and segmenting live cell movies, we used
@@ -52,9 +53,9 @@ Other parameters in the UserParams.py file can be ignored.
 
 ### Example Data
 One of the phase contrast movie and models trained on 2 frames per movie in leave-one-movie-out cross validation  
-    * phase contrast movie with its labeled mask is in the assets folder.  
-    * single-microscopy-type U-Net is in models/results/model_round1_specialist_unet/  
-    * multiple-microscopy-type VGG19D-U-Net is in the models/results/model_round1_generalist_VGG19_dropout/
+* phase contrast movie with its labeled mask is in the assets folder.  
+* single-microscopy-type U-Net is in models/results/model_round1_specialist_unet/  
+* multiple-microscopy-type VGG19D-U-Net is in the models/results/model_round1_generalist_VGG19_dropout/
 
 ### Label Tool
 Tool to facilitate labelling raw images semi-automatically
@@ -71,7 +72,7 @@ In the folder label_tool folder
     * python segment_edge.py will save results in generated_segmentation folder
 
 
-### Segmentation Model Training and Prediction
+### Deep Learning Model Training and Segmentaion
 This section is for training deep learning models from scratch and segmenting the live cell movies 
 * Put your live cell movies into the assets folder. Our pipeline assumes leave-one-movie-out cross validation so please provide multiple movies.
 * To crop patches, run
@@ -81,7 +82,7 @@ This section is for training deep learning models from scratch and segmenting th
 * To segment live cell movies, run
     * models/prediction.py
 
-### Evaluation
+### Evaluation and Visualization
 This section is for replicating our evaluation results including bar graphs, line graphs, and violin plots,
 In evaluation folder,  
 Before running code, please install [Correspondence Algorithm](https://github.com/davidstutz/extended-berkeley-segmentation-benchmark)  
@@ -91,6 +92,7 @@ Before running code, please install [Correspondence Algorithm](https://github.co
     * frame_list
     * root_path
     * img_root_path
+* Download [NPY Reader](https://github.com/kwikteam/npy-matlab) and add the folder to MATLAB path.
 * Before visualizing the evaluated results, calculate F1, precision and recall from the segmented movies, run
     * evaluation/evaluation_f1/run_overlap_mask_prediction.m
 * To draw bar graphs and line graphs across different training frames, run
@@ -112,7 +114,7 @@ To draw activation maps and replicate SEG-Grad-CAM results, run
 * SegGradCAM/main.py
 
 
-### Morphodynamics
+### Morphodynamics Profiling
 * For single cell cropping the segmented movie, run
     * rotate_crop_img.py
 * Download [Windowing and Protrusion package](https://github.com/DanuserLab/Windowing-Protrusion)

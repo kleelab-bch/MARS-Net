@@ -1,6 +1,9 @@
 assets/*
 assets_expand/*
 models/results/history_*
+evaluation/npy-matlab-master
+evaluation/generated
+**/.ipynb_checkpoints
 **/*.avi
 **/*.mp4
 **/*.png
