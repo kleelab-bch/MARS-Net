@@ -13,11 +13,11 @@ To learn more about MARS-Net, please read the [paper](https://www.biorxiv.org/co
 
 
 ## Run Demo
-You can quickly segment one of our live cell movie in this demo  
+You can quickly segment one of our live cell movie in this demo (Estimated Time: 10 minutes)  
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kleelab-bch/MARS-Net/blob/master/run_MARS_Net_demo.ipynb) 
 <!-- end of the list -->
-To test MARS-Net pipeline from the scratch in the user's local machine, users need to satisfy software requirements and train the models before segmenting movies which can take several hours.  
 This demo allows users to see the segmentation performance of MARS-Net and U-Net which are already trained on our live cell movies.
+To test MARS-Net pipeline from the scratch in the user's local machine, users need to satisfy software requirements and train the models before segmenting movies.  
 
 ## Software Requirements
 MARS-Net pipeline has been tested on Ubuntu 16.04 with anaconda v4.5.11 and Python v3.6
@@ -37,7 +37,7 @@ MARS-Net pipeline has been tested on Ubuntu 16.04 with anaconda v4.5.11 and Pyth
 The pipeline consists of label tool, segmentation modeling, and morphodynamics profiling.    
 
 ### Installation
-Installation depends on your download speed but it should take less than a hour.  
+Installation Time can vary based on user's download speed (Estimated Time: 1 hour)  
 1. Download MARS-Net pipeline from Github repository and install its software requirements.
 1. Setup Anaconda environment
     * conda env create --name marsnet --file environment.yml
