@@ -5,6 +5,7 @@ evaluation/npy-matlab-master
 evaluation/generated
 **/.ipynb_checkpoints
 **/*.avi
+**/*.gif
 **/*.mp4
 **/*.png
 **/*.jpg
