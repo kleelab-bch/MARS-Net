@@ -13,11 +13,11 @@ To learn more about MARS-Net, please read the [paper](https://www.biorxiv.org/co
 
 
 ## Run Demo
-You can quickly segment one of our live cell movie in this demo (Estimated Time: 10 minutes)  
+You can quickly segment one of our live cell movie in this demo (Estimated Time: 12 minutes)  
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kleelab-bch/MARS-Net/blob/master/MARS_Net_demo.ipynb) 
 <!-- end of the list -->
 This demo allows users to see the segmentation performance of MARS-Net and U-Net which are already trained on our live cell movies.
-To test MARS-Net pipeline from the scratch in the user's local machine, users need to satisfy software requirements and train the models before segmenting movies.  
+To test MARS-Net pipeline from the scratch in a user's local machine, the user needs to satisfy software requirements and train the models before segmenting movies.  
 
 ## Software Requirements
 MARS-Net pipeline has been tested on Ubuntu 16.04 with anaconda v4.5.11 and Python v3.6
@@ -61,16 +61,16 @@ Installation Time can vary based on user's download speed (Estimated Time: 1 hou
 
 ### Label Tool
 Tool to facilitate labelling raw images semi-automatically
-In the folder label_tool folder
-1. To determine hysteresis thresholding for canny detector and kernel size for blurring
-    * python explore_edge_extraction_user_params.py
-    * Compare results in generated_explore_edge folder
-1. Edge extraction Step
+
+1. To determine hysteresis thresholding for canny detector and kernel size for blurring, run
+    * label_tool/explore_edge_extraction_user_params.py
+1. Compare results in generated_explore_edge folder
+1. To extract edge after choosing hyper parameters, run
     * Python extract_edge.py 
-1. Manual Fix Step
+1. Manually Fix the generated edges
     * The generated edges in generated_edge folder, connect fragmented edges and delete the wrong edges
     * We used [ImageJ](https://imagej.nih.gov/ij/download.html) or [GIMP](https://www.gimp.org/) for manual fix after overlaying edge over the original image
-1. Post processing step to fill the extracted edges
+1. Post processing to fill the edges
     * python segment_edge.py will save results in generated_segmentation folder
 
 
@@ -85,9 +85,8 @@ This section is for training deep learning models from scratch and segmenting th
     * models/prediction.py
 
 ### Evaluation and Visualization
-This section is for replicating our evaluation results including bar graphs, line graphs, and violin plots,
-In evaluation folder,  
-Before running code, please install [Correspondence Algorithm](https://github.com/davidstutz/extended-berkeley-segmentation-benchmark)  
+This section is for replicating our evaluation results including bar graphs, line graphs, and violin plots.  
+
 * Edit parameters in evaluation/GlobalConfig.m
     * prediction_path_list
     * display_names
@@ -95,6 +94,7 @@ Before running code, please install [Correspondence Algorithm](https://github.co
     * root_path
     * img_root_path
 * Download [NPY Reader](https://github.com/kwikteam/npy-matlab) and add the folder to MATLAB path.
+* Download [Correspondence Algorithm](https://github.com/davidstutz/extended-berkeley-segmentation-benchmark) and add the folder to MATLAB path.
 * Before visualizing the evaluated results, calculate F1, precision and recall from the segmented movies, run
     * evaluation/evaluation_f1/run_overlap_mask_prediction.m
 * To draw bar graphs and line graphs across different training frames, run
