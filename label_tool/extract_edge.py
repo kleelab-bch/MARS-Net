@@ -19,8 +19,8 @@ from PIL import Image
 from scipy import ndimage
 
 from cv2.ximgproc import guidedFilter
-from cv2_rolling_ball import subtract_background_rolling_ball
-import bm3d
+# from cv2_rolling_ball import subtract_background_rolling_ball
+# import bm3d
 
 import user_params
 from visualization_helper import *
