@@ -46,6 +46,7 @@ dependencies:
     - numba==0.53.1
     - numpy==1.18.5
     - oauthlib==3.1.0
+    - opencv-contrib-python==4.5.1.48
     - opencv-python==4.5.1.48
     - opt-einsum==3.3.0
     - pillow==8.2.0
