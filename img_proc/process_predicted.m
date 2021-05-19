@@ -52,8 +52,8 @@ frame_list = {'2'};
 %frame_list = {'10'};
 
 root_path_list = {'../models/results/predict_wholeframe_round1_single_micro_VGG19_dropout/'}
-dataset = {'040119_PtK1_S01_01_phase_3_DMSO_nd_03';};
-model_names = {'ABCD'};
+dataset = {'040119_PtK1_S01_01_phase_3_DMSO_nd_03'; '040119_PtK1_S01_01_phase_2_DMSO_nd_02'; '040119_PtK1_S01_01_phase_2_DMSO_nd_01'; '040119_PtK1_S01_01_phase_ROI2'; '040119_PtK1_S01_01_phase'};
+model_names = {'ABCD';'ABCE'; 'ABDE'; 'ACDE'; 'BCDE'};
 frame_list = {'2'};
 
 repeat_index = 0;

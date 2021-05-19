@@ -8,6 +8,7 @@ This is for visualization of the results
 import cv2
 from PIL import Image
 
+
 def overlay_edge_over_img(img, canny_edge, save_path):
     # overlay with the original image
     colorful_img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)

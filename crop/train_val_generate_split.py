@@ -127,6 +127,7 @@ def augment_data(imgs,msks,edgs,batch_size,iteration):
     train, mask, edge = shuffle(train, mask, edge, random_state=10)
     return train, mask, edge
 
+
 class data_generate:
     def __init__(self, dataset_name, n_frames_train, input_size, output_size, random_seed, img_format, crop_mode, rand_crop_num, root, img_folder, mask_folder):
         self.n_frames_train = n_frames_train

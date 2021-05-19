@@ -163,17 +163,13 @@ class SegGradCAM:
         with tf.GradientTape() as tape:
             conv_output, y_c = heatmap_model(img_tensor)
             y_c = y_c[0,self.cls]
-            # print("y_c: ", y_c.shape)
-            # print("conv_output: ", conv_output.shape)
-            y_c = y_c * self.roi.roi  # Mask the region of interest
+            y_c = y_c * self.roi.roi
 
         grads = tape.gradient(y_c, conv_output)
-
         self.A, self.grads_val = conv_output[0, :], grads[0, :, :, :]
 
-        # print("A: ", self.A.shape)
-        # print("grads: ", self.grads_val.shape)
         return self.A, self.grads_val
+
 
     def gradientWeights(self):
         """Defines a matrix of alpha^k_c. Each alpha^k_c denotes importance (weights) of a feature map A^k for class c.

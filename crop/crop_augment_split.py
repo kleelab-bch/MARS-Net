@@ -38,7 +38,6 @@ def Training_dataset(constants, model_name, dataset_name, frame, repeat_index, i
             split_edgs = edges_train[split_lower_limit:split_upper_limit,:,:]
         print('split_imgs shape: ', split_imgs.shape)
 
-
         train, mask, edge = augment_data(split_imgs, split_msks, split_edgs, batch_size, augmentation_factor)
         print('train shape: ', train.shape, ' mask shape: ', mask.shape)
 

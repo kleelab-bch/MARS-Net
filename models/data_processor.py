@@ -29,6 +29,20 @@ def preprocess_output(imgs):
     return imgs_p
 
 
+def preprocess_per_input_image(imgs):
+    print('preprocess_per_input_image')
+    imgs = to3channel(imgs)
+    for img_index in range(imgs.shape[0]):
+        img = imgs[img_index]
+        std = np.std(img)
+        mean = np.mean(img)
+
+        img -= mean
+        img /= std
+        imgs[img_index] = img
+    return imgs
+
+
 def preprocess_input(imgs, std=None, mean=None):
     imgs_p = to3channel(imgs)
     if std is None:

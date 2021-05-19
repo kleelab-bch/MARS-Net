@@ -9,6 +9,7 @@ from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
 from tensorflow.keras import backend as K
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.utils import plot_model
+from sklearn.model_selection import train_test_split
 
 from deeplabv3 import Deeplabv3
 from deep_neural_net import *
@@ -24,7 +25,7 @@ def unison_shuffled_copies(a, b):
     return a[p], b[p]
 
 
-def concatenate_split_crops(concatenate_dataset, model_name, dataset_name, frame, repeat_index):
+def concatenate_split_crops(constants, concatenate_dataset, model_name, dataset_name, frame, repeat_index):
     print('concatenate_split_crops: ', model_name, dataset_name, frame)
     for split_index in range(constants.crop_split_constant):
         print('------------split: {}------------'.format(split_index))
@@ -103,14 +104,14 @@ def get_concatenate_dataset(constants, model_index, frame, repeat_index, leave_o
         if leave_one_movie:
             if model_index != dataset_index:
                 dataset_list.append(dataset_name)
-                concatenate_dataset = concatenate_split_crops(concatenate_dataset, model_name, dataset_name, frame, repeat_index)
+                concatenate_dataset = concatenate_split_crops(constants, concatenate_dataset, model_name, dataset_name, frame, repeat_index)
             else:
                 print()
                 print('omitted dataset:', dataset_name)
                 print()
         else:
             dataset_list.append(dataset_name)
-            concatenate_dataset = concatenate_split_crops(concatenate_dataset, model_name, dataset_name, frame, repeat_index)
+            concatenate_dataset = concatenate_split_crops(constants, concatenate_dataset, model_name, dataset_name, frame, repeat_index)
 
     print('get_concatenate_dataset')
     print(dataset_list)
@@ -152,11 +153,8 @@ def train_model(constants, model_index, frame, repeat_index):
 
     # ------------ process dataset ----------------
     comb_train, comb_mask = unison_shuffled_copies(comb_train, comb_mask)
-    # if frame == 1 and repeat_index == 0:
-    #     img_path = constants.dataset_folder + '/' + constants.dataset_names[model_index] + constants.img_folder
-    #     show_cropped_image(comb_train, comb_mask, img_path, constants.img_format, constants.strategy_type,
-    #                        f'results/debugger/round{constants.round_num}_{constants.strategy_type}/{constants.dataset_names[model_index]}_frame{frame}_repeat{repeat_index}/')
 
+    print(np.mean(comb_train), np.std(comb_train), np.ptp(comb_train))
     print(comb_train.dtype, comb_train.shape)
     print(comb_mask.dtype, comb_mask.shape)
     print('----------')
@@ -295,9 +293,10 @@ def train_model(constants, model_index, frame, repeat_index):
         hist = model.fit(comb_train, [comb_mask,[]], batch_size = args.batch_size, epochs = args.epochs, validation_split = args.validation_split,
                          verbose=1, shuffle=True, callbacks=[model_checkpoint, earlyStopping, time_callback])
     else:
-        hist = model.fit(comb_train, comb_mask, batch_size = args.batch_size, epochs = args.epochs,
-                         validation_split = args.validation_split, verbose=1, shuffle=True,
-                  callbacks=[model_checkpoint, earlyStopping, time_callback])
+        x_train, x_val, y_train, y_val = train_test_split(comb_train, comb_mask, shuffle=True, test_size=0.2, random_state=repeat_index)
+        hist = model.fit(x_train, y_train, batch_size = args.batch_size, epochs = args.epochs,
+                         validation_data=(x_val, y_val), verbose=1, shuffle=True,
+                         callbacks=[model_checkpoint, earlyStopping, time_callback])
 
     # ------------ Save the History ------------
     hist.history['times'] = time_callback.times

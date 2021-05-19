@@ -206,20 +206,6 @@ def set_plot_aspect_ratio(input_ax):
     input_ax.set_aspect(abs((xright - xleft) / (ybottom - ytop)) * ratio)
 
 
-def test_open_data():
-    # strategy_type = 'single_micro_VGG19_dropout'
-    # model_names=['A', 'B', 'C', 'D', 'E']
-    strategy_type = 'VGG19_dropout'
-    model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
-    frame = 34
-    for model_name in model_names:
-        root_path = '../models/results/history_round1_{}/history_frame{}_{}_repeat0.npy'.format(strategy_type, frame, model_name)
-        data = np.load(root_path, allow_pickle=True, encoding="bytes")
-        data_dict = data.ravel()[0]
-        print('Total training in hours: ', sum(data_dict['times'])/3600)
-
-
-
 if __name__ == "__main__":
     # blue, orange, green, yellow, red, skyblue, violet
     # ['#0071bc', '#d85218', '#76ab2f', '#ecb01f', '#a1132e', '#4cbded', '#7d2e8d']

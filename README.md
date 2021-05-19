@@ -53,6 +53,8 @@ Installation Time can vary based on user's download speed (Estimated Time: 1 hou
     * model_names  (list of the model names, necessary since multiple models are created from cross validation)
     * REPEAT_MAX  (Max number of times to repeat cross validation. e.g. 1 or 5)
     * Other parameters can be ignored
+1. Store movie datasets in the directories specified in UserParams.py.   
+   Each folder must contain images and their corresponding masks of one movie.
 
 ### Example Data
 * phase contrast movie with its labeled mask is in repository's assets folder.  

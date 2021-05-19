@@ -78,8 +78,10 @@ classdef GlobalConfig
 
 %        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_unet/';
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_VGG19_dropout/';}
-        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_VGG19_dropout/';
-                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_single_micro_VGG19_dropout/'};
+%        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_VGG19_dropout/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_single_micro_VGG19_dropout/'};
+%        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_single_micro_VGG19_dropout/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_single_micro_VGG19_dropout_crop_even/'};
 
 %        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_VGG19_dropout_input64/';
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_VGG19_dropout_input80/';
@@ -95,8 +97,6 @@ classdef GlobalConfig
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_paxillin_TIRF_normalize_cropped_VGG19_dropout_patience_10/';};
 %        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_paxillin_WF_normalize/';
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_paxillin_TIRF_normalize/';};
-%        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_paxillin_TIRF_normalize/';
-%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round2_paxillin_TIRF_normalize_2.5/';};
 
 %        prediction_path_list = {'../../models/results/predict_wholeframe_round1_unet/';
 %                                 '../../models/results/predict_wholeframe_round1_VGG16_no_pretrain/';
@@ -115,6 +115,9 @@ classdef GlobalConfig
 %                                 '../../models/results/predict_wholeframe_round1_VGG19_dropout/';
 %                                 '../../models/results/predict_wholeframe_round1_Res50V2/';
 %                                 '../../models/results/predict_wholeframe_round1_EFF_B7_no_preprocessing/'};
+
+
+        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_organoid_VGG19_dropout_crop_even/'};
 %% --------------------------------------------------------------
 %        dice_folder_name = 'round1_specialist_unet_round1_generalist_unet_round1_specialist_VGG19_dropout_round1_generalist_VGG19_dropout';
 
@@ -129,7 +132,7 @@ classdef GlobalConfig
 
 %% --------------------------------------------------------------
 %        display_names = {'Specialist U-Net'; 'Generalist U-Net'; 'Specialist VGG19-U-Net'; 'Generalist VGG19-U-Net'};
-        display_names = {'VGG19D-U-Net'; 'single_micro VGG19D-U-Net'};
+%        display_names = {'VGG19D-U-Net'; 'VGG19D-U-Net even'};
 
 %        display_names = {'cryptic VGG19D'; 'cryptic VGG19D pat10'; 'cryptic VGG19D sm'; 'cryptic VGG19D mm pat10';'cryptic VGG19D mm pat10 overfit';'cryptic VGG19D overfit';'cryptic VGG16'};
 %        display_names = {'cryptic_all VGG19D pat10'; 'cryptic_all VGG19D mm pat10'; 'cryptic_all heq VGG19D mm pat10'};
@@ -157,11 +160,13 @@ classdef GlobalConfig
 %                         'Res50V2-U-Net';
 %                         'EFF-B7-U-Net'};
 
+        display_names = {'organoid VGG19D-U-Net';};
+
 %% --------------------------------------------------------------
 % In the frame_list matrix,
 % each column corresponds to different number of traning frames and
 % each row separated by ; corresponds to the different models
-        frame_list = [2;2];
+%        frame_list = [2;2];
 %        frame_list = [10;10;10];
 %        frame_list = [2;2;2;2];
 
@@ -187,6 +192,8 @@ classdef GlobalConfig
 %                     1,2,6,10,22,34;
 %                     1,2,6,10,22,34;
 %                     1,2,6,10,22,34];
+
+        frame_list = [2];
 
 %% --------------------------------------------------------------
     end  % properties end
@@ -294,6 +301,21 @@ classdef GlobalConfig
                                     [0.8500, 0.3250, 0.0980];
                                     [0.4940, 0.1840, 0.5560]];
 
+                elseif contains(prediction_path, 'organoid_')
+                    GlobalConfigObj.repeat_max = 1;
+                    GlobalConfigObj.img_root_path = '/media/bch_drive/Public/JunbongJang/Organoid/generated/segmentation_train/';
+                    GlobalConfigObj.mask_type = '/mask/';
+                    GlobalConfigObj.img_type = '/img/';
+                    GlobalConfigObj.dataset_list = {'Lu-17_48h_z_ex1'; 'Lu-17_48h_z_ex2'; 'Lu-17_48h_z_ex4';
+                                                  'Lu-24_48h_z_ex1';'Lu-24_48h_z_ex2';'Lu-24_48h_z_ex3';'Lu-24_48h_z_ex4';
+                                                  'Lu-24_724_z_ex1'; 'Lu-24_724_z_ex2'; 'Lu-24_724_z_ex4';
+                                                  'Lu-28_724_z_ex2'; 'Lu-28_724_z_ex4'};
+                    GlobalConfigObj.fold_name_list = {'A'; 'B'; 'C'; 'D'; 'E'; 'F'; 'G'; 'H'; 'I'; 'J'; 'K'; 'L'};
+                    GlobalConfigObj.max_dist_pixel = 5;
+                    GlobalConfigObj.dataset_split_list = [length(GlobalConfigObj.dataset_list)];
+                    GlobalConfigObj.dataset_interval_list = [1];
+
+
                 elseif contains(prediction_path, '_paxillin_WF')
                     GlobalConfigObj.repeat_max = 1;
                     GlobalConfigObj.img_root_path = '/media/bch_drive/Public/JunbongJang/Segmentation/assets/';
@@ -339,10 +361,10 @@ classdef GlobalConfig
                     GlobalConfigObj.img_root_path = '/media/bch_drive/Public/JunbongJang/Segmentation/assets/';
                     GlobalConfigObj.mask_type = '/mask_fixed/';
                     GlobalConfigObj.img_type = '/img/';
-%                    GlobalConfigObj.dataset_list = {'040119_PtK1_S01_01_phase_3_DMSO_nd_03'; '040119_PtK1_S01_01_phase_2_DMSO_nd_02'; '040119_PtK1_S01_01_phase_2_DMSO_nd_01'; '040119_PtK1_S01_01_phase_ROI2'; '040119_PtK1_S01_01_phase'};
-%                    GlobalConfigObj.fold_name_list = {'ABCD';'ABCE'; 'ABDE'; 'ACDE'; 'BCDE'};
-                    GlobalConfigObj.dataset_list = {'040119_PtK1_S01_01_phase_3_DMSO_nd_03'};
-                    GlobalConfigObj.fold_name_list = {'ABCD'};
+                    GlobalConfigObj.dataset_list = {'040119_PtK1_S01_01_phase_3_DMSO_nd_03'; '040119_PtK1_S01_01_phase_2_DMSO_nd_02'; '040119_PtK1_S01_01_phase_2_DMSO_nd_01'; '040119_PtK1_S01_01_phase_ROI2'; '040119_PtK1_S01_01_phase'};
+                    GlobalConfigObj.fold_name_list = {'ABCD';'ABCE'; 'ABDE'; 'ACDE'; 'BCDE'};
+%                    GlobalConfigObj.dataset_list = {'040119_PtK1_S01_01_phase_3_DMSO_nd_03'};
+%                    GlobalConfigObj.fold_name_list = {'ABCD'};
 %                    GlobalConfigObj.fold_name_list = {'A'; 'B'; 'C'; 'D'; 'E'};
                     GlobalConfigObj.max_dist_pixel = 3;
 

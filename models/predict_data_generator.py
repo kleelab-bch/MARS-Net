@@ -8,7 +8,7 @@ Gather test set and process it
 import numpy as np
 import glob
 import os, cv2
-from data_processor import to3channel, preprocess_input, normalize_input, normalize_clip_input, heq_norm_input, aggregate_std_mean, get_std_mean_from_images
+from data_processor import to3channel, preprocess_input, normalize_input, normalize_clip_input, heq_norm_input, aggregate_std_mean, get_std_mean_from_images, preprocess_per_input_image
 
 
 class DataGenerator:
@@ -27,8 +27,8 @@ class DataGenerator:
 
         # ------------------- pre-processing images -------------------
         # std and mean from test set images
-        std_value, mean_value = get_std_mean_from_images(self.img_path, img_format=self.img_format)
-        print(mean_value, std_value)
+        # std_value, mean_value = get_std_mean_from_images(self.img_path, img_format=self.img_format)
+        # print(mean_value, std_value)
 
         # std and mean from training set images, Don't use it because it yields worse prediction results
         # crop_path, _ = constants.get_crop_path(model_name, dataset_name, str(frame), str(0), str(repeat_index))
@@ -44,7 +44,8 @@ class DataGenerator:
         elif 'heq' in str(self.strategy_type):
             imgs = heq_norm_input(imgs)
         else:
-            imgs = preprocess_input(imgs, std_value, mean_value)
+            # imgs = preprocess_input(imgs, std_value, mean_value)
+            imgs = preprocess_input(imgs)
         
         return imgs, img_list, image_cols, image_rows, self.col, self.row
 
@@ -97,6 +98,8 @@ class DataGenerator:
         for img_filename in img_filename_list:
             if os.path.isfile(img_path + img_filename) and img_filename.endswith(self.img_format):
                 img_list.append(img_filename)
+        img_list.sort()
+        
         return img_list
 
     def get_img_size(self):

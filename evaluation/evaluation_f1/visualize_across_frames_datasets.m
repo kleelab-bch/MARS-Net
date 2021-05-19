@@ -72,7 +72,7 @@ draw_violinplot(precision_across_frame_across_dataset_across_predictions.', save
 %draw_boxplot(f1_across_frame_across_dataset_across_predictions.', saved_folder, 'F1', constants_struct.graph_colors, constants_struct.display_names);
 %draw_boxplot(recall_across_frame_across_dataset_across_predictions.', saved_folder, 'Recall', constants_struct.graph_colors, constants_struct.display_names);
 %draw_boxplot(precision_across_frame_across_dataset_across_predictions.', saved_folder, 'Precision', constants_struct.graph_colors, constants_struct.display_names);
-
+f1_mean_across_frame_across_dataset
 draw_line_for_models(f1_mean_across_frame_across_dataset, f1_errorci_across_frame_across_dataset, constants_struct.total_prediction_path_num, 'F1', constants_struct.frame_list, constants_struct.chosen_frame_index, constants_struct.display_names, constants_struct.graph_colors, constants_struct.f1_ylim, constants_struct.f1_bar_ylim, saved_folder);
 draw_line_for_models(precision_mean_across_frame_across_dataset, precision_errorci_across_frame_across_dataset, constants_struct.total_prediction_path_num, 'Precision', constants_struct.frame_list, constants_struct.chosen_frame_index, constants_struct.display_names, constants_struct.graph_colors, constants_struct.precision_ylim, constants_struct.precision_bar_ylim, saved_folder);
 draw_line_for_models(recall_mean_across_frame_across_dataset, recall_errorci_across_frame_across_dataset, constants_struct.total_prediction_path_num, 'Recall', constants_struct.frame_list, constants_struct.chosen_frame_index, constants_struct.display_names, constants_struct.graph_colors, constants_struct.recall_ylim, constants_struct.recall_bar_ylim, saved_folder);

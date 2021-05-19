@@ -26,7 +26,7 @@ class UserParams:
         random.seed(42)
 
         self.round_num = 1 # [1,1,1,1,1,1,3] # [1,1,1,1] # # [1,1,1,1,1,1,1,1,1]  # [1,2]
-        self.strategy_type = 'generalist_VGG19_dropout' # 'paxillin_TIRF_normalize_cropped_VGG19_dropout' # 'cryptic_VGG19_dropout_mm_patience_10' #'multi_micro_VGG19_dropout' # ['unet', 'VGG16', 'VGG19', 'VGG16_dropout', 'VGG19_dropout', 'Res50V2', 'EFF_B7_no_preprocessing']  #'cryptic_VGG19_dropout_mm_patience_10_overfit'  # ['specialist_unet', 'generalist_unet', 'specialist_VGG19_dropout', 'generalist_VGG19_dropout']  # ['VGG19_dropout_input64', 'VGG19_dropout_input80', 'VGG19_dropout_input96', 'VGG19_dropout', 'VGG19_dropout_input192', 'VGG19_dropout_input256_crop200'] # ['mDia_raw_unet', 'mDia_raw_VGG19_dropout'] # ['paxillin_TIRF_normalize_cropped_unet_patience_10', 'paxillin_TIRF_normalize_cropped_VGG19_dropout_patience_10'] # ['unet', 'VGG16', 'VGG19', 'VGG16_dropout', 'VGG19_dropout', 'Res50V2', 'EFF_B7_no_preprocessing'] # ['VGG19_dropout', 'VGG19_dropout_input256_crop200'] # ['unet', 'VGG16_no_pretrain', 'VGG19_no_pretrain', 'VGG16', 'VGG19', 'VGG16_batchnorm', 'VGG19_batchnorm', 'VGG16_dropout', 'VGG19_dropout'] # ['paxillin_TIRF_normalize', 'paxillin_TIRF_normalize_2.5']  # '2.5_2frame'
+        self.strategy_type = 'single_micro_VGG19D_attn_temporal' # 'organoid_VGG19_dropout_crop_even' # 'single_micro_Res50V2' # 'cryptic_VGG19_dropout_mm_patience_10' # ['unet', 'VGG16', 'VGG19', 'VGG16_dropout', 'VGG19_dropout', 'Res50V2', 'EFF_B7_no_preprocessing']  #'cryptic_VGG19_dropout_mm_patience_10_overfit'  # ['specialist_unet', 'generalist_unet', 'specialist_VGG19_dropout', 'generalist_VGG19_dropout']  # ['VGG19_dropout_input64', 'VGG19_dropout_input80', 'VGG19_dropout_input96', 'VGG19_dropout', 'VGG19_dropout_input192', 'VGG19_dropout_input256_crop200'] # ['mDia_raw_unet', 'mDia_raw_VGG19_dropout'] # ['paxillin_TIRF_normalize_cropped_unet_patience_10', 'paxillin_TIRF_normalize_cropped_VGG19_dropout_patience_10'] # ['unet', 'VGG16', 'VGG19', 'VGG16_dropout', 'VGG19_dropout', 'Res50V2', 'EFF_B7_no_preprocessing'] # ['VGG19_dropout', 'VGG19_dropout_input256_crop200'] # ['unet', 'VGG16_no_pretrain', 'VGG19_no_pretrain', 'VGG16', 'VGG19', 'VGG16_batchnorm', 'VGG19_batchnorm', 'VGG16_dropout', 'VGG19_dropout'] # ['paxillin_TIRF_normalize', 'paxillin_TIRF_normalize_2.5']  # '2.5_2frame'
         self.self_training_type = None
         self.final_round_num = 2
         self.dataset_folders = '../assets/'
@@ -84,6 +84,26 @@ class UserParams:
                                           '040119_PtK1_S01_01_phase']
                     self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
                     self.REPEAT_MAX = 1
+
+
+                elif 'organoid_' in str(self.strategy_type):
+                    self.dataset_folders = ['../../Organoid/generated/segmentation_train/','../../Organoid/generated/segmentation_train/',
+                                            '../../Organoid/generated/segmentation_train/','../../Organoid/generated/segmentation_train/',
+                                            '../../Organoid/generated/segmentation_train/','../../Organoid/generated/segmentation_train/',
+                                            '../../Organoid/generated/segmentation_train/','../../Organoid/generated/segmentation_train/',
+                                            '../../Organoid/generated/segmentation_train/','../../Organoid/generated/segmentation_train/',
+                                            '../../Organoid/generated/segmentation_train/','../../Organoid/generated/segmentation_train/',]
+                    self.img_folders = ['/img/','/img/','/img/','/img/','/img/','/img/','/img/','/img/','/img/','/img/','/img/','/img/']
+                    self.mask_folders = ['/mask/','/mask/','/mask/','/mask/','/mask/','/mask/','/mask/','/mask/','/mask/','/mask/','/mask/','/mask/']
+
+                    self.frame_list = [2]
+                    self.dataset_names = ['Lu-17_48h_z_ex1', 'Lu-17_48h_z_ex2', 'Lu-17_48h_z_ex4',
+                                          'Lu-24_48h_z_ex1','Lu-24_48h_z_ex2','Lu-24_48h_z_ex3','Lu-24_48h_z_ex4',
+                                          'Lu-24_724_z_ex1', 'Lu-24_724_z_ex2', 'Lu-24_724_z_ex4',
+                                          'Lu-28_724_z_ex2', 'Lu-28_724_z_ex4']
+                    self.model_names = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
+                    self.REPEAT_MAX = 1
+
 
                 elif "mDia" in str(self.strategy_type):
                     self.dataset_folders = '../assets/mDia_chauncey/'
@@ -346,7 +366,25 @@ class UserParams:
                     self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03', '040119_PtK1_S01_01_phase_2_DMSO_nd_02',
                                           '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2',
                                           '040119_PtK1_S01_01_phase']
-                    self.model_names = ['ABCD','B','C','D','E']
+                    self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
+                    self.REPEAT_MAX = 1
+
+                elif 'organoid_' in str(self.strategy_type):
+                    self.dataset_folders = ['../../Organoid/generated/segmentation_train/','../../Organoid/generated/segmentation_train/',
+                                            '../../Organoid/generated/segmentation_train/','../../Organoid/generated/segmentation_train/',
+                                            '../../Organoid/generated/segmentation_train/','../../Organoid/generated/segmentation_train/',
+                                            '../../Organoid/generated/segmentation_train/','../../Organoid/generated/segmentation_train/',
+                                            '../../Organoid/generated/segmentation_train/','../../Organoid/generated/segmentation_train/',
+                                            '../../Organoid/generated/segmentation_train/','../../Organoid/generated/segmentation_train/',]
+                    self.img_folders = ['/img/','/img/','/img/','/img/','/img/','/img/','/img/','/img/','/img/','/img/','/img/','/img/']
+                    self.mask_folders = ['/mask/','/mask/','/mask/','/mask/','/mask/','/mask/','/mask/','/mask/','/mask/','/mask/','/mask/','/mask/']
+
+                    self.frame_list = [2]
+                    self.dataset_names = ['Lu-17_48h_z_ex1', 'Lu-17_48h_z_ex2', 'Lu-17_48h_z_ex4',
+                                          'Lu-24_48h_z_ex1','Lu-24_48h_z_ex2','Lu-24_48h_z_ex3','Lu-24_48h_z_ex4',
+                                          'Lu-24_724_z_ex1', 'Lu-24_724_z_ex2', 'Lu-24_724_z_ex4',
+                                          'Lu-28_724_z_ex2', 'Lu-28_724_z_ex4']
+                    self.model_names = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
                     self.REPEAT_MAX = 1
 
                 elif "cryptic_all" in str(self.strategy_type):
@@ -533,99 +571,79 @@ class UserParams:
             assert (len(self.img_folders) == len(self.dataset_names))
 
 
-    # ------------- helper functions ------------
-
-    def get_crop_args(self):
+    # ------------- helper functions -----------
+    def get_args(self):
         parser = argparse.ArgumentParser()
 
-        if '_even' in str(self.strategy_type):
+        crop_mode = 'random'
+        if 'crop_even' in str(self.strategy_type):
             crop_mode = 'even'
-        else:
+        elif 'crop_random' in str(self.strategy_type):
             crop_mode = 'random'
-
-        if 'input1024' in str(self.strategy_type):
-            input_size = 1024
-            crop_patches = 12
-            batch_size = 8
-        elif "input256_crop200" in str(self.strategy_type):
-            input_size = 256
-            crop_patches = 200
-            batch_size = 128
-        elif "input256" in str(self.strategy_type):
-            input_size = 256
-            crop_patches = 50
-            batch_size = 32
-        elif "input192" in str(self.strategy_type):
-            input_size = 192
-            crop_patches = 200
-            batch_size = 128
-        elif "input96" in str(self.strategy_type):
-            input_size = 96
-            crop_patches = 200
-            batch_size = 128
-        elif "input80" in str(self.strategy_type):
-            input_size = 80
-            crop_patches = 200
-            batch_size = 128
-        elif "input64" in str(self.strategy_type):
-            input_size = 64
-            crop_patches = 200
-            batch_size = 128
-        else:
-            input_size = 128
-            crop_patches = 200
-            batch_size = 128
-
-        output_size = input_size-60
-
-        augmentation_factor = 50
-        parser.add_argument("--input_size", type = int, default = input_size)
-        parser.add_argument("--output_size", type = int, default = output_size)
-        parser.add_argument("--crop_mode", type = str, default = crop_mode)
-        parser.add_argument("--crop_patches", type = int, default = crop_patches)
-        parser.add_argument("--batch_size", type = int, default = batch_size)  # how many images to augment at once
-        parser.add_argument("--augmentation_factor", type = int, default = augmentation_factor)
-        
-        args = parser.parse_args()
-    
-        return args
-    
-    
-    def get_train_args(self): 
-        parser = argparse.ArgumentParser() 
 
         if 'patience_10' in str(self.strategy_type):
             patience = 10
             epochs = 300
         else:
-            patience = 10
-            epochs = 300
+            patience = 3
+            epochs = 100
 
         if 'input1024' in str(self.strategy_type):
             input_size = 1024
-            batch_size = 16
+            crop_patches = 12
+            crop_batch_size = 8
+            train_batch_size = 16
+        elif "input256_crop200" in str(self.strategy_type):
+            input_size = 256
+            crop_patches = 200
+            crop_batch_size = 128
         elif "input256" in str(self.strategy_type):
             input_size = 256
-            batch_size = 32
+            crop_patches = 50
+            crop_batch_size = 32
+            train_batch_size = 32
         elif "input192" in str(self.strategy_type):
             input_size = 192
-            batch_size = 64
+            crop_patches = 200
+            crop_batch_size = 128
+            train_batch_size = 64
+        elif "_3D" in str(self.strategy_type):
+            input_size = 128
+            crop_patches = 200
+            crop_batch_size = 128
+            train_batch_size = 16
         elif "input96" in str(self.strategy_type):
             input_size = 96
-            batch_size = 64
+            crop_patches = 200
+            crop_batch_size = 128
+            train_batch_size = 64
         elif "input80" in str(self.strategy_type):
             input_size = 80
-            batch_size = 64
+            crop_patches = 200
+            crop_batch_size = 128
+            train_batch_size = 64
+
         elif "input64" in str(self.strategy_type):
             input_size = 64
-            batch_size = 64
+            crop_patches = 200
+            crop_batch_size = 128
+            train_batch_size = 64
         else:
             input_size = 128
-            batch_size = 64
-        
-        parser.add_argument("--input_size", type = int, default = input_size)
+            crop_patches = 200
+            crop_batch_size = 128
+            train_batch_size = 64
+
+        output_size = input_size - 60
+
+        parser.add_argument("--input_size", type=int, default=input_size)
+        parser.add_argument("--input_depth", type=int, default=16)
+        parser.add_argument("--output_size", type=int, default=output_size)
+        parser.add_argument("--crop_mode", type=str, default=crop_mode)
+        parser.add_argument("--crop_patches", type=int, default=crop_patches)
+        parser.add_argument("--crop_batch_size", type=int, default=crop_batch_size) # how many images to augment at once
         parser.add_argument("--cropped_boundary", type = int, default = 30)
-        parser.add_argument("--batch_size", type = int, default = batch_size)
+        parser.add_argument("--train_batch_size", type = int, default = train_batch_size)
         parser.add_argument("--epochs", type = int, default = epochs)
         parser.add_argument("--validation_split", type = int, default = 0.2)
         parser.add_argument("--patience", type = int, default = patience)

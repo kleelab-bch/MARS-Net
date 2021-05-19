@@ -8,9 +8,10 @@ import os.path
 from tensorflow.keras import backend as K
 from tensorflow.keras.utils import plot_model
 
-import debugger
+import debug_utils
 from deeplabv3 import Deeplabv3
 from deep_neural_net import *
+from deep_neural_net_3D import *
 from predict_data_generator import DataGenerator
 from UserParams import UserParams
 
@@ -41,9 +42,8 @@ def prediction(constants, model_name, dataset_folder, dataset_name, frame, repea
     # ------------------- Load trained Model -------------------
 
     weights_path = constants.get_trained_weights_path(str(frame), model_name, str(repeat_index))
-    # print(debugger.check_loaded_weights(weights_path))
 
-    if "Res50V2" == str(constants.strategy_type):
+    if "Res50V2" in str(constants.strategy_type):
         model = ResNet50V2Keras(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
     elif "Dense201" == str(constants.strategy_type):   
         model = DenseNet201Keras(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
@@ -70,24 +70,30 @@ def prediction(constants, model_name, dataset_folder, dataset_name, frame, repea
     elif "VGG16" in str(constants.strategy_type):
         model = VGG16(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
 
+    elif "VGG19_dropout_gelu" in str(constants.strategy_type):
+        model = VGG19_dropout_gelu(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
+    elif "VGG19_dropout_swish" in str(constants.strategy_type):
+        model = VGG19_dropout_swish(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
     elif "VGG19_dropout_dac" in str(constants.strategy_type):
         model = VGG19_dropout_dac(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
     elif "VGG19_dropout_feature_extractor" in str(constants.strategy_type):
         model = VGG19_dropout_feature_extractor(image_rows, image_cols, 0, image_cols - orig_cols, image_rows - orig_rows, weights_path=weights_path)
-    elif "VGG19_batchnorm_dropout" == str(constants.strategy_type):
+    elif "VGG19_batchnorm_dropout" in str(constants.strategy_type):
         model = VGG19_batchnorm_dropout(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
-    elif "VGG19_batchnorm" == str(constants.strategy_type):
+    elif "VGG19_batchnorm" in str(constants.strategy_type):
         model = VGG19_batchnorm(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
     elif "VGG19_dropout" in str(constants.strategy_type):
         model = VGG19_dropout(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
     elif "VGG19" in str(constants.strategy_type):
         model = VGG19(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path, encoder_weights=None)
-    elif "EFF_B7" == str(constants.strategy_type) or "EFF_B7_no_preprocessing" == str(constants.strategy_type):
+    elif "EFF_B7" in str(constants.strategy_type):
         K.set_image_data_format('channels_last')
         imgs_val = np.moveaxis(imgs_val, 1, -1)  # first channel to last channel
         print(imgs_val.dtype, imgs_val.shape)
         model = EFF_B7(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
 
+    elif "unet_3D" in str(constants.strategy_type):
+        model = UNet_3D(32, image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
     elif "unet_feature_extractor" in str(constants.strategy_type):
         model = UNet_feature_extractor(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
     elif "unet" in str(constants.strategy_type):
@@ -101,6 +107,11 @@ def prediction(constants, model_name, dataset_folder, dataset_name, frame, repea
     if "feature_extractor" in str(constants.strategy_type):
         segmented_output, style_output = model.predict(imgs_val, batch_size = 1, verbose = 1)
         np.save(save_path + 'style_feature_vector.npy', style_output)
+    elif "_3D" in str(constants.strategy_type):
+        imgs_val = imgs_val[np.newaxis,:32,:,:,:]  # image shape: depth, channel, width, height
+        imgs_val = np.moveaxis(imgs_val, 1, 2)  # new image shape: 1, channel, depth, width, height
+        segmented_output = model.predict(imgs_val, batch_size = 1, verbose = 1) # output shape (1, 1, 16, 474, 392)
+        segmented_output = np.moveaxis(segmented_output[0], 0, 1)  # new output shape: (16, 1, 474, 392)
     else:
         segmented_output = model.predict(imgs_val, batch_size = 1, verbose = 1)
 
