@@ -103,9 +103,22 @@ def VGG19D_attn_temporal(img_rows, img_cols, crop_margin, right_crop, bottom_cro
         x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv3')(x)
         block5_conv4 = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv4')(x)
 
-        return tf.keras.Model(inputs=[inputs], outputs=[block1_conv2, block2_conv2, block3_conv4, block4_conv4, block5_conv4])
+        model = tf.keras.Model(inputs=[inputs], outputs=[block1_conv2, block2_conv2, block3_conv4, block4_conv4, block5_conv4])
+        # Load weights.
+        WEIGHTS_PATH_NO_TOP = ('https://storage.googleapis.com/tensorflow/'
+                               'keras-applications/vgg19/'
+                               'vgg19_weights_tf_dim_ordering_tf_kernels_notop.h5')
 
-    def temporal_attn_block(cur_frame_conv, M1_conv, M2_conv, M3_conv, M4_conv, value_channel_num, width_height):
+        weights_path = get_file(
+            'vgg19_weights_tf_dim_ordering_tf_kernels_notop.h5',
+            WEIGHTS_PATH_NO_TOP,
+            cache_subdir='models',
+            file_hash='253f8cb515780f3b799900260a226db6')
+        model.load_weights(weights_path, by_name=True)
+
+        return model
+
+    def temporal_attn_block(cur_frame_conv, M1_conv, M2_conv, M3_conv, M4_conv, value_channel_num):
         def encoding_layers(a_conv, channel_num):
             a_conv = Conv2D(channel_num, (1, 1), activation='relu', padding='same')(a_conv)
             a_conv = Conv2D(channel_num, (3, 3), activation='relu', padding='same')(a_conv)
@@ -114,6 +127,7 @@ def VGG19D_attn_temporal(img_rows, img_cols, crop_margin, right_crop, bottom_cro
         print('temporal_attn_block')
         key_channel_num = value_channel_num//4
         memory_num = 4
+        height, width = cur_frame_conv.shape[2:]
 
         cur_frame_key = encoding_layers(cur_frame_conv, key_channel_num)
         cur_frame_value = encoding_layers(cur_frame_conv, value_channel_num)
@@ -141,19 +155,19 @@ def VGG19D_attn_temporal(img_rows, img_cols, crop_margin, right_crop, bottom_cro
         # ------------------- Calculate temporal memory attention ---------------------
         # cur_frame_value: C x H x W
         # cur_frame_key: C x H x W --> C x HW --> HW x C
-        cur_frame_key = tf.reshape(cur_frame_key, shape=(-1, key_channel_num, width_height*width_height))
+        cur_frame_key = tf.reshape(cur_frame_key, shape=(-1, key_channel_num, height*width))
         print(cur_frame_key.shape) # (None, 128, 64)
         cur_frame_key = tf.transpose(cur_frame_key, perm=[0,2,1])
         print(cur_frame_key.shape) # (None, 64, 128)
         # M_key: T x C x H x W --> C x T x H x W --> C x THW
         M_key = tf.transpose(M_key, perm=[0,2,1,3,4])
         print(M_key.shape) # (None, 128, 4, 8, 8)
-        M_key = tf.reshape(M_key, shape=(-1, key_channel_num, memory_num*width_height*width_height))
+        M_key = tf.reshape(M_key, shape=(-1, key_channel_num, memory_num*height*width))
         print(M_key.shape) # (None, 128, 256)
         # M_value: T x C x H x W --> T x H x W x C --> THW x C
         M_value = tf.transpose(M_value, perm=[0,1,3,4,2])
         print(M_value.shape) # (None, 4, 8, 8, 512)
-        M_value = tf.reshape(M_value, shape=(-1, memory_num*width_height*width_height, value_channel_num))
+        M_value = tf.reshape(M_value, shape=(-1, memory_num*height*width, value_channel_num))
         print(M_value.shape) # (None, 256, 512)
 
         # HW x C and C x THW --> HW x THW
@@ -161,11 +175,11 @@ def VGG19D_attn_temporal(img_rows, img_cols, crop_margin, right_crop, bottom_cro
         print(softmax.shape) # (None, 64, 256)
         # HW x THW and THW x C --> HW x C
         memory_attn = tf.matmul(softmax, M_value)
-        # HW x C --> C x HW --> C x H x W
         print(memory_attn.shape) # (None, 64, 512)
+        # HW x C --> C x HW --> C x H x W
         memory_attn = tf.transpose(memory_attn, perm=[0,2,1])
         print(memory_attn.shape) # (None, 512, 64)
-        memory_attn_reshaped = tf.reshape(memory_attn, shape=(-1, value_channel_num, width_height, width_height))
+        memory_attn_reshaped = tf.reshape(memory_attn, shape=(-1, value_channel_num, height, width))
         print(memory_attn_reshaped.shape) # (None, 512, 8, 8)
 
         cur_frame_value_and_memory_attn = concatenate([cur_frame_value, memory_attn_reshaped], axis=1)
@@ -187,7 +201,7 @@ def VGG19D_attn_temporal(img_rows, img_cols, crop_margin, right_crop, bottom_cro
     M3_block1_conv, M3_block2_conv, M3_block3_conv, M3_block4_conv, M3_block5_conv = a_encoder(M3_input)
     M4_block1_conv, M4_block2_conv, M4_block3_conv, M4_block4_conv, M4_block5_conv = a_encoder(M4_input)
 
-    block5_conv = temporal_attn_block(block5_conv, M1_block5_conv, M2_block5_conv, M3_block5_conv, M4_block5_conv, 512, 8)
+    block5_conv = temporal_attn_block(block5_conv, M1_block5_conv, M2_block5_conv, M3_block5_conv, M4_block5_conv, 512)
 
     # ------------------ Decoder -----------------------
 
@@ -221,17 +235,7 @@ def VGG19D_attn_temporal(img_rows, img_cols, crop_margin, right_crop, bottom_cro
 
     model = Model(inputs=[cur_frame_input, M1_input, M2_input, M3_input, M4_input], outputs=[crop_conv])
 
-    # Load weights.
-    if weights_path == '':
-        WEIGHTS_PATH_NO_TOP = ('https://storage.googleapis.com/tensorflow/'
-                               'keras-applications/vgg19/'
-                               'vgg19_weights_tf_dim_ordering_tf_kernels_notop.h5')
-
-        weights_path = get_file(
-            'vgg19_weights_tf_dim_ordering_tf_kernels_notop.h5',
-            WEIGHTS_PATH_NO_TOP,
-            cache_subdir='models',
-            file_hash='253f8cb515780f3b799900260a226db6')
-    model.load_weights(weights_path, by_name=True)
+    if weights_path != '':
+        model.load_weights(weights_path, by_name=True)
 
     return model

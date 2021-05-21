@@ -27,7 +27,7 @@ from UserParams import UserParams
 def crop_dataset(round_num, dataset_name, repeat_index, input_size, output_size, img_folder, mask_folder, dataset_folder, img_format, crop_mode, crop_patches, augmentation_factor):
     data_generator = data_generate(dataset_name, input_size, output_size, repeat_index, round_num, img_format, crop_mode, crop_patches, dataset_folder, img_folder, mask_folder)
 
-    img_train, mask_train, frame_names = data_generator.crop()
+    img_train, mask_train, img_frame_names, mask_frame_names = data_generator.crop()
 
     if augmentation_factor > 0:
         img_train, mask_train = data_generator.augment_data(img_train, mask_train, repeat_index, crop_patches, augmentation_factor)
@@ -44,11 +44,13 @@ def crop_dataset(round_num, dataset_name, repeat_index, input_size, output_size,
 
     print('img_train shape:', img_train.shape, ' mask_train shape:', mask_train.shape)
 
-    for frame_index in tqdm(range(img_train.shape[0])): # img_train.shape[0]
+    for frame_index in tqdm(range(img_train.shape[0])):
         for crop_index in range(img_train.shape[1]):
-            frame_name = frame_names[frame_index]
-            cv2.imwrite(root_path_img + f'f{frame_name}_c{crop_index}_{crop_mode}.png', img_train[frame_index, crop_index])
-            cv2.imwrite(root_path_mask + f'f{frame_name}_c{crop_index}_{crop_mode}.png', mask_train[frame_index, crop_index])
+            cv2.imwrite(root_path_img + f'f{img_frame_names[frame_index]}_c{crop_index}_{crop_mode}.png', img_train[frame_index, crop_index])
+
+    for frame_index in tqdm(range(mask_train.shape[0])):
+        for crop_index in range(mask_train.shape[1]):
+            cv2.imwrite(root_path_mask + f'f{mask_frame_names[frame_index]}_c{crop_index}_{crop_mode}.png', mask_train[frame_index, crop_index])
 
     print(gc.collect(), end='\n\n')  # runs garbage collection to free memory
     K.clear_session()

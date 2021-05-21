@@ -37,10 +37,10 @@ def run_seggradcam(constants, dataset_folder, mask_folder, img_folder, model_nam
     if 'TIRF' in dataset_name and 'specialist' in constants.strategy_type:
         temp_strategy_type = constants.strategy_type + '_normalize'
 
-    prediction_data_generator = DataGenerator(img_path, frame, 128, 68, temp_strategy_type, img_format=constants.img_format)
+    prediction_data_generator = PredictDataGenerator(img_path, mask_path, temp_strategy_type, img_format=constants.img_format)
     expanded_images, namelist, image_cols, image_rows, orig_cols, orig_rows = prediction_data_generator.get_expanded_whole_frames()
     orig_images, _, _, _ = prediction_data_generator.get_orig_whole_frames()
-    masks = prediction_data_generator.get_mask_frames(mask_path)
+    masks = prediction_data_generator.get_mask_frames()
 
     print('img size:', image_rows, image_cols)
     print('orig img size:', orig_rows, orig_cols)

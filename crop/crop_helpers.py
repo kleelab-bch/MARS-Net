@@ -18,17 +18,6 @@ import tensorflow as tf
 
 K.set_image_data_format('channels_last')
 
-# def expand_channel_input(imgs, img_rows, img_cols):
-#     imgs_p = np.ndarray((imgs.shape[0], img_rows, img_cols, 3), dtype=np.uint8)
-#
-#     for i in range(imgs.shape[0]):
-#         imgs_p[i, :, :, 0] = cv2.resize(imgs[i, :, :, 0], (img_cols, img_rows), interpolation=cv2.INTER_CUBIC)
-#         imgs_p[i, :, :, 1] = cv2.resize(imgs[i, :, :, 0], (img_cols, img_rows), interpolation=cv2.INTER_CUBIC)
-#         imgs_p[i,:, :,  2] = cv2.resize(imgs[i, :, :, 0], (img_cols, img_rows), interpolation=cv2.INTER_CUBIC)
-#
-#     return imgs_p
-
-
 class data_generate:
     def __init__(self, dataset_name, input_size, output_size, random_seed, round_num, img_format, crop_mode,
                  crop_patches_num, root, img_folder, mask_folder):
@@ -66,42 +55,35 @@ class data_generate:
         return mask
 
     def read_img_mask(self):
-        if self.round_num == 1:
-            r_path = self.root + self.dataset_name + self.img_folder
-            m_path = self.root + self.dataset_name + self.mask_folder
-        else:
-            r_path = self.root + self.dataset_name + self.img_folder
-            m_path = self.mask_folder
+        r_path = self.root + self.dataset_name + self.img_folder
+        m_path = self.root + self.dataset_name + self.mask_folder
+
         img_list = glob.glob(r_path + '*' + self.img_format)
         mask_list = glob.glob(m_path + '*' + self.img_format)
 
-        total_number = len(mask_list)
-        imgs = np.ndarray((total_number, int(self.row), int(self.col)), dtype=np.uint8)
-        masks = np.ndarray((total_number, int(self.row), int(self.col)), dtype=np.uint8)
-        framenames = list()
+        imgs = np.zeros((len(img_list), int(self.row), int(self.col)), dtype=np.uint8)
+        masks = np.zeros((len(mask_list), int(self.row), int(self.col)), dtype=np.uint8)
+
+        img_frame_names = []
+        mask_frame_names = []
 
         for i in range(len(mask_list)):
-            img_path = img_list[i]
             mask_path = mask_list[i]
-            img_name = img_path[len(r_path):]
             mask_name = mask_path[len(r_path):]
-
             image_id = mask_name[-7:-4]
-            img_name = img_name[:-7] + image_id + img_name[-4:]
 
-            framenames.append(image_id)
-            if self.round_num == 1:
-                masks[i] = self.read_mask(mask_list[i])
-                imgs[i] = cv2.imread(r_path + img_name, cv2.IMREAD_GRAYSCALE)
-            elif self.round_num > 1:
-                mask_orig = self.read_mask(mask_list[i])
-                img_orig = cv2.imread(r_path + img_name, cv2.IMREAD_GRAYSCALE)
-                row, col = img_orig.shape
-                # because predicted images' border is hazy.
-                imgs[i] = img_orig[30:, 30:]
-                masks[i] = mask_orig[30:, 30:]
+            mask_frame_names.append(image_id)
+            masks[i] = self.read_mask(mask_list[i])
 
-        return imgs, masks, framenames
+        for i in range(len(img_list)):
+            img_path = img_list[i]
+            img_name = img_path[len(r_path):]
+            image_id = img_name[-7:-4]
+
+            img_frame_names.append(image_id)
+            imgs[i] = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
+
+        return imgs, masks, img_frame_names, mask_frame_names
 
     # ==================================================================================
     # ==================================================================================
@@ -128,8 +110,8 @@ class data_generate:
     def crop_on_loc(self, inputs, loc, sample):
         image, mask = inputs[0], inputs[1]
 
-        imgs = np.ndarray((len(sample), int(self.input_size), int(self.input_size)), dtype=np.uint8)
-        masks = np.ndarray((len(sample), int(self.input_size), int(self.input_size)), dtype=np.uint8)
+        imgs = np.zeros((len(sample), int(self.input_size), int(self.input_size)), dtype=np.uint8)
+        masks = np.zeros((len(sample), int(self.input_size), int(self.input_size)), dtype=np.uint8)
 
         for i in range(len(sample)):
             imgs[i] = image[loc[0][sample[i]]:loc[0][sample[i]] + self.input_size,
@@ -159,48 +141,10 @@ class data_generate:
         imgs_n, masks_n = self.crop_on_loc([image, mask], loc_n, sample_n)
         return np.r_[imgs_p, imgs_n], np.r_[masks_p, masks_n]
 
-    # ==================================================================================
-    # ==================================================================================
-    def pad_img(self, inputs, num_x, num_y):
-        sym = int(np.ceil((self.input_size - self.output_size) / 2.0))
-        for i in range(len(inputs)):
-            row_expand = int(num_x * self.output_size - inputs[i].shape[1])
-            col_expand = int(num_y * self.output_size - inputs[i].shape[2])
-            inputs[i] = np.lib.pad(inputs[i], ((0, 0), (sym, sym + row_expand), (sym, sym + col_expand)), 'symmetric')
-        return inputs
-
-    def crop_even(self, image, mask):
-        # crop images evenly, considering the mask image will be 68x68 from 128x128 for training
-        # The cropped images overlaps but the cropped mask images will be right next to each other at 68x68
-        crop_overlap_percentage = 0.5  # 0.5 means 50%
-        crop_offset = math.floor(self.output_size * (1 - crop_overlap_percentage))
-        num_x = int(np.ceil(float(self.row) / crop_offset))
-        num_y = int(np.ceil(float(self.col) / crop_offset))
-        image, mask = self.pad_img([image, mask], num_x, num_y)
-
-        print('crop_even', self.total_frames, image.shape, mask.shape, num_x, num_y,  self.row, self.col, crop_offset)
-        imgCrop = np.ndarray((self.total_frames, num_x * num_y, int(self.input_size), int(self.input_size)),
-                             dtype=np.uint8)
-        maskCrop = np.ndarray((self.total_frames, num_x * num_y, int(self.input_size), int(self.input_size)),
-                             dtype=np.uint8)
-
-        for row in range(num_y):
-            for col in range(num_x):
-                for a_frame in range(self.total_frames):
-
-                    imgCrop[a_frame, col + row * num_x] = image[a_frame,
-                                                 col * crop_offset:col * crop_offset + self.input_size,
-                                                 row * crop_offset:row * crop_offset + self.input_size]
-                    maskCrop[a_frame, col + row * num_x] = mask[a_frame,
-                                                 col * crop_offset:col * crop_offset + self.input_size,
-                                                 row * crop_offset:row * crop_offset + self.input_size]
-
-        return imgCrop, maskCrop
-
     def crop_random(self, image, mask):
-        imgs_r = np.ndarray((self.total_frames, self.crop_patches_num, int(self.input_size), int(self.input_size)),
+        imgs_r = np.zeros((self.total_frames, self.crop_patches_num, int(self.input_size), int(self.input_size)),
                             dtype=np.uint8)
-        masks_r = np.ndarray((self.total_frames, self.crop_patches_num, int(self.input_size), int(self.input_size)),
+        masks_r = np.zeros((self.total_frames, self.crop_patches_num, int(self.input_size), int(self.input_size)),
                             dtype=np.uint8)
 
         for i in range(self.total_frames):
@@ -208,10 +152,51 @@ class data_generate:
             masks_r[i,:] = self.crop_rand([image[i], mask[i]])
 
         return imgs_r, masks_r
+    # ==================================================================================
+    # ==================================================================================
+    def pad_img(self, inputs, num_x, num_y, crop_offset):
+        sym = int(np.ceil((self.input_size - self.output_size) / 2.0))
+        row_expand = int( self.input_size + num_x * crop_offset - inputs.shape[1])
+        col_expand = int( self.input_size + num_y * crop_offset - inputs.shape[2])
+        print('pad_img', sym, row_expand, col_expand, num_x, num_y)
+
+        return np.lib.pad(inputs, ((0, 0), (sym, sym + row_expand), (sym, sym + col_expand)), 'symmetric')
+
+    def crop_even(self, images, masks):
+        # crop images evenly, considering the mask image will be 68x68 from 128x128 for training
+        # The cropped images overlaps but the cropped mask images will be right next to each other at 68x68
+        crop_overlap_percentage = 0.5  # 0.5 means 50%
+        crop_offset = math.floor(self.output_size * (1 - crop_overlap_percentage))
+
+        num_x = int(np.ceil(float(self.row - self.input_size) / crop_offset))
+        num_y = int(np.ceil(float(self.col - self.input_size) / crop_offset))
+        images = self.pad_img(images, num_x, num_y, crop_offset)
+        masks = self.pad_img(masks, num_x, num_y, crop_offset)
+
+        print('crop_even', images.shape, masks.shape, num_x, num_y,  self.row, self.col, crop_offset)
+        imgCrop = np.zeros((images.shape[0], num_x * num_y, int(self.input_size), int(self.input_size)),
+                             dtype=np.uint8)
+        maskCrop = np.zeros((masks.shape[0], num_x * num_y, int(self.input_size), int(self.input_size)),
+                             dtype=np.uint8)
+
+        for row in range(num_y):
+            for col in range(num_x):
+                for a_frame in range(images.shape[0]):
+                    imgCrop[a_frame, col + row * num_x] = images[a_frame,
+                                                 col * crop_offset:col * crop_offset + self.input_size,
+                                                 row * crop_offset:row * crop_offset + self.input_size]
+
+                for a_frame in range(masks.shape[0]):
+                    maskCrop[a_frame, col + row * num_x] = masks[a_frame,
+                                                 col * crop_offset:col * crop_offset + self.input_size,
+                                                 row * crop_offset:row * crop_offset + self.input_size]
+
+        return imgCrop, maskCrop
+    # ==================================================================================
+    # ==================================================================================
 
     def crop(self):
-        images, masks, framenames = self.read_img_mask()
-
+        images, masks, img_frame_names, mask_frame_names = self.read_img_mask()
         if self.crop_mode == 'random':
             imgs_train, masks_train = self.crop_random(images, masks)
         elif self.crop_mode == 'even':
@@ -220,7 +205,7 @@ class data_generate:
             print('Crop Mode Error:', self.crop_mode)
             exit()
 
-        return imgs_train, masks_train, framenames
+        return imgs_train, masks_train, img_frame_names, mask_frame_names
 
     # ==================================================================================
     # Below functions are not used since augmentation happens in-memory during training

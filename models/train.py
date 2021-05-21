@@ -29,7 +29,7 @@ from debug_utils import *
 from UserParams import UserParams
 from custom_callback import TimeHistory
 from train_data_generator import get_data_generators
-from train_data_generator_3D import get_data_generators_3D
+from train_data_generator_3D import get_data_generators_3D, get_data_generators_3D_all
 
 
 def build_model(constants, args, frame, model_name):
@@ -196,14 +196,11 @@ def train_model(constants, model_index, frame, repeat_index, history_path):
         process_type = 'standardize'
 
     if '_3D' in constants.strategy_type:
-        train_x, train_y, valid_x, valid_y = get_data_generators_3D(train_val_dataset_names,
+        train_x, train_y, valid_x, valid_y = get_data_generators_3D_all(train_val_dataset_names,
                         repeat_index, args.crop_mode, constants.img_format, process_type, args.input_depth)
     elif 'attn_temporal' in constants.strategy_type:
-        aug_batch_size = 64
-        train_x, train_y, valid_x, valid_y = get_data_generators(constants.round_num, train_val_dataset_names,
-                    model_name, frame, repeat_index, args.crop_mode, constants.img_format, aug_batch_size, process_type, history_path)
-        train_x = [train_x, train_x, train_x, train_x, train_x]
-        valid_x = [valid_x, valid_x, valid_x, valid_x, valid_x]
+        train_x, train_y, valid_x, valid_y = get_data_generators_3D(train_val_dataset_names, frame,
+                        repeat_index, args.crop_mode, constants.img_format, process_type)
     else:
         aug_batch_size = 64
         train_x, train_y, valid_x, valid_y = get_data_generators(constants.round_num, train_val_dataset_names,
@@ -222,7 +219,7 @@ def train_model(constants, model_index, frame, repeat_index, history_path):
     model = build_model(constants, args, frame, model_name)
 
     # ------------ Sanity check the model ------------
-    # print(model.summary())
+    print(model.summary())
     print('Num of layers: ', len(model.layers))
     # print('FLOPS: ', get_flops())  # run this after model compilation
     # check_loaded_weights(constants)

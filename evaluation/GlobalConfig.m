@@ -82,6 +82,8 @@ classdef GlobalConfig
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_single_micro_VGG19_dropout/'};
 %        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_single_micro_VGG19_dropout/';
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_single_micro_VGG19_dropout_crop_even/'};
+        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_VGG19_dropout/';
+                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_single_micro_VGG19D_attn_temporal/'};
 
 %        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_VGG19_dropout_input64/';
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_VGG19_dropout_input80/';
@@ -117,7 +119,7 @@ classdef GlobalConfig
 %                                 '../../models/results/predict_wholeframe_round1_EFF_B7_no_preprocessing/'};
 
 
-        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_organoid_VGG19_dropout_crop_even/'};
+%        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_organoid_VGG19_dropout_crop_even/'};
 %% --------------------------------------------------------------
 %        dice_folder_name = 'round1_specialist_unet_round1_generalist_unet_round1_specialist_VGG19_dropout_round1_generalist_VGG19_dropout';
 
@@ -132,7 +134,7 @@ classdef GlobalConfig
 
 %% --------------------------------------------------------------
 %        display_names = {'Specialist U-Net'; 'Generalist U-Net'; 'Specialist VGG19-U-Net'; 'Generalist VGG19-U-Net'};
-%        display_names = {'VGG19D-U-Net'; 'VGG19D-U-Net even'};
+        display_names = {'VGG19D-U-Net'; 'VGG19D-U-Net attn'};
 
 %        display_names = {'cryptic VGG19D'; 'cryptic VGG19D pat10'; 'cryptic VGG19D sm'; 'cryptic VGG19D mm pat10';'cryptic VGG19D mm pat10 overfit';'cryptic VGG19D overfit';'cryptic VGG16'};
 %        display_names = {'cryptic_all VGG19D pat10'; 'cryptic_all VGG19D mm pat10'; 'cryptic_all heq VGG19D mm pat10'};
@@ -160,13 +162,13 @@ classdef GlobalConfig
 %                         'Res50V2-U-Net';
 %                         'EFF-B7-U-Net'};
 
-        display_names = {'organoid VGG19D-U-Net';};
+%        display_names = {'organoid VGG19D-U-Net';};
 
 %% --------------------------------------------------------------
 % In the frame_list matrix,
 % each column corresponds to different number of traning frames and
 % each row separated by ; corresponds to the different models
-%        frame_list = [2;2];
+        frame_list = [2;2];
 %        frame_list = [10;10;10];
 %        frame_list = [2;2;2;2];
 
@@ -193,7 +195,7 @@ classdef GlobalConfig
 %                     1,2,6,10,22,34;
 %                     1,2,6,10,22,34];
 
-        frame_list = [2];
+%        frame_list = [2];
 
 %% --------------------------------------------------------------
     end  % properties end

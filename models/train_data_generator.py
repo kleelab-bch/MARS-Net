@@ -17,12 +17,12 @@ K.set_image_data_format('channels_first')
 
 from tqdm import tqdm
 import glob
-import re
 import random
 import numpy as np
 import pickle
 import cv2
 from joblib import Parallel, delayed
+from data_generator_utils import *
 
 
 def get_data_generators(round_num, dataset_names, model_name, frame, repeat_index, crop_mode, img_format, aug_batch_size, process_type, save_path):
@@ -219,7 +219,6 @@ def calc_augmentation_factor(x_filenames, aug_batch_size, data_type):
     Gradually reduce it as the number of frames increase
     :return: augmentation factor
     '''
-
     total_max_patches = 27200
     if data_type == 'train_val':
         max_patches = total_max_patches
@@ -238,38 +237,6 @@ def calc_augmentation_factor(x_filenames, aug_batch_size, data_type):
     print('calc_augmentation_factor', data_type, aug_factor)
     return aug_factor
 
-
-def read_images(image_path_list):
-    # https://stackoverflow.com/questions/33778155/python-parallelized-image-reading-and-preprocessing-using-multiprocessing
-    images = Parallel(n_jobs=4, verbose=1)(
-        delayed(cv2.imread)(image_path, cv2.IMREAD_GRAYSCALE) for image_path in image_path_list
-    )
-    return images
-
-
-def unison_shuffle_lists(a, b):
-    assert len(a) == len(b)
-    p = np.random.permutation(len(a))
-    a = [a[i] for i in p]
-    b = [b[i] for i in p]
-    return a, b
-
-
-def unison_shuffle_ndarrays(a, b):
-    assert len(a) == len(b)
-
-    shuffler = np.random.permutation(len(a))
-    a_shuffled = a[shuffler]
-    b_shuffled = b[shuffler]
-
-    return a_shuffled, b_shuffled
-
-
-def regex_find_frame_id(filename):
-    regex = re.compile(r'/f\d+_c')
-    frame_id = regex.findall(filename)[0]  # example: '/f040_c'
-
-    return frame_id
 
 # ----------------------------------------------------------------------------------
 # ------ old method that augments new images for every epoch in memory ------------

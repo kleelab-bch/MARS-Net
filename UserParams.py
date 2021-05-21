@@ -7,7 +7,7 @@
 
 import os
 # tensorflow import must come after os.environ gpu setting
-os.environ["CUDA_VISIBLE_DEVICES"] = '0'
+os.environ["CUDA_VISIBLE_DEVICES"] = '1'
 import argparse
 import numpy as np
 import random
@@ -52,7 +52,19 @@ class UserParams:
                 self.crop_split_constant = 1
                 self.img_folder = '/img/'
 
-                if 'multi_micro' in str(self.strategy_type):
+                if 'attn_temporal' in str(self.strategy_type):
+                    self.dataset_folders = ['../assets/','../assets/','../assets/','../assets/','../assets/']
+                    self.img_folders = ['/img_all/','/img_all/','/img_all/','/img_all/','/img_all/']
+                    self.mask_folders = ['/mask_fixed/','/mask_fixed/','/mask_fixed/','/mask_fixed/','/mask_fixed/']
+
+                    self.frame_list = [2]
+                    self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03', '040119_PtK1_S01_01_phase_2_DMSO_nd_02',
+                                          '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2',
+                                          '040119_PtK1_S01_01_phase']
+                    self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
+                    self.REPEAT_MAX = 1
+
+                elif 'multi_micro' in str(self.strategy_type):
                     # if mode == 'train':  # don't crop since I manually move cropped files, commented in 3/15/2021
                     self.dataset_folders = ['../assets/','../assets/','../assets/','../assets/','../assets/',
                                            '../assets/mDia_chauncey/','../assets/mDia_chauncey/','../assets/mDia_chauncey/','../assets/mDia_chauncey/','../assets/mDia_chauncey/',
@@ -300,7 +312,19 @@ class UserParams:
             self.img_folder = '/img/'
             if self.round_num == 1:
 
-                if 'generalist' in str(self.strategy_type) or 'specialist' in str(self.strategy_type):
+                if 'attn_temporal' in str(self.strategy_type):
+                    self.dataset_folders = ['../assets/','../assets/','../assets/','../assets/','../assets/']
+                    self.img_folders = ['/img_all/','/img_all/','/img_all/','/img_all/','/img_all/']
+                    self.mask_folders = ['/mask_fixed/','/mask_fixed/','/mask_fixed/','/mask_fixed/','/mask_fixed/']
+
+                    self.frame_list = [2]
+                    self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03', '040119_PtK1_S01_01_phase_2_DMSO_nd_02',
+                                          '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2',
+                                          '040119_PtK1_S01_01_phase']
+                    self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
+                    self.REPEAT_MAX = 1
+
+                elif 'generalist' in str(self.strategy_type) or 'specialist' in str(self.strategy_type):
                     if 'feature_extractor_big_orig' in str(self.strategy_type):
                         self.dataset_folders = '../assets/test_feature_extractor_big_orig/'
                     elif 'feature_extractor_big' in str(self.strategy_type):
@@ -576,10 +600,8 @@ class UserParams:
         parser = argparse.ArgumentParser()
 
         crop_mode = 'random'
-        if 'crop_even' in str(self.strategy_type):
+        if 'crop_even' in str(self.strategy_type) or 'attn_temporal' in str(self.strategy_type):
             crop_mode = 'even'
-        elif 'crop_random' in str(self.strategy_type):
-            crop_mode = 'random'
 
         if 'patience_10' in str(self.strategy_type):
             patience = 10
