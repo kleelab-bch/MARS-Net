@@ -6,7 +6,7 @@ Store functions that define 3D Keras models
 """
 import tensorflow as tf
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import (Input, concatenate,
+from tensorflow.keras.layers import (Input, concatenate, Subtract, Add, Multiply,
                                      Conv2D, MaxPooling2D, UpSampling2D, Cropping2D,
                                      Conv3D, MaxPooling3D, UpSampling3D, Cropping3D, Dropout)
 from tensorflow.keras.utils import get_file
@@ -66,6 +66,7 @@ def UNet_3D(img_depth, img_rows, img_cols, crop_margin, right_crop, bottom_crop,
     return model
 
 
+@log_function_call
 def VGG19D_attn_temporal(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
 
     def create_encoder(inputs):
@@ -119,27 +120,34 @@ def VGG19D_attn_temporal(img_rows, img_cols, crop_margin, right_crop, bottom_cro
         return model
 
     def temporal_attn_block(cur_frame_conv, M1_conv, M2_conv, M3_conv, M4_conv, value_channel_num):
-        def encoding_layers(a_conv, channel_num):
-            a_conv = Conv2D(channel_num, (1, 1), activation='relu', padding='same')(a_conv)
+        def create_encoding_block(input_conv, channel_num):
+            input_conv = Input(shape=input_conv.shape[1:])
+            a_conv = Conv2D(channel_num, (1, 1), activation='relu', padding='same')(input_conv)
             a_conv = Conv2D(channel_num, (3, 3), activation='relu', padding='same')(a_conv)
-            return a_conv
+
+            return Model(inputs=input_conv, outputs=a_conv)
 
         print('temporal_attn_block')
         key_channel_num = value_channel_num//4
         memory_num = 4
         height, width = cur_frame_conv.shape[2:]
 
-        cur_frame_key = encoding_layers(cur_frame_conv, key_channel_num)
-        cur_frame_value = encoding_layers(cur_frame_conv, value_channel_num)
+        cur_frame_key_encoder = create_encoding_block(cur_frame_conv, key_channel_num)
+        cur_frame_value_encoder = create_encoding_block(cur_frame_conv, value_channel_num)
+        M_key_encoder = create_encoding_block(M1_conv, key_channel_num)
+        M_value_encoder = create_encoding_block(M1_conv, value_channel_num)
 
-        M1_key = encoding_layers(M1_conv, key_channel_num)
-        M1_value = encoding_layers(M1_conv, value_channel_num)
-        M2_key = encoding_layers(M2_conv, key_channel_num)
-        M2_value = encoding_layers(M2_conv, value_channel_num)
-        M3_key = encoding_layers(M3_conv, key_channel_num)
-        M3_value = encoding_layers(M3_conv, value_channel_num)
-        M4_key = encoding_layers(M4_conv, key_channel_num)
-        M4_value = encoding_layers(M4_conv, value_channel_num)
+        cur_frame_key = cur_frame_key_encoder(cur_frame_conv)
+        cur_frame_value = cur_frame_value_encoder(cur_frame_conv)
+
+        M1_key = M_key_encoder(M1_conv)
+        M1_value = M_value_encoder(M1_conv)
+        M2_key = M_key_encoder(M2_conv)
+        M2_value = M_value_encoder(M2_conv)
+        M3_key = M_key_encoder(M3_conv)
+        M3_value = M_value_encoder(M3_conv)
+        M4_key = M_key_encoder(M4_conv)
+        M4_value = M_value_encoder(M4_conv)
 
         M_key = concatenate([tf.expand_dims(M1_key, axis=1),
                     tf.expand_dims(M2_key, axis=1),
@@ -201,7 +209,144 @@ def VGG19D_attn_temporal(img_rows, img_cols, crop_margin, right_crop, bottom_cro
     M3_block1_conv, M3_block2_conv, M3_block3_conv, M3_block4_conv, M3_block5_conv = a_encoder(M3_input)
     M4_block1_conv, M4_block2_conv, M4_block3_conv, M4_block4_conv, M4_block5_conv = a_encoder(M4_input)
 
-    block5_conv = temporal_attn_block(block5_conv, M1_block5_conv, M2_block5_conv, M3_block5_conv, M4_block5_conv, 512)
+    block3_conv = temporal_attn_block(block3_conv, M1_block3_conv, M2_block3_conv, M3_block3_conv, M4_block3_conv, 128)
+    block4_conv = temporal_attn_block(block4_conv, M1_block4_conv, M2_block4_conv, M3_block4_conv, M4_block4_conv, 256)
+    block5_conv = temporal_attn_block(block5_conv, M1_block5_conv, M2_block5_conv, M3_block5_conv, M4_block5_conv, 256)
+
+    # ------------------ Decoder -----------------------
+
+    up6 = concatenate([UpSampling2D(size=(2, 2))(block5_conv), block4_conv], axis=1)
+    up6 = Dropout(0.5)(up6)
+    conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(up6)
+    conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(conv6)
+
+    up7 = concatenate([UpSampling2D(size=(2, 2))(conv6), block3_conv], axis=1)
+    up7 = Dropout(0.5)(up7)
+    conv7 = Conv2D(256, (3, 3), activation='relu', padding='same')(up7)
+    conv7 = Conv2D(256, (3, 3), activation='relu', padding='same')(conv7)
+
+    up8 = concatenate([UpSampling2D(size=(2, 2))(conv7), block2_conv], axis=1)
+    up8 = Dropout(0.5)(up8)
+    conv8 = Conv2D(128, (3, 3), activation='relu', padding='same')(up8)
+    conv8 = Conv2D(128, (3, 3), activation='relu', padding='same')(conv8)
+
+    up9 = concatenate([UpSampling2D(size=(2, 2))(conv8), block1_conv], axis=1)
+    up9 = Dropout(0.5)(up9)
+    conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(up9)
+    conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(conv9)
+
+    sigmoid_conv = Conv2D(1, (1, 1), activation='sigmoid')(conv9)
+    if bottom_crop == 0:
+        # ((top_crop, bottom_crop), (left_crop, right_crop)) for training
+        crop_conv = Cropping2D(cropping=((crop_margin, crop_margin), (crop_margin, crop_margin)))(sigmoid_conv)
+    else:
+        # remove reflected portion from the image for prediction
+        crop_conv = Cropping2D(cropping=((0, bottom_crop), (0, right_crop)))(sigmoid_conv)
+
+    model = Model(inputs=[cur_frame_input, M1_input, M2_input, M3_input, M4_input], outputs=[crop_conv])
+
+    if weights_path != '':
+        model.load_weights(weights_path, by_name=True)
+
+    return model
+
+
+def VGG19D_context_residual(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
+
+    def create_encoder(inputs):
+        # Block 1
+        x = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv1')(inputs)
+        block1_conv2 = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv2')(x)
+        x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(block1_conv2)
+        x = Dropout(0.25)(x)
+
+        # Block 2
+        x = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv1')(x)
+        block2_conv2 = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv2')(x)
+        x = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')(block2_conv2)
+        x = Dropout(0.5)(x)
+
+        # Block 3
+        x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv1')(x)
+        x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv2')(x)
+        x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv3')(x)
+        block3_conv4 = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv4')(x)
+        x = MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool')(block3_conv4)
+        x = Dropout(0.5)(x)
+
+        # Block 4
+        x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv1')(x)
+        x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv2')(x)
+        x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv3')(x)
+        block4_conv4 = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv4')(x)
+        x = MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool')(block4_conv4)
+        x = Dropout(0.5)(x)
+
+        # Block 5
+        x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv1')(x)
+        x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv2')(x)
+        x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv3')(x)
+        block5_conv4 = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv4')(x)
+
+        model = tf.keras.Model(inputs=[inputs], outputs=[block1_conv2, block2_conv2, block3_conv4, block4_conv4, block5_conv4])
+        # Load weights.
+        WEIGHTS_PATH_NO_TOP = ('https://storage.googleapis.com/tensorflow/'
+                               'keras-applications/vgg19/'
+                               'vgg19_weights_tf_dim_ordering_tf_kernels_notop.h5')
+
+        weights_path = get_file(
+            'vgg19_weights_tf_dim_ordering_tf_kernels_notop.h5',
+            WEIGHTS_PATH_NO_TOP,
+            cache_subdir='models',
+            file_hash='253f8cb515780f3b799900260a226db6')
+        model.load_weights(weights_path, by_name=True)
+
+        return model
+
+    def context_residual_block(cur_frame_conv, M1_conv, M2_conv, M3_conv, M4_conv):
+        print('context_residual_block')
+
+        # subtract features between each pairs of frames
+        subtracted1 = Subtract()([cur_frame_conv, M1_conv])
+        subtracted2 = Subtract()([M1_conv, M2_conv])
+        subtracted3 = Subtract()([M2_conv, M3_conv])
+        subtracted4 = Subtract()([M3_conv, M4_conv])
+
+        # concatenate those subtracted features
+        context_residual = tf.keras.backend.abs(concatenate([subtracted1,subtracted2,subtracted3,subtracted4], axis=1))
+
+        # convolve 1x1 to reduce their channels to equal channels of (cur_frame_conv)
+        conv_context_residual = Conv2D(int(context_residual.shape[1]/4), (1, 1), activation='relu', padding='same')(context_residual)
+        conv_context_residual = Conv2D(conv_context_residual.shape[1], (1, 1), activation='sigmoid')(conv_context_residual)
+
+        # multiply with (cur_frame_conv) and add (cur_frame_conv)
+        context_attention = Add()([Multiply()([cur_frame_conv, conv_context_residual]), cur_frame_conv])
+
+        print(cur_frame_conv.shape, context_residual.shape, conv_context_residual.shape, context_attention.shape)
+        print('---------')
+
+        return context_attention
+
+    # ------------------------ Model Creation -----------------------------------
+    # M stands for Memory, M1 means previous 1 frame from current frame
+    cur_frame_input = Input(shape=[3, img_rows, img_cols])
+    M1_input = Input(shape=[3, img_rows, img_cols])
+    M2_input = Input(shape=[3, img_rows, img_cols])
+    M3_input = Input(shape=[3, img_rows, img_cols])
+    M4_input = Input(shape=[3, img_rows, img_cols])
+
+    a_encoder = create_encoder(cur_frame_input)
+    block1_conv, block2_conv, block3_conv, block4_conv, block5_conv = a_encoder(cur_frame_input)
+    M1_block1_conv, M1_block2_conv, M1_block3_conv, M1_block4_conv, M1_block5_conv = a_encoder(M1_input)
+    M2_block1_conv, M2_block2_conv, M2_block3_conv, M2_block4_conv, M2_block5_conv = a_encoder(M2_input)
+    M3_block1_conv, M3_block2_conv, M3_block3_conv, M3_block4_conv, M3_block5_conv = a_encoder(M3_input)
+    M4_block1_conv, M4_block2_conv, M4_block3_conv, M4_block4_conv, M4_block5_conv = a_encoder(M4_input)
+
+    block1_conv = context_residual_block(block1_conv, M1_block1_conv, M2_block1_conv, M3_block1_conv, M4_block1_conv)
+    block2_conv = context_residual_block(block2_conv, M1_block2_conv, M2_block2_conv, M3_block2_conv, M4_block2_conv)
+    block3_conv = context_residual_block(block3_conv, M1_block3_conv, M2_block3_conv, M3_block3_conv, M4_block3_conv)
+    block4_conv = context_residual_block(block4_conv, M1_block4_conv, M2_block4_conv, M3_block4_conv, M4_block4_conv)
+    block5_conv = context_residual_block(block5_conv, M1_block5_conv, M2_block5_conv, M3_block5_conv, M4_block5_conv)
 
     # ------------------ Decoder -----------------------
 

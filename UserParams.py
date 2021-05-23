@@ -26,7 +26,7 @@ class UserParams:
         random.seed(42)
 
         self.round_num = 1 # [1,1,1,1,1,1,3] # [1,1,1,1] # # [1,1,1,1,1,1,1,1,1]  # [1,2]
-        self.strategy_type = 'single_micro_VGG19D_attn_temporal' # 'organoid_VGG19_dropout_crop_even' # 'single_micro_Res50V2' # 'cryptic_VGG19_dropout_mm_patience_10' # ['unet', 'VGG16', 'VGG19', 'VGG16_dropout', 'VGG19_dropout', 'Res50V2', 'EFF_B7_no_preprocessing']  #'cryptic_VGG19_dropout_mm_patience_10_overfit'  # ['specialist_unet', 'generalist_unet', 'specialist_VGG19_dropout', 'generalist_VGG19_dropout']  # ['VGG19_dropout_input64', 'VGG19_dropout_input80', 'VGG19_dropout_input96', 'VGG19_dropout', 'VGG19_dropout_input192', 'VGG19_dropout_input256_crop200'] # ['mDia_raw_unet', 'mDia_raw_VGG19_dropout'] # ['paxillin_TIRF_normalize_cropped_unet_patience_10', 'paxillin_TIRF_normalize_cropped_VGG19_dropout_patience_10'] # ['unet', 'VGG16', 'VGG19', 'VGG16_dropout', 'VGG19_dropout', 'Res50V2', 'EFF_B7_no_preprocessing'] # ['VGG19_dropout', 'VGG19_dropout_input256_crop200'] # ['unet', 'VGG16_no_pretrain', 'VGG19_no_pretrain', 'VGG16', 'VGG19', 'VGG16_batchnorm', 'VGG19_batchnorm', 'VGG16_dropout', 'VGG19_dropout'] # ['paxillin_TIRF_normalize', 'paxillin_TIRF_normalize_2.5']  # '2.5_2frame'
+        self.strategy_type = 'single_micro_VGG19D_context_residual' # 'organoid_VGG19_dropout_crop_even' # 'single_micro_Res50V2' # 'cryptic_VGG19_dropout_mm_patience_10' # ['unet', 'VGG16', 'VGG19', 'VGG16_dropout', 'VGG19_dropout', 'Res50V2', 'EFF_B7_no_preprocessing']  #'cryptic_VGG19_dropout_mm_patience_10_overfit'  # ['specialist_unet', 'generalist_unet', 'specialist_VGG19_dropout', 'generalist_VGG19_dropout']  # ['VGG19_dropout_input64', 'VGG19_dropout_input80', 'VGG19_dropout_input96', 'VGG19_dropout', 'VGG19_dropout_input192', 'VGG19_dropout_input256_crop200'] # ['mDia_raw_unet', 'mDia_raw_VGG19_dropout'] # ['paxillin_TIRF_normalize_cropped_unet_patience_10', 'paxillin_TIRF_normalize_cropped_VGG19_dropout_patience_10'] # ['unet', 'VGG16', 'VGG19', 'VGG16_dropout', 'VGG19_dropout', 'Res50V2', 'EFF_B7_no_preprocessing'] # ['VGG19_dropout', 'VGG19_dropout_input256_crop200'] # ['unet', 'VGG16_no_pretrain', 'VGG19_no_pretrain', 'VGG16', 'VGG19', 'VGG16_batchnorm', 'VGG19_batchnorm', 'VGG16_dropout', 'VGG19_dropout'] # ['paxillin_TIRF_normalize', 'paxillin_TIRF_normalize_2.5']  # '2.5_2frame'
         self.self_training_type = None
         self.final_round_num = 2
         self.dataset_folders = '../assets/'
@@ -52,12 +52,12 @@ class UserParams:
                 self.crop_split_constant = 1
                 self.img_folder = '/img/'
 
-                if 'attn_temporal' in str(self.strategy_type):
+                if 'attn_temporal' in str(self.strategy_type) or 'context_residual' in str(self.strategy_type):
                     self.dataset_folders = ['../assets/','../assets/','../assets/','../assets/','../assets/']
                     self.img_folders = ['/img_all/','/img_all/','/img_all/','/img_all/','/img_all/']
                     self.mask_folders = ['/mask_fixed/','/mask_fixed/','/mask_fixed/','/mask_fixed/','/mask_fixed/']
 
-                    self.frame_list = [2]
+                    self.frame_list = [22]
                     self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03', '040119_PtK1_S01_01_phase_2_DMSO_nd_02',
                                           '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2',
                                           '040119_PtK1_S01_01_phase']
@@ -312,7 +312,7 @@ class UserParams:
             self.img_folder = '/img/'
             if self.round_num == 1:
 
-                if 'attn_temporal' in str(self.strategy_type):
+                if 'attn_temporal' in str(self.strategy_type) or 'context_residual' in str(self.strategy_type):
                     self.dataset_folders = ['../assets/','../assets/','../assets/','../assets/','../assets/']
                     self.img_folders = ['/img_all/','/img_all/','/img_all/','/img_all/','/img_all/']
                     self.mask_folders = ['/mask_fixed/','/mask_fixed/','/mask_fixed/','/mask_fixed/','/mask_fixed/']
@@ -600,7 +600,7 @@ class UserParams:
         parser = argparse.ArgumentParser()
 
         crop_mode = 'random'
-        if 'crop_even' in str(self.strategy_type) or 'attn_temporal' in str(self.strategy_type):
+        if 'crop_even' in str(self.strategy_type) or 'attn_temporal' in str(self.strategy_type) or 'context_residual' in str(self.strategy_type):
             crop_mode = 'even'
 
         if 'patience_10' in str(self.strategy_type):

@@ -47,6 +47,8 @@ def build_model(constants, frame, model_name, image_rows, image_cols, orig_rows,
     elif "VGG16" in str(constants.strategy_type):
         model = VGG16(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
 
+    elif "VGG19D_context_residual" in str(constants.strategy_type):
+        model = VGG19D_context_residual(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
     elif "VGG19D_attn_temporal" in str(constants.strategy_type):
         model = VGG19D_attn_temporal(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
     elif "VGG19_dropout_gelu" in str(constants.strategy_type):
@@ -122,17 +124,13 @@ def prediction(constants, frame, model_index, repeat_index, save_path):
         segmented_output, style_output = model.predict(input_images, batch_size = 1, verbose = 1)
         np.save(save_path + 'style_feature_vector.npy', style_output)
 
-    elif "attn_temporal" in str(constants.strategy_type):
-        input_images = [input_images, input_images, input_images, input_images, input_images]
-        segmented_output = model.predict(input_images, batch_size = 1, verbose = 1)
-
     elif "_3D" in str(constants.strategy_type):
         input_images = input_images[np.newaxis,:32,:,:,:]  # image shape: depth, channel, width, height
         input_images = np.moveaxis(input_images, 1, 2)  # new image shape: 1, channel, depth, width, height
         segmented_output = model.predict(input_images, batch_size = 1, verbose = 1) # output shape (1, 1, 16, 474, 392)
         segmented_output = np.moveaxis(segmented_output[0], 0, 1)  # new output shape: (16, 1, 474, 392)
-    else:
-        segmented_output = model.predict(input_images, batch_size = 1, verbose = 1)
+
+    segmented_output = model.predict(input_images, batch_size = 1, verbose = 1)
 
     segmented_output = 255 * segmented_output  # 0=black color and 255=white color
 
@@ -141,7 +139,7 @@ def prediction(constants, frame, model_index, repeat_index, save_path):
         segmented_output = np.moveaxis(segmented_output, -1, 1)
         print(segmented_output.shape)
 
-    for f in range(len(image_filenames)):
+    for f in range(segmented_output.shape[0]):
         if constants.strategy_type == 'movie3' or constants.strategy_type == 'movie3_loss':
             out = segmented_output[f, 1, :, :]
         else:

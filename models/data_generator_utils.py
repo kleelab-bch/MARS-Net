@@ -8,6 +8,7 @@ utility functions for train and predict data generators
 import cv2
 import numpy as np
 import re
+from joblib import Parallel, delayed
 
 def read_images(image_path_list):
     # https://stackoverflow.com/questions/33778155/python-parallelized-image-reading-and-preprocessing-using-multiprocessing

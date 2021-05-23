@@ -21,7 +21,6 @@ import random
 import numpy as np
 import pickle
 import cv2
-from joblib import Parallel, delayed
 from data_generator_utils import *
 
 

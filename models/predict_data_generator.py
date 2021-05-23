@@ -21,17 +21,22 @@ class PredictDataGenerator:
         self.max_prev_frame_num = 4
 
     def get_expanded_whole_frames(self):
-        if 'attn_temporal' in str(self.strategy_type):
+        if 'attn_temporal' in str(self.strategy_type) or 'context_residual' in str(self.strategy_type):
             image_filenames = self.find_filenames(self.mask_path)
 
             x_combined_filenames = []
-            for a_filename in image_filenames:
+            filename_remove_index = None
+            for i, a_filename in enumerate(image_filenames):
                 sampled_prev_img_filenames = self.regex_find_prev_filenames(a_filename, self.max_prev_frame_num)
                 if sampled_prev_img_filenames is not None:
                     x_combined_filenames.append(a_filename)
                     for sampled_prev_img_filename in sampled_prev_img_filenames:
                         x_combined_filenames.append(sampled_prev_img_filename)
+                else:
+                    filename_remove_index = i
 
+            if filename_remove_index is not None:
+                del image_filenames[filename_remove_index]
             imgs, image_rows, image_cols = self.get_expanded_images(x_combined_filenames)
 
             new_imgs = np.zeros(shape=(int(imgs.shape[0]/(self.max_prev_frame_num+1)), (self.max_prev_frame_num+1), imgs.shape[1], imgs.shape[2]))
@@ -66,11 +71,16 @@ class PredictDataGenerator:
             imgs = preprocess_input(imgs)
 
         print('imgs shape:', imgs.shape)
-        if 'attn_temporal' in str(self.strategy_type):
+        if 'attn_temporal' in str(self.strategy_type) or 'context_residual' in str(self.strategy_type):
             imgs_list = []
             for frame_counter in range(self.max_prev_frame_num + 1):
                 imgs_list.append(imgs[:, :, frame_counter, :, :])
-        
+
+            # test by setting the previous frames same as the current frame
+            # imgs = imgs[:, :, 0, :, :]
+            # zero_imgs = np.zeros_like(imgs)
+            # imgs_list = [imgs, zero_imgs, zero_imgs, zero_imgs, zero_imgs]
+
         return imgs_list, image_filenames, image_cols, image_rows, self.col, self.row
 
 
@@ -163,13 +173,15 @@ class PredictDataGenerator:
     def regex_find_prev_filenames(self, cur_filename, max_prev_frame_num):
         # For the given current frame, get n previous frames
         cur_frame_id = int(cur_filename[-7:-4])
+        frame_interval = 5
 
-        if cur_frame_id - max_prev_frame_num < 0:
-            return None
-        else:
-            prev_filenames = []
-            for prev_counter in range(1, max_prev_frame_num+1):
+        prev_filenames = []
+        for prev_counter in range(frame_interval, frame_interval*(max_prev_frame_num+1), frame_interval):
+            if cur_frame_id - frame_interval * max_prev_frame_num < 1:
+                # TODO instead of appending cur_filename, append the last previous frame
+                prev_filenames.append(cur_filename)
+            else:
                 prev_filename = f"{cur_filename[:-7]}{(cur_frame_id - prev_counter):03d}{cur_filename[-4:]}"
                 prev_filenames.append(prev_filename)
 
-            return prev_filenames
+        return prev_filenames

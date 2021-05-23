@@ -17,11 +17,10 @@ import glob
 import random
 import numpy as np
 import pickle
-from joblib import Parallel, delayed
 from data_generator_utils import *
 
 
-def get_data_generators_3D(dataset_names, frame, repeat_index, crop_mode, img_format, process_type):
+def get_data_generators_3D(dataset_names, frame, repeat_index, crop_mode, img_format, aug_batch_size, process_type):
     # get img frames with mask only (every fifth frame)
     # sample some image frames and get their previous 4 frames
     # Put previous frames in a new dimension whose index represents T-n frame
@@ -48,11 +47,12 @@ def get_data_generators_3D(dataset_names, frame, repeat_index, crop_mode, img_fo
 
             img_filenames = glob.glob(crop_path_img + f'*_{crop_mode}' + img_format)
             mask_filenames = glob.glob(crop_path_mask + f'*_{crop_mode}' + img_format)
-            assert len(img_filenames) > len(mask_filenames) * 3
+            assert len(img_filenames) > len(mask_filenames) * 4
 
             # count unique frames
             unique_frames = []
             for mask_filename in mask_filenames:
+                frame_id = regex_find_frame_id(mask_filename)
                 prev_filenames = regex_find_prev_filenames(mask_filename, max_prev_frame_num)
                 if frame_id not in unique_frames and prev_filenames is not None:  # exclude '/f001'
                     unique_frames.append(frame_id)
@@ -114,7 +114,7 @@ def get_data_generators_3D(dataset_names, frame, repeat_index, crop_mode, img_fo
         '''
         max_patches = 27200
 
-        if len(x_filenames) >= max_patches:
+        if len(x_filenames) >= max_patches or aug_batch_size == 0:
             aug_factor = 0
         else:
             aug_factor = int((max_patches - len(x_filenames)) / aug_batch_size)
@@ -122,41 +122,42 @@ def get_data_generators_3D(dataset_names, frame, repeat_index, crop_mode, img_fo
         print('calc_augmentation_factor', len(x_filenames), aug_factor)
         return aug_factor
 
-    def getAugmentedImages(x_filenames, x_data, y_data):
-        aug_batch_size = 64
+    def getAugmentedImages(x_filenames, x_data, y_data, aug_batch_size):
         augmentation_factor = calc_augmentation_factor(x_filenames, aug_batch_size)
+        if augmentation_factor == 0:
+            return x_data, y_data
+        else:
+            aug_images = np.zeros((x_data.shape[0] + augmentation_factor * aug_batch_size, x_data.shape[1], x_data.shape[2], x_data.shape[3], x_data.shape[4]),
+                                  dtype=np.uint8)
+            aug_masks = np.zeros((y_data.shape[0] + augmentation_factor * aug_batch_size, y_data.shape[1], y_data.shape[2], y_data.shape[3]),
+                                 dtype=np.uint8)
+            print('getAugmentedImages aug', aug_images.shape, aug_images.dtype, aug_masks.shape, aug_masks.dtype)
 
-        aug_images = np.zeros((x_data.shape[0] + augmentation_factor * aug_batch_size, x_data.shape[1], x_data.shape[2], x_data.shape[3], x_data.shape[4]),
-                              dtype=np.uint8)
-        aug_masks = np.zeros((y_data.shape[0] + augmentation_factor * aug_batch_size, y_data.shape[1], y_data.shape[2], y_data.shape[3]),
-                             dtype=np.uint8)
-        print('getAugmentedImages aug', aug_images.shape, aug_images.dtype, aug_masks.shape, aug_masks.dtype)
+            datagen = ImageDataGenerator(rotation_range=50.,
+                                         width_shift_range=0.1,
+                                         height_shift_range=0.1,
+                                         shear_range=0.1,
+                                         zoom_range=0.1,
+                                         horizontal_flip=True,
+                                         vertical_flip=True,
+                                         fill_mode='reflect')
 
-        datagen = ImageDataGenerator(rotation_range=50.,
-                                     width_shift_range=0.1,
-                                     height_shift_range=0.1,
-                                     shear_range=0.1,
-                                     zoom_range=0.1,
-                                     horizontal_flip=True,
-                                     vertical_flip=True,
-                                     fill_mode='reflect')
+            assert x_data.shape[3:] == y_data.shape[2:]  # their width and height must match for augmentation to be correct!
+            for iteration in tqdm(range(augmentation_factor)):
+                for prev_frame_num in range(x_data.shape[2]):
+                    for aug_image_batch in datagen.flow(x_data[:, :, prev_frame_num, :, :], batch_size=aug_batch_size, seed=iteration):
+                        break
+                    aug_images[iteration * aug_batch_size:(iteration + 1) * aug_batch_size,:,prev_frame_num,:,:] = aug_image_batch
 
-        assert x_data.shape[3:] == y_data.shape[2:]  # their width and height must match for augmentation to be correct!
-        for iteration in tqdm(range(augmentation_factor)):
-            for prev_frame_num in range(x_data.shape[2]):
-                for aug_image_batch in datagen.flow(x_data[:, :, prev_frame_num, :, :], batch_size=aug_batch_size, seed=iteration):
+                for aug_mask_batch in datagen.flow(y_data, batch_size=aug_batch_size, seed=iteration):
                     break
-                aug_images[iteration * aug_batch_size:(iteration + 1) * aug_batch_size,:,prev_frame_num,:,:] = aug_image_batch
+                aug_masks[iteration * aug_batch_size:(iteration + 1) * aug_batch_size] = aug_mask_batch
 
-            for aug_mask_batch in datagen.flow(y_data, batch_size=aug_batch_size, seed=iteration):
-                break
-            aug_masks[iteration * aug_batch_size:(iteration + 1) * aug_batch_size] = aug_mask_batch
+            aug_images[(iteration + 1) * aug_batch_size:] = x_data
+            aug_masks[(iteration + 1) * aug_batch_size:] = y_data
 
-        aug_images[(iteration + 1) * aug_batch_size:] = x_data
-        aug_masks[(iteration + 1) * aug_batch_size:] = y_data
-
-        print('getAugmentedImages aug', aug_images.shape, aug_images.dtype, aug_masks.shape, aug_masks.dtype)
-        return aug_images, aug_masks
+            print('getAugmentedImages aug', aug_images.shape, aug_images.dtype, aug_masks.shape, aug_masks.dtype)
+            return aug_images, aug_masks
 
     # -----------------------------------------------------
     max_prev_frame_num = 4
@@ -167,7 +168,7 @@ def get_data_generators_3D(dataset_names, frame, repeat_index, crop_mode, img_fo
     x_data, y_data = GetImageMask(x_filenames, y_filenames, max_prev_frame_num)
 
     # Augmentation
-    x_data, y_data = getAugmentedImages(x_filenames, x_data, y_data)
+    x_data, y_data = getAugmentedImages(x_filenames, x_data, y_data, aug_batch_size)
 
     # ---------- preprocessing ------------
     if process_type == 'normalize':

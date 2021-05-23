@@ -104,6 +104,11 @@ def build_model(constants, args, frame, model_name):
                       weights_path=pretrained_weights_path)
         model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
 
+    elif "VGG19D_context_residual" in str(constants.strategy_type):
+        model = VGG19D_context_residual(args.input_size, args.input_size, args.cropped_boundary, 0, 0,
+                              weights_path=pretrained_weights_path)
+        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
+
     elif "VGG19D_attn_temporal" in str(constants.strategy_type):
         model = VGG19D_attn_temporal(args.input_size, args.input_size, args.cropped_boundary, 0, 0,
                               weights_path=pretrained_weights_path)
@@ -198,9 +203,10 @@ def train_model(constants, model_index, frame, repeat_index, history_path):
     if '_3D' in constants.strategy_type:
         train_x, train_y, valid_x, valid_y = get_data_generators_3D_all(train_val_dataset_names,
                         repeat_index, args.crop_mode, constants.img_format, process_type, args.input_depth)
-    elif 'attn_temporal' in constants.strategy_type:
+    elif 'attn_temporal' in constants.strategy_type or 'context_residual' in constants.strategy_type:
+        aug_batch_size = 0
         train_x, train_y, valid_x, valid_y = get_data_generators_3D(train_val_dataset_names, frame,
-                        repeat_index, args.crop_mode, constants.img_format, process_type)
+                        repeat_index, args.crop_mode, constants.img_format, aug_batch_size, process_type)
     else:
         aug_batch_size = 64
         train_x, train_y, valid_x, valid_y = get_data_generators(constants.round_num, train_val_dataset_names,
