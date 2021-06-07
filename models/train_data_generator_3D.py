@@ -20,7 +20,7 @@ import pickle
 from data_generator_utils import *
 
 
-def get_data_generators_3D(dataset_names, frame, repeat_index, crop_mode, img_format, aug_batch_size, process_type):
+def get_data_generator_3D(dataset_names, frame, repeat_index, crop_mode, img_format, aug_batch_size, process_type):
     # get img frames with mask only (every fifth frame)
     # sample some image frames and get their previous 4 frames
     # Put previous frames in a new dimension whose index represents T-n frame
@@ -48,7 +48,6 @@ def get_data_generators_3D(dataset_names, frame, repeat_index, crop_mode, img_fo
             img_filenames = glob.glob(crop_path_img + f'*_{crop_mode}' + img_format)
             mask_filenames = glob.glob(crop_path_mask + f'*_{crop_mode}' + img_format)
             assert len(img_filenames) > len(mask_filenames) * 4
-
             # count unique frames
             unique_frames = []
             for mask_filename in mask_filenames:
@@ -198,7 +197,7 @@ def get_data_generators_3D(dataset_names, frame, repeat_index, crop_mode, img_fo
 
 # ------------------------------------------------------------
 
-def get_data_generators_3D_all(dataset_names, repeat_index, crop_mode, img_format, process_type, input_depth):
+def get_data_generator_3D_all(dataset_names, repeat_index, crop_mode, img_format, process_type, input_depth):
     def get_cropped_filenames(dataset_names, repeat_index, crop_mode, img_format):
         all_img_filenames = []
         all_mask_filenames = []

@@ -93,7 +93,7 @@ end
 
 
 function visualize_boundary_overlay_mask_prediction(img, mask, img_model)
-    se = strel('diamond',2);
+    se = strel('diamond',1);
     mask = imdilate(mask,se);
     img_model = imdilate(img_model,se);
 
@@ -104,6 +104,17 @@ function visualize_boundary_overlay_mask_prediction(img, mask, img_model)
 
     figure(1);
     imshow(img_gt_model);
+    axis off;
+    set(gca,'LooseInset',get(gca,'TightInset'));
+    set(gca,'position',[0 0 1 1]);
+
+
+    width = 100;
+    height = 4;
+    col_pos = size(img_gt_model,1)-20; % bottom
+    row_pos = 20; % left
+    rectangle('Position',[row_pos,col_pos,width,height],'FaceColor', 'white', 'LineWidth',1,'LineStyle','none')
+
 end
 
 

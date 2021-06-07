@@ -16,10 +16,10 @@ sys.path.append('..')
 
 
 def to3channel(imgs):
-    imgs_p = np.repeat(imgs, 3, axis=1)
-    imgs_p = imgs_p.astype('float32')
+    if imgs.shape[1] == 1:
+        imgs = np.repeat(imgs, 3, axis=1)
 
-    return imgs_p
+    return imgs.astype('float32')
 
 
 def preprocess_output(imgs):

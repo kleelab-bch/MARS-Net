@@ -24,7 +24,7 @@ import cv2
 from data_generator_utils import *
 
 
-def get_data_generators(round_num, dataset_names, model_name, frame, repeat_index, crop_mode, img_format, aug_batch_size, process_type, save_path):
+def get_data_generator(round_num, dataset_names, model_name, frame, repeat_index, crop_mode, img_format, aug_batch_size, process_type, save_path):
     # first set and retrieve image data in filenames
     set_training_dataset_names(round_num, dataset_names, model_name, frame, repeat_index, crop_mode, img_format, save_path)
     x_train_filenames, x_val_filenames, y_train_filenames, y_val_filenames = get_training_dataset_names(model_name, frame, repeat_index, save_path)
@@ -227,8 +227,8 @@ def calc_augmentation_factor(x_filenames, aug_batch_size, data_type):
         max_patches = int(total_max_patches/5)
     else:
         raise Exception('calc_augmentation_factor: data_type {}'.format(data_type))
-    
-    if len(x_filenames) >= max_patches:
+
+    if len(x_filenames) >= max_patches or aug_batch_size == 0:
         aug_factor = 0
     else:
         aug_factor = int((max_patches - len(x_filenames)) / aug_batch_size)

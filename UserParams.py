@@ -7,7 +7,7 @@
 
 import os
 # tensorflow import must come after os.environ gpu setting
-os.environ["CUDA_VISIBLE_DEVICES"] = '1'
+os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 import argparse
 import numpy as np
 import random
@@ -26,7 +26,7 @@ class UserParams:
         random.seed(42)
 
         self.round_num = 1 # [1,1,1,1,1,1,3] # [1,1,1,1] # # [1,1,1,1,1,1,1,1,1]  # [1,2]
-        self.strategy_type = 'single_micro_VGG19D_context_residual' # 'organoid_VGG19_dropout_crop_even' # 'single_micro_Res50V2' # 'cryptic_VGG19_dropout_mm_patience_10' # ['unet', 'VGG16', 'VGG19', 'VGG16_dropout', 'VGG19_dropout', 'Res50V2', 'EFF_B7_no_preprocessing']  #'cryptic_VGG19_dropout_mm_patience_10_overfit'  # ['specialist_unet', 'generalist_unet', 'specialist_VGG19_dropout', 'generalist_VGG19_dropout']  # ['VGG19_dropout_input64', 'VGG19_dropout_input80', 'VGG19_dropout_input96', 'VGG19_dropout', 'VGG19_dropout_input192', 'VGG19_dropout_input256_crop200'] # ['mDia_raw_unet', 'mDia_raw_VGG19_dropout'] # ['paxillin_TIRF_normalize_cropped_unet_patience_10', 'paxillin_TIRF_normalize_cropped_VGG19_dropout_patience_10'] # ['unet', 'VGG16', 'VGG19', 'VGG16_dropout', 'VGG19_dropout', 'Res50V2', 'EFF_B7_no_preprocessing'] # ['VGG19_dropout', 'VGG19_dropout_input256_crop200'] # ['unet', 'VGG16_no_pretrain', 'VGG19_no_pretrain', 'VGG16', 'VGG19', 'VGG16_batchnorm', 'VGG19_batchnorm', 'VGG16_dropout', 'VGG19_dropout'] # ['paxillin_TIRF_normalize', 'paxillin_TIRF_normalize_2.5']  # '2.5_2frame'
+        self.strategy_type = 'FNA_VGG19D_classifier' # 'cryptic_VGG19D_temporal_context_residual' # 'single_micro_VGG19D_temporal_context_residual' # 'cryptic_VGG19D_temporal_distributed_v2' # 'single_micro_VGG19D' # 'organoid_VGG19_dropout_crop_even' # 'cryptic_VGG19_dropout_mm_patience_10' # ['unet', 'VGG16', 'VGG19', 'VGG16_dropout', 'VGG19_dropout', 'Res50V2', 'EFF_B7_no_preprocessing']  #'cryptic_VGG19_dropout_mm_patience_10_overfit'  # ['specialist_unet', 'generalist_unet', 'specialist_VGG19_dropout', 'generalist_VGG19_dropout']  # ['VGG19_dropout_input64', 'VGG19_dropout_input80', 'VGG19_dropout_input96', 'VGG19_dropout', 'VGG19_dropout_input192', 'VGG19_dropout_input256_crop200'] # ['mDia_raw_unet', 'mDia_raw_VGG19_dropout'] # ['paxillin_TIRF_normalize_cropped_unet_patience_10', 'paxillin_TIRF_normalize_cropped_VGG19_dropout_patience_10'] # ['unet', 'VGG16', 'VGG19', 'VGG16_dropout', 'VGG19_dropout', 'Res50V2', 'EFF_B7_no_preprocessing'] # ['VGG19_dropout', 'VGG19_dropout_input256_crop200'] # ['unet', 'VGG16_no_pretrain', 'VGG19_no_pretrain', 'VGG16', 'VGG19', 'VGG16_batchnorm', 'VGG19_batchnorm', 'VGG16_dropout', 'VGG19_dropout'] # ['paxillin_TIRF_normalize', 'paxillin_TIRF_normalize_2.5']  # '2.5_2frame'
         self.self_training_type = None
         self.final_round_num = 2
         self.dataset_folders = '../assets/'
@@ -52,19 +52,7 @@ class UserParams:
                 self.crop_split_constant = 1
                 self.img_folder = '/img/'
 
-                if 'attn_temporal' in str(self.strategy_type) or 'context_residual' in str(self.strategy_type):
-                    self.dataset_folders = ['../assets/','../assets/','../assets/','../assets/','../assets/']
-                    self.img_folders = ['/img_all/','/img_all/','/img_all/','/img_all/','/img_all/']
-                    self.mask_folders = ['/mask_fixed/','/mask_fixed/','/mask_fixed/','/mask_fixed/','/mask_fixed/']
-
-                    self.frame_list = [22]
-                    self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03', '040119_PtK1_S01_01_phase_2_DMSO_nd_02',
-                                          '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2',
-                                          '040119_PtK1_S01_01_phase']
-                    self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
-                    self.REPEAT_MAX = 1
-
-                elif 'multi_micro' in str(self.strategy_type):
+                if 'multi_micro' in str(self.strategy_type):
                     # if mode == 'train':  # don't crop since I manually move cropped files, commented in 3/15/2021
                     self.dataset_folders = ['../assets/','../assets/','../assets/','../assets/','../assets/',
                                            '../assets/mDia_chauncey/','../assets/mDia_chauncey/','../assets/mDia_chauncey/','../assets/mDia_chauncey/','../assets/mDia_chauncey/',
@@ -87,7 +75,7 @@ class UserParams:
 
                 elif 'single_micro' in str(self.strategy_type):
                     self.dataset_folders = ['../assets/','../assets/','../assets/','../assets/','../assets/']
-                    self.img_folders = ['/img/','/img/','/img/','/img/','/img/']
+                    self.img_folders = ['/img_all/','/img_all/','/img_all/','/img_all/','/img_all/']
                     self.mask_folders = ['/mask_fixed/','/mask_fixed/','/mask_fixed/','/mask_fixed/','/mask_fixed/']
 
                     self.frame_list = [2]
@@ -97,6 +85,16 @@ class UserParams:
                     self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
                     self.REPEAT_MAX = 1
 
+
+                elif 'FNA_' in str(self.strategy_type):
+                    self.dataset_folders = ['../assets/FNA/','../assets/FNA/']
+                    self.img_folders = ['/img/','/img/']
+                    self.mask_folders = ['/mask/','/mask/']
+
+                    self.frame_list = [2]
+                    self.dataset_names = ['FNA_test', 'FNA_train_val']
+                    self.model_names = ['training', '']
+                    self.REPEAT_MAX = 1
 
                 elif 'organoid_' in str(self.strategy_type):
                     self.dataset_folders = ['../../Organoid/generated/segmentation_train/','../../Organoid/generated/segmentation_train/',
@@ -115,7 +113,6 @@ class UserParams:
                                           'Lu-28_724_z_ex2', 'Lu-28_724_z_ex4']
                     self.model_names = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
                     self.REPEAT_MAX = 1
-
 
                 elif "mDia" in str(self.strategy_type):
                     self.dataset_folders = '../assets/mDia_chauncey/'
@@ -211,8 +208,8 @@ class UserParams:
                     self.model_names = ['A']
                     self.REPEAT_MAX = 1
 
-                elif "cryptic" in str(self.strategy_type):
-                    self.img_folders = ['/img/','/img/','/img/','/img/','/img/']
+                elif "cryptic_" in str(self.strategy_type):
+                    self.img_folders = ['/img_all/','/img_all/','/img_all/','/img_all/','/img_all/']
                     self.mask_folders = ['/mask/','/mask/','/mask/','/mask/','/mask/']
                     self.dataset_folders = ['../assets/Cryptic Lamellipodia/CellMask-05152014-Control-1/',
                                             '../assets/Cryptic Lamellipodia/CellMask-05152014-Control-1/',
@@ -220,7 +217,7 @@ class UserParams:
                                             '../assets/Cryptic Lamellipodia/CellMask-05152014-Control-1/',
                                             '../assets/Cryptic Lamellipodia/CellMask-05152014-Control-1/']
 
-                    self.frame_list = [10]
+                    self.frame_list = [2]
                     self.dataset_names = ['101018_part_E', '101018_part_D', '101018_part_C', '101018_part_B', '101018_part_A']
                     self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
 
@@ -312,19 +309,7 @@ class UserParams:
             self.img_folder = '/img/'
             if self.round_num == 1:
 
-                if 'attn_temporal' in str(self.strategy_type) or 'context_residual' in str(self.strategy_type):
-                    self.dataset_folders = ['../assets/','../assets/','../assets/','../assets/','../assets/']
-                    self.img_folders = ['/img_all/','/img_all/','/img_all/','/img_all/','/img_all/']
-                    self.mask_folders = ['/mask_fixed/','/mask_fixed/','/mask_fixed/','/mask_fixed/','/mask_fixed/']
-
-                    self.frame_list = [2]
-                    self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03', '040119_PtK1_S01_01_phase_2_DMSO_nd_02',
-                                          '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2',
-                                          '040119_PtK1_S01_01_phase']
-                    self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
-                    self.REPEAT_MAX = 1
-
-                elif 'generalist' in str(self.strategy_type) or 'specialist' in str(self.strategy_type):
+                if 'generalist' in str(self.strategy_type) or 'specialist' in str(self.strategy_type):
                     if 'feature_extractor_big_orig' in str(self.strategy_type):
                         self.dataset_folders = '../assets/test_feature_extractor_big_orig/'
                     elif 'feature_extractor_big' in str(self.strategy_type):
@@ -383,7 +368,7 @@ class UserParams:
 
                 elif 'single_micro' in str(self.strategy_type):
                     self.dataset_folders = ['../assets/','../assets/','../assets/','../assets/','../assets/']
-                    self.img_folders = ['/img/','/img/','/img/','/img/','/img/']
+                    self.img_folders = ['/img_all/','/img_all/','/img_all/','/img_all/','/img_all/']
                     self.mask_folders = ['/mask_fixed/','/mask_fixed/','/mask_fixed/','/mask_fixed/','/mask_fixed/']
 
                     self.frame_list = [2]
@@ -391,6 +376,16 @@ class UserParams:
                                           '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2',
                                           '040119_PtK1_S01_01_phase']
                     self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
+                    self.REPEAT_MAX = 1
+
+                elif 'FNA_' in str(self.strategy_type):
+                    self.dataset_folders = ['../assets/FNA/','../assets/FNA/']
+                    self.img_folders = ['/img/','/img/']
+                    self.mask_folders = ['/mask/','/mask/']
+
+                    self.frame_list = [2]
+                    self.dataset_names = ['FNA_test', 'FNA_train_val']
+                    self.model_names = ['training', '']
                     self.REPEAT_MAX = 1
 
                 elif 'organoid_' in str(self.strategy_type):
@@ -452,16 +447,16 @@ class UserParams:
                     self.REPEAT_MAX = 1
 
                 elif "cryptic" in str(self.strategy_type):
-                    self.img_folders = ['/img_cropped/','/img/','/img/','/img/','/img_cropped/']
-                    self.mask_folders = ['/mask_cropped/','/mask/','/mask/','/mask/','/mask_cropped/']
+                    self.img_folders = ['/img_all/','/img_all/','/img_all/','/img_all/','/img_all/']
+                    self.mask_folders = ['/mask/','/mask/','/mask/','/mask/','/mask/']
                     self.dataset_folders = ['../assets/Cryptic Lamellipodia/CellMask-05152014-Control-1/',
                                             '../assets/Cryptic Lamellipodia/CellMask-05152014-Control-1/',
                                             '../assets/Cryptic Lamellipodia/CellMask-05152014-Control-1/',
                                             '../assets/Cryptic Lamellipodia/CellMask-05152014-Control-1/',
                                             '../assets/Cryptic Lamellipodia/CellMask-05152014-Control-1/']
-                    self.frame_list = [10]
+                    self.frame_list = [2]
                     self.dataset_names = ['101018_part_E', '101018_part_D', '101018_part_C', '101018_part_B', '101018_part_A']
-                    self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
+                    self.model_names = ['ABCD', 'ABCE', 'ABDE', 'ACDE', 'BCDE']
                     self.REPEAT_MAX = 1
 
                 elif "mDia" in str(self.strategy_type):
@@ -600,7 +595,7 @@ class UserParams:
         parser = argparse.ArgumentParser()
 
         crop_mode = 'random'
-        if 'crop_even' in str(self.strategy_type) or 'attn_temporal' in str(self.strategy_type) or 'context_residual' in str(self.strategy_type):
+        if 'crop_even' in str(self.strategy_type) or 'temporal_' in str(self.strategy_type) or 'FNA_' in str(self.strategy_type):
             crop_mode = 'even'
 
         if 'patience_10' in str(self.strategy_type):
@@ -650,6 +645,11 @@ class UserParams:
             crop_patches = 200
             crop_batch_size = 128
             train_batch_size = 64
+        elif "temporal" in str(self.strategy_type):
+            input_size = 128
+            crop_patches = 200
+            crop_batch_size = 128
+            train_batch_size = 32
         else:
             input_size = 128
             crop_patches = 200

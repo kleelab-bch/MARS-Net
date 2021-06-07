@@ -18,7 +18,7 @@ import tensorflow as tf
 
 K.set_image_data_format('channels_last')
 
-class data_generate:
+class CropGenerator:
     def __init__(self, dataset_name, input_size, output_size, random_seed, round_num, img_format, crop_mode,
                  crop_patches_num, root, img_folder, mask_folder):
         np.random.seed(random_seed)
@@ -42,8 +42,8 @@ class data_generate:
         else:
             m_path = self.mask_folder
         mask_list = glob.glob(m_path + '*' + self.img_format)
-        img = cv2.imread(mask_list[0], cv2.IMREAD_GRAYSCALE)
-        r, c = img.shape
+        mask = cv2.imread(mask_list[0], cv2.IMREAD_GRAYSCALE)
+        r, c = mask.shape
         if self.round_num > 1:
             r = r - 30
             c = c - 30
@@ -55,11 +55,11 @@ class data_generate:
         return mask
 
     def read_img_mask(self):
-        r_path = self.root + self.dataset_name + self.img_folder
-        m_path = self.root + self.dataset_name + self.mask_folder
+        img_root_path = self.root + self.dataset_name + self.img_folder
+        mask_root_path = self.root + self.dataset_name + self.mask_folder
 
-        img_list = glob.glob(r_path + '*' + self.img_format)
-        mask_list = glob.glob(m_path + '*' + self.img_format)
+        img_list = glob.glob(img_root_path + '*' + self.img_format)
+        mask_list = glob.glob(mask_root_path + '*' + self.img_format)
 
         imgs = np.zeros((len(img_list), int(self.row), int(self.col)), dtype=np.uint8)
         masks = np.zeros((len(mask_list), int(self.row), int(self.col)), dtype=np.uint8)
@@ -69,18 +69,18 @@ class data_generate:
 
         for i in range(len(mask_list)):
             mask_path = mask_list[i]
-            mask_name = mask_path[len(r_path):]
-            image_id = mask_name[-7:-4]
+            mask_name = mask_path[-(3+len(self.img_format)):-len(self.img_format)]
+            # mask_name = mask_path[len(mask_root_path):-len(self.img_format)]
 
-            mask_frame_names.append(image_id)
-            masks[i] = self.read_mask(mask_list[i])
+            mask_frame_names.append(mask_name)
+            masks[i] = self.read_mask(mask_path)
 
         for i in range(len(img_list)):
             img_path = img_list[i]
-            img_name = img_path[len(r_path):]
-            image_id = img_name[-7:-4]
+            img_name = img_path[-(3+len(self.img_format)):-len(self.img_format)]
+            # img_name = img_path[len(img_root_path):-len(self.img_format)]
 
-            img_frame_names.append(image_id)
+            img_frame_names.append(img_name)
             imgs[i] = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
 
         return imgs, masks, img_frame_names, mask_frame_names
@@ -152,6 +152,7 @@ class data_generate:
             masks_r[i,:] = self.crop_rand([image[i], mask[i]])
 
         return imgs_r, masks_r
+
     # ==================================================================================
     # ==================================================================================
     def pad_img(self, inputs, num_x, num_y, crop_offset):
@@ -164,8 +165,9 @@ class data_generate:
 
     def crop_even(self, images, masks):
         # crop images evenly, considering the mask image will be 68x68 from 128x128 for training
-        # The cropped images overlaps but the cropped mask images will be right next to each other at 68x68
-        crop_overlap_percentage = 0.5  # 0.5 means 50%
+        # The cropped images will overlap but the cropped mask images will be right next to each other at 68x68
+        print('--')
+        crop_overlap_percentage = 0  # 0.5 means 50%
         crop_offset = math.floor(self.output_size * (1 - crop_overlap_percentage))
 
         num_x = int(np.ceil(float(self.row - self.input_size) / crop_offset))

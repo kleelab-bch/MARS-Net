@@ -21,7 +21,7 @@ class PredictDataGenerator:
         self.max_prev_frame_num = 4
 
     def get_expanded_whole_frames(self):
-        if 'attn_temporal' in str(self.strategy_type) or 'context_residual' in str(self.strategy_type):
+        if 'temporal_' in str(self.strategy_type):
             image_filenames = self.find_filenames(self.mask_path)
 
             x_combined_filenames = []
@@ -71,15 +71,17 @@ class PredictDataGenerator:
             imgs = preprocess_input(imgs)
 
         print('imgs shape:', imgs.shape)
-        if 'attn_temporal' in str(self.strategy_type) or 'context_residual' in str(self.strategy_type):
+        if 'temporal_' in str(self.strategy_type):
             imgs_list = []
             for frame_counter in range(self.max_prev_frame_num + 1):
                 imgs_list.append(imgs[:, :, frame_counter, :, :])
 
             # test by setting the previous frames same as the current frame
             # imgs = imgs[:, :, 0, :, :]
-            # zero_imgs = np.zeros_like(imgs)
-            # imgs_list = [imgs, zero_imgs, zero_imgs, zero_imgs, zero_imgs]
+            # zero_imgs = np.ones_like(imgs)
+            # imgs_list = [imgs, imgs, imgs, imgs, imgs]
+        else:
+            imgs_list = imgs
 
         return imgs_list, image_filenames, image_cols, image_rows, self.col, self.row
 
@@ -103,7 +105,8 @@ class PredictDataGenerator:
         imgs = np.ndarray((total_number, int(imgs_row_exp), int(imgs_col_exp)), dtype=np.uint8)
         i = 0
         for name in tqdm(namelist):
-            img = cv2.resize( cv2.imread(self.img_path + name, cv2.IMREAD_GRAYSCALE),(int(self.col), int(self.row)), interpolation = cv2.INTER_CUBIC)
+            # img = cv2.resize( cv2.imread(self.img_path + name, cv2.IMREAD_GRAYSCALE),(int(self.col), int(self.row)), interpolation = cv2.INTER_CUBIC) # note that .resize takes (width, column) while .shape shows (height, width)
+            img = cv2.imread(self.img_path + name, cv2.IMREAD_GRAYSCALE)
             imgs[i] = cv2.copyMakeBorder(img, 0, imgs_row_exp - self.row, 0, imgs_col_exp - self.col, cv2.BORDER_REFLECT)
             i += 1
         return imgs, imgs_row_exp, imgs_col_exp
@@ -140,7 +143,6 @@ class PredictDataGenerator:
         masks = np.ndarray((len(img_namelist), self.row, self.col), dtype=np.uint8)
         for i, img_name in enumerate(img_namelist):
             image_id = img_name[-7:-4]
-
             mask_path_list = glob.glob(self.mask_path + '*' + self.img_format)
             mask_path_name = mask_path_list[0]
             mask_path_name = mask_path_name[:-7] + image_id + mask_path_name[-4:]
@@ -166,6 +168,7 @@ class PredictDataGenerator:
         img_list = self.find_filenames(img_path)
         for file in img_list:
             if os.path.isfile(img_path + file) and file.endswith(self.img_format):
+                print('get_img_size', cv2.imread(img_path + file , cv2.IMREAD_GRAYSCALE).shape)
                 return cv2.imread(img_path + file , cv2.IMREAD_GRAYSCALE).shape
         print("ERROR: get_img_size")
         return -1, -1
@@ -173,7 +176,7 @@ class PredictDataGenerator:
     def regex_find_prev_filenames(self, cur_filename, max_prev_frame_num):
         # For the given current frame, get n previous frames
         cur_frame_id = int(cur_filename[-7:-4])
-        frame_interval = 5
+        frame_interval = 1
 
         prev_filenames = []
         for prev_counter in range(frame_interval, frame_interval*(max_prev_frame_num+1), frame_interval):

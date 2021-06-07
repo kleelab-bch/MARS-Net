@@ -743,6 +743,202 @@ def VGG19_batchnorm(img_rows, img_cols, crop_margin, right_crop, bottom_crop, we
 
 
 @log_function_call
+def VGG19_classifier(img_rows, img_cols, weights_path):
+    inputs = Input(shape=[3, img_rows, img_cols])
+    # Block 1
+    x = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv1')(inputs)
+    block1_conv2 = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv2')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(block1_conv2)
+
+    # Block 2
+    x = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv1')(x)
+    block2_conv2 = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv2')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')(block2_conv2)
+
+    # Block 3
+    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv1')(x)
+    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv2')(x)
+    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv3')(x)
+    block3_conv4 = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv4')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool')(block3_conv4)
+
+    # Block 4
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv1')(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv2')(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv3')(x)
+    block4_conv4 = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv4')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool')(block4_conv4)
+
+    # Block 5
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv1')(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv2')(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv3')(x)
+    block5_conv4 = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv4')(x)
+
+    x = GlobalAveragePooling2D()(block5_conv4)
+    output = Dense(1, activation='sigmoid')(x)
+
+    model = Model(inputs=inputs, outputs=output)
+
+    # Load weights.
+    if weights_path == '':
+        WEIGHTS_PATH_NO_TOP = ('https://storage.googleapis.com/tensorflow/'
+                               'keras-applications/vgg19/'
+                               'vgg19_weights_tf_dim_ordering_tf_kernels_notop.h5')
+
+        weights_path = get_file(
+            'vgg19_weights_tf_dim_ordering_tf_kernels_notop.h5',
+            WEIGHTS_PATH_NO_TOP,
+            cache_subdir='models',
+            file_hash='253f8cb515780f3b799900260a226db6')
+    model.load_weights(weights_path, by_name=True)
+
+    return model
+
+
+@log_function_call
+def VGG19D_classifier(img_rows, img_cols, weights_path):
+    inputs = Input(shape=[3, img_rows, img_cols])
+    # Block 1
+    x = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv1')(inputs)
+    block1_conv2 = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv2')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(block1_conv2)
+    x = Dropout(0.25)(x)
+
+    # Block 2
+    x = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv1')(x)
+    block2_conv2 = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv2')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')(block2_conv2)
+    x = Dropout(0.5)(x)
+
+    # Block 3
+    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv1')(x)
+    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv2')(x)
+    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv3')(x)
+    block3_conv4 = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv4')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool')(block3_conv4)
+    x = Dropout(0.5)(x)
+
+    # Block 4
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv1')(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv2')(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv3')(x)
+    block4_conv4 = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv4')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool')(block4_conv4)
+    x = Dropout(0.5)(x)
+
+    # Block 5
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv1')(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv2')(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv3')(x)
+    block5_conv4 = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv4')(x)
+
+    x = GlobalAveragePooling2D()(block5_conv4)
+    output = Dense(1, activation='sigmoid')(x)
+
+    model = Model(inputs=inputs, outputs=output)
+
+    # Load weights.
+    if weights_path == '':
+        WEIGHTS_PATH_NO_TOP = ('https://storage.googleapis.com/tensorflow/'
+                               'keras-applications/vgg19/'
+                               'vgg19_weights_tf_dim_ordering_tf_kernels_notop.h5')
+
+        weights_path = get_file(
+            'vgg19_weights_tf_dim_ordering_tf_kernels_notop.h5',
+            WEIGHTS_PATH_NO_TOP,
+            cache_subdir='models',
+            file_hash='253f8cb515780f3b799900260a226db6')
+    model.load_weights(weights_path, by_name=True)
+
+    return model
+
+
+@log_function_call
+def VGG19D_crop_first(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
+    inputs = Input(shape=[3, img_rows, img_cols])
+    # Block 1
+    x = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv1')(inputs)
+    block1_conv2 = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv2')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(block1_conv2)
+    x = Dropout(0.25)(x)
+
+    # Block 2
+    x = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv1')(x)
+    block2_conv2 = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv2')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')(block2_conv2)
+    x = Dropout(0.5)(x)
+
+    # Block 3
+    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv1')(x)
+    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv2')(x)
+    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv3')(x)
+    block3_conv4 = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv4')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool')(block3_conv4)
+    x = Dropout(0.5)(x)
+
+    # Block 4
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv1')(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv2')(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv3')(x)
+    block4_conv4 = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv4')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool')(block4_conv4)
+    x = Dropout(0.5)(x)
+
+    # Block 5
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv1')(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv2')(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv3')(x)
+    block5_conv4 = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv4')(x)
+
+
+    # upsampling model
+    up6 = concatenate([UpSampling2D(size=(2, 2))(block5_conv4), block4_conv4], axis=1)
+    up6 = Dropout(0.5)(up6)
+    conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(up6)
+    conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(conv6)
+
+    up7 = concatenate([UpSampling2D(size=(2, 2))(conv6), block3_conv4], axis=1)
+    up7 = Dropout(0.5)(up7)
+    conv7 = Conv2D(256, (3, 3), activation='relu', padding='same')(up7)
+    conv7 = Conv2D(256, (3, 3), activation='relu', padding='same')(conv7)
+
+    up8 = concatenate([UpSampling2D(size=(2, 2))(conv7), block2_conv2], axis=1)
+    up8 = Dropout(0.5)(up8)
+    conv8 = Conv2D(128, (3, 3), activation='relu', padding='same')(up8)
+    conv8 = Conv2D(128, (3, 3), activation='relu', padding='same')(conv8)
+
+    up9 = concatenate([UpSampling2D(size=(2, 2))(conv8), block1_conv2], axis=1)
+    up9 = Dropout(0.5)(up9)
+    conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(up9)
+    conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(conv9)
+
+    if bottom_crop == 0:
+        crop_conv = Cropping2D(cropping=((crop_margin, crop_margin), (crop_margin, crop_margin)))(conv9)  # ((top_crop, bottom_crop), (left_crop, right_crop)) for training
+    else:
+        crop_conv = Cropping2D(cropping=((0, bottom_crop), (0, right_crop)))(conv9)  # remove reflected portion from the image for prediction
+
+    conv10 = Conv2D(1, (1, 1), activation='sigmoid')(crop_conv)
+
+    model = Model(inputs=inputs, outputs=conv10)
+
+    # Load weights.
+    if weights_path == '':
+        WEIGHTS_PATH_NO_TOP = ('https://storage.googleapis.com/tensorflow/'
+                               'keras-applications/vgg19/'
+                               'vgg19_weights_tf_dim_ordering_tf_kernels_notop.h5')
+
+        weights_path = get_file(
+            'vgg19_weights_tf_dim_ordering_tf_kernels_notop.h5',
+            WEIGHTS_PATH_NO_TOP,
+            cache_subdir='models',
+            file_hash='253f8cb515780f3b799900260a226db6')
+    model.load_weights(weights_path, by_name=True)
+
+    return model
+
+
+@log_function_call
 def VGG19_dropout(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
     # https://github.com/tensorflow/tensorflow/blob/v2.3.1/tensorflow/python/keras/applications/vgg19.py#L45-L230
     inputs = Input(shape=[3, img_rows, img_cols])

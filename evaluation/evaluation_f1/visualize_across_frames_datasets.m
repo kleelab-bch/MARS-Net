@@ -90,7 +90,7 @@ function draw_line_for_models(mean_across_frame_across_dataset, errorci_across_f
         errorci_dataset_across_frame(prediction_num, :, 1) = mean(errorci_across_frame_across_dataset(prediction_num, :, :, 1), 2);
         errorci_dataset_across_frame(prediction_num, :, 2) = mean(errorci_across_frame_across_dataset(prediction_num, :, :, 2), 2);
     end
-
+    mean_dataset_across_frame
     draw_line_with_error_extra_lines(mean_dataset_across_frame, errorci_dataset_across_frame, mean_across_frame_across_dataset, ...
     errorci_across_frame_across_dataset, 'across datasets and frames', metric_type, saved_folder, frame_list, graph_colors, ylim, display_names);
 

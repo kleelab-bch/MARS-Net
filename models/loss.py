@@ -1,6 +1,7 @@
 from tensorflow.keras import backend as K
 import tensorflow as tf
 
+
 def dice_coef(y_true, y_pred):
     smooth = 1.
 
@@ -11,19 +12,9 @@ def dice_coef(y_true, y_pred):
 
     return dice
 
-def recall(y_true, y_pred):
-    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
-    possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
-    recall = true_positives / (possible_positives + K.epsilon())
-    return recall
-
-def precision(y_true, y_pred):
-    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
-    predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
-    precision = true_positives / (predicted_positives + K.epsilon())
-    return precision
 
 def f1(y_true, y_pred):
+    # referenced https://datascience.stackexchange.com/questions/45165/how-to-get-accuracy-f1-precision-and-recall-for-a-keras-model
     def recall(y_true, y_pred):
         true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
         possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
@@ -37,7 +28,7 @@ def f1(y_true, y_pred):
         return precision
     precision = precision(y_true, y_pred)
     recall = recall(y_true, y_pred)
-    return 2*((precision*recall)/(precision+recall))
+    return 2*((precision*recall)/(precision+recall + K.epsilon()))
        
        
 def weighted_cross_entropy(beta):
@@ -107,6 +98,7 @@ def temporal_cross_entropy(y_true, y_pred):
     '''
     
     return reduced_loss
+
 
 def zero_loss(y_true, y_pred):
     return 0

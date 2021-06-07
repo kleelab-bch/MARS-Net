@@ -10,12 +10,28 @@ import numpy as np
 import re
 from joblib import Parallel, delayed
 
+
 def read_images(image_path_list):
     # https://stackoverflow.com/questions/33778155/python-parallelized-image-reading-and-preprocessing-using-multiprocessing
     images = Parallel(n_jobs=4, verbose=1)(
         delayed(cv2.imread)(image_path, cv2.IMREAD_GRAYSCALE) for image_path in image_path_list
     )
     return images
+
+
+def read_color_images(image_path_list):
+    images = Parallel(n_jobs=4, verbose=1)(
+        delayed(cv2.imread)(image_path, cv2.IMREAD_COLOR) for image_path in image_path_list
+    )
+    return images
+
+
+def unison_shuffle_lists(a, b):
+    assert len(a) == len(b)
+    p = np.random.permutation(len(a))
+    a = [a[i] for i in p]
+    b = [b[i] for i in p]
+    return a, b
 
 
 def unison_shuffle_ndarrays(a, b):

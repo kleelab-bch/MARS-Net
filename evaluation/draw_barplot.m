@@ -19,7 +19,7 @@ function draw_barplot(mean_across_frame, errorci, saved_folder, metric_type, gra
     hold off
 
     set(gca,'XTickLabel', {});  % display_names
-%    legend(display_names, 'Location', 'SouthEastOutside', 'Box','off');
+    legend(display_names, 'Location', 'SouthEastOutside', 'Box','off');
     ylabel(metric_type);
 %    title('Comparison of models');
 

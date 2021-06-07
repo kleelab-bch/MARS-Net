@@ -14,6 +14,182 @@ import math
 
 from scipy.stats import bernoulli
 import copy
+from tensorflow.keras.utils import plot_model, get_file
+
+
+def create_VGG19D_encoder(inputs):
+    # Block 1
+    x = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv1')(inputs)
+    block1_conv2 = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv2')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(block1_conv2)
+    x = Dropout(0.25)(x)
+
+    # Block 2
+    x = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv1')(x)
+    block2_conv2 = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv2')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')(block2_conv2)
+    x = Dropout(0.5)(x)
+
+    # Block 3
+    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv1')(x)
+    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv2')(x)
+    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv3')(x)
+    block3_conv4 = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv4')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool')(block3_conv4)
+    x = Dropout(0.5)(x)
+
+    # Block 4
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv1')(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv2')(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv3')(x)
+    block4_conv4 = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv4')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool')(block4_conv4)
+    x = Dropout(0.5)(x)
+
+    # Block 5
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv1')(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv2')(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv3')(x)
+    block5_conv4 = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv4')(x)
+
+    model = tf.keras.Model(inputs=[inputs], outputs=[block1_conv2, block2_conv2, block3_conv4, block4_conv4, block5_conv4])
+    # Load weights.
+    WEIGHTS_PATH_NO_TOP = ('https://storage.googleapis.com/tensorflow/'
+                           'keras-applications/vgg19/'
+                           'vgg19_weights_tf_dim_ordering_tf_kernels_notop.h5')
+
+    weights_path = get_file(
+        'vgg19_weights_tf_dim_ordering_tf_kernels_notop.h5',
+        WEIGHTS_PATH_NO_TOP,
+        cache_subdir='models',
+        file_hash='253f8cb515780f3b799900260a226db6')
+    model.load_weights(weights_path, by_name=True)
+
+    return model
+
+
+def create_decoder(block1_conv, block2_conv, block3_conv, block4_conv, block5_conv, crop_margin, bottom_crop, right_crop):
+
+    up6 = concatenate([UpSampling2D(size=(2, 2))(block5_conv), block4_conv], axis=1)
+    up6 = Dropout(0.5)(up6)
+    conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(up6)
+    conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(conv6)
+
+    up7 = concatenate([UpSampling2D(size=(2, 2))(conv6), block3_conv], axis=1)
+    up7 = Dropout(0.5)(up7)
+    conv7 = Conv2D(256, (3, 3), activation='relu', padding='same')(up7)
+    conv7 = Conv2D(256, (3, 3), activation='relu', padding='same')(conv7)
+
+    up8 = concatenate([UpSampling2D(size=(2, 2))(conv7), block2_conv], axis=1)
+    up8 = Dropout(0.5)(up8)
+    conv8 = Conv2D(128, (3, 3), activation='relu', padding='same')(up8)
+    conv8 = Conv2D(128, (3, 3), activation='relu', padding='same')(conv8)
+
+    up9 = concatenate([UpSampling2D(size=(2, 2))(conv8), block1_conv], axis=1)
+    up9 = Dropout(0.5)(up9)
+    conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(up9)
+    conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(conv9)
+
+    sigmoid_conv = Conv2D(1, (1, 1), activation='sigmoid')(conv9)
+    if bottom_crop == 0:
+        # ((top_crop, bottom_crop), (left_crop, right_crop)) for training
+        crop_conv = Cropping2D(cropping=((crop_margin, crop_margin), (crop_margin, crop_margin)))(sigmoid_conv)
+    else:
+        # remove reflected portion from the image for prediction
+        crop_conv = Cropping2D(cropping=((0, bottom_crop), (0, right_crop)))(sigmoid_conv)
+
+    model = tf.keras.Model(inputs=[block1_conv, block2_conv, block3_conv, block4_conv, block5_conv], outputs=[conv6, conv7, conv8, conv9, crop_conv])
+
+    return model
+
+
+def squeeze_and_excitation_block(input_conv):
+    squeezed_features = tf.keras.layers.GlobalAveragePooling2D()(input_conv)
+    divide_ratio = 8
+    excited_features = tf.keras.layers.Dense(squeezed_features.shape[1]//divide_ratio, activation='relu')(squeezed_features)
+    excited_features = tf.keras.layers.Dense(squeezed_features.shape[1], activation='sigmoid')(excited_features)
+
+    expanded_excited_features = tf.expand_dims(tf.expand_dims(excited_features, axis=-1), axis=-1)
+    se_output = tf.keras.layers.Multiply()([input_conv, expanded_excited_features])
+    print(input_conv.shape, squeezed_features.shape, excited_features.shape, expanded_excited_features.shape, se_output.shape)
+
+    return se_output
+
+
+def temporal_attn_block(cur_frame_conv, M1_conv, M2_conv, M3_conv, M4_conv, value_channel_num):
+    def create_encoding_block(input_conv, channel_num):
+        input_conv = Input(shape=input_conv.shape[1:])
+        a_conv = Conv2D(channel_num, (1, 1), activation='relu', padding='same')(input_conv)
+        a_conv = Conv2D(channel_num, (3, 3), activation='relu', padding='same')(a_conv)
+
+        return Model(inputs=input_conv, outputs=a_conv)
+
+    print('temporal_attn_block')
+    key_channel_num = value_channel_num//4
+    memory_num = 4
+    height, width = cur_frame_conv.shape[2:]
+
+    cur_frame_key_encoder = create_encoding_block(cur_frame_conv, key_channel_num)
+    cur_frame_value_encoder = create_encoding_block(cur_frame_conv, value_channel_num)
+    M_key_encoder = create_encoding_block(M1_conv, key_channel_num)
+    M_value_encoder = create_encoding_block(M1_conv, value_channel_num)
+
+    cur_frame_key = cur_frame_key_encoder(cur_frame_conv)
+    cur_frame_value = cur_frame_value_encoder(cur_frame_conv)
+
+    M1_key = M_key_encoder(M1_conv)
+    M1_value = M_value_encoder(M1_conv)
+    M2_key = M_key_encoder(M2_conv)
+    M2_value = M_value_encoder(M2_conv)
+    M3_key = M_key_encoder(M3_conv)
+    M3_value = M_value_encoder(M3_conv)
+    M4_key = M_key_encoder(M4_conv)
+    M4_value = M_value_encoder(M4_conv)
+
+    M_key = concatenate([tf.expand_dims(M1_key, axis=1),
+                tf.expand_dims(M2_key, axis=1),
+                tf.expand_dims(M3_key, axis=1),
+                tf.expand_dims(M4_key, axis=1)], axis=1)
+    M_value = concatenate([tf.expand_dims(M1_value, axis=1),
+                tf.expand_dims(M2_value, axis=1),
+                tf.expand_dims(M3_value, axis=1),
+                tf.expand_dims(M4_value, axis=1)], axis=1)
+    print(cur_frame_key.shape, cur_frame_value.shape, M_key.shape, M_value.shape)
+    print('---------')
+
+    # ------------------- Calculate temporal memory attention ---------------------
+    # cur_frame_value: C x H x W
+    # cur_frame_key: C x H x W --> C x HW --> HW x C
+    cur_frame_key = tf.reshape(cur_frame_key, shape=(-1, key_channel_num, height*width))
+    print(cur_frame_key.shape) # (None, 128, 64)
+    cur_frame_key = tf.transpose(cur_frame_key, perm=[0,2,1])
+    print(cur_frame_key.shape) # (None, 64, 128)
+    # M_key: T x C x H x W --> C x T x H x W --> C x THW
+    M_key = tf.transpose(M_key, perm=[0,2,1,3,4])
+    print(M_key.shape) # (None, 128, 4, 8, 8)
+    M_key = tf.reshape(M_key, shape=(-1, key_channel_num, memory_num*height*width))
+    print(M_key.shape) # (None, 128, 256)
+    # M_value: T x C x H x W --> T x H x W x C --> THW x C
+    M_value = tf.transpose(M_value, perm=[0,1,3,4,2])
+    print(M_value.shape) # (None, 4, 8, 8, 512)
+    M_value = tf.reshape(M_value, shape=(-1, memory_num*height*width, value_channel_num))
+    print(M_value.shape) # (None, 256, 512)
+
+    # HW x C and C x THW --> HW x THW
+    softmax = tf.nn.softmax(tf.matmul(cur_frame_key, M_key))
+    print(softmax.shape) # (None, 64, 256)
+    # HW x THW and THW x C --> HW x C
+    memory_attn = tf.matmul(softmax, M_value)
+    print(memory_attn.shape) # (None, 64, 512)
+    # HW x C --> C x HW --> C x H x W
+    memory_attn = tf.transpose(memory_attn, perm=[0,2,1])
+    print(memory_attn.shape) # (None, 512, 64)
+    memory_attn_reshaped = tf.reshape(memory_attn, shape=(-1, value_channel_num, height, width))
+    print(memory_attn_reshaped.shape) # (None, 512, 8, 8)
+
+    cur_frame_value_and_memory_attn = concatenate([cur_frame_value, memory_attn_reshaped], axis=1)
+    print(cur_frame_value_and_memory_attn.shape)
+    return cur_frame_value_and_memory_attn
 
 
 def downsample_batch_dropout(input_tensor, filters, size, name='', apply_batchnorm=True, activation='ReLU'):

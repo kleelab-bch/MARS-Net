@@ -19,7 +19,7 @@ for prediction_num = 1 : length(constants_struct.prediction_path_list)
         for frame_index = 1 : size(constants_struct.frame_list, 2)
             frame_num = constants_struct.frame_list(prediction_num, frame_index);
 %            visualize_bool = frame_index == size(constants_struct.frame_list, 2);  % if last frame
-            visualize_bool = 1;
+            visualize_bool = 0;
 
             for repeat_index = 1: constants_struct.repeat_max
                 disp([prediction_num, data_index, frame_num, repeat_index]);

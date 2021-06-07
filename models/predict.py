@@ -9,79 +9,10 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.utils import plot_model
 
 import debug_utils
-from deeplabv3 import Deeplabv3
-from deep_neural_net import *
-from deep_neural_net_3D import *
 from predict_data_generator import PredictDataGenerator
+from data_generator_classifier import get_data_generator_classifier
 from UserParams import UserParams
-
-
-def build_model(constants, frame, model_name, image_rows, image_cols, orig_rows, orig_cols):
-    weights_path = constants.get_trained_weights_path(str(frame), model_name, str(repeat_index))
-
-    if "Res50V2" in str(constants.strategy_type):
-        model = ResNet50V2Keras(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
-    elif "Dense201" == str(constants.strategy_type):
-        model = DenseNet201Keras(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
-    elif "InceptionResV2" == str(constants.strategy_type):
-        model = InceptionResV2(image_rows, image_cols, 0, image_cols - orig_cols, image_rows - orig_rows, weights_path=weights_path)
-    elif "deeplabv3" == str(constants.strategy_type):
-        K.set_image_data_format('channels_last')
-        input_images = np.moveaxis(input_images, 1, -1)  # first channel to last channel
-        print(input_images.dtype, input_images.shape)
-        model = Deeplabv3(input_shape=(image_rows, image_cols, 3), output_shape=(orig_rows, orig_cols))
-        model.load_weights(weights_path, by_name=True)
-
-    elif "VGG16_dropout" == str(constants.strategy_type):
-        model = VGG16_dropout(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
-    elif "VGG16_batchnorm" == str(constants.strategy_type):
-        model = VGG16_batchnorm(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
-    elif "VGG16_instancenorm" == str(constants.strategy_type):
-        model = VGG16_instancenorm(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
-    elif "movie3" in str(constants.strategy_type):
-        model = VGG16_movie(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
-    elif "VGG16_dac_input256" == constants.strategy_type:
-        model = VGG16_dac(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
-    elif "VGG16_spp_input256" == constants.strategy_type:
-        model = VGG16_spp(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
-    elif "VGG16" in str(constants.strategy_type):
-        model = VGG16(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
-
-    elif "VGG19D_context_residual" in str(constants.strategy_type):
-        model = VGG19D_context_residual(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
-    elif "VGG19D_attn_temporal" in str(constants.strategy_type):
-        model = VGG19D_attn_temporal(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
-    elif "VGG19_dropout_gelu" in str(constants.strategy_type):
-        model = VGG19_dropout_gelu(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
-    elif "VGG19_dropout_swish" in str(constants.strategy_type):
-        model = VGG19_dropout_swish(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
-    elif "VGG19_dropout_dac" in str(constants.strategy_type):
-        model = VGG19_dropout_dac(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
-    elif "VGG19_dropout_feature_extractor" in str(constants.strategy_type):
-        model = VGG19_dropout_feature_extractor(image_rows, image_cols, 0, image_cols - orig_cols, image_rows - orig_rows, weights_path=weights_path)
-    elif "VGG19_batchnorm_dropout" in str(constants.strategy_type):
-        model = VGG19_batchnorm_dropout(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
-    elif "VGG19_batchnorm" in str(constants.strategy_type):
-        model = VGG19_batchnorm(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
-    elif "VGG19_dropout" in str(constants.strategy_type):
-        model = VGG19_dropout(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
-    elif "VGG19" in str(constants.strategy_type):
-        model = VGG19(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path, encoder_weights=None)
-
-    elif "EFF_B7" in str(constants.strategy_type):
-        K.set_image_data_format('channels_last')
-        input_images = np.moveaxis(input_images, 1, -1)  # first channel to last channel
-        print(input_images.dtype, input_images.shape)
-        model = EFF_B7(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
-
-    elif "unet_3D" in str(constants.strategy_type):
-        model = UNet_3D(32, image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
-    elif "unet_feature_extractor" in str(constants.strategy_type):
-        model = UNet_feature_extractor(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
-    elif "unet" in str(constants.strategy_type):
-        model = UNet(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
-
-    return model
+from model_builder import build_model_predict
 
 
 def prediction(constants, frame, model_index, repeat_index, save_path):
@@ -93,7 +24,7 @@ def prediction(constants, frame, model_index, repeat_index, save_path):
 
     img_path = dataset_folder + dataset_name + img_folder
     mask_path = dataset_folder + dataset_name + mask_folder
-    
+
     if constants.self_training_type is None:
         save_path = save_path + '{}/frame{}_{}_repeat{}/'.format(dataset_name, str(frame), model_name, str(repeat_index))
     else:
@@ -107,44 +38,67 @@ def prediction(constants, frame, model_index, repeat_index, save_path):
     if 'TIRF' in dataset_name and 'specialist' in constants.strategy_type:
         a_strategy = constants.strategy_type + '_normalize'
 
-    prediction_data_generator = PredictDataGenerator(img_path, mask_path, a_strategy, img_format=constants.img_format)
-    input_images, image_filenames, image_cols, image_rows, orig_cols, orig_rows = prediction_data_generator.get_expanded_whole_frames()
+    if "classifier" in str(constants.strategy_type):
+        input_images, mask_class_list = get_data_generator_classifier([dataset_name], repeat_index, 'even', constants.img_format, 'predict')
+        image_rows, image_cols = input_images.shape[2:]
+        orig_rows, orig_cols = 0, 0
+    else:
+        prediction_data_generator = PredictDataGenerator(img_path, mask_path, a_strategy, img_format=constants.img_format)
+        input_images, image_filenames, image_cols, image_rows, orig_cols, orig_rows = prediction_data_generator.get_expanded_whole_frames()
 
-    print('img size:', image_rows, image_cols)
-    print('orig img size:', orig_rows, orig_cols)
+        print('img size:', image_rows, image_cols)
+        print('orig img size:', orig_rows, orig_cols)
 
     # ------------------- Load the trained Model -------------------
-    model = build_model(constants, frame, model_name, image_rows, image_cols, orig_rows, orig_cols)
+    model = build_model_predict(constants, frame, repeat_index, model_name, image_rows, image_cols, orig_rows, orig_cols)
     print('model layers: ', len(model.layers))
     plot_model(model, to_file='model_plots/model_round{}_{}_predict.png'.format(constants.round_num, constants.strategy_type), show_shapes=True, show_layer_names=True, dpi=144)
 
-    # ------------------- predict segmented images and save them -------------------
+    # ------------------ Prediction and Save ------------------------------
+    if "classifier" in str(constants.strategy_type):
+        class_list_output = model.predict(input_images, batch_size=1, verbose=1)
+        # model.evaluate(input_images, mask_class_list, batch_size=1, verbose=1)
 
-    if "feature_extractor" in str(constants.strategy_type):
-        segmented_output, style_output = model.predict(input_images, batch_size = 1, verbose = 1)
-        np.save(save_path + 'style_feature_vector.npy', style_output)
+        # thresholding prediction to calculate evaluation statistics
+        class_list_output[class_list_output < 0.5] = 0
+        class_list_output[class_list_output > 0] = 1
 
-    elif "_3D" in str(constants.strategy_type):
-        input_images = input_images[np.newaxis,:32,:,:,:]  # image shape: depth, channel, width, height
-        input_images = np.moveaxis(input_images, 1, 2)  # new image shape: 1, channel, depth, width, height
-        segmented_output = model.predict(input_images, batch_size = 1, verbose = 1) # output shape (1, 1, 16, 474, 392)
-        segmented_output = np.moveaxis(segmented_output[0], 0, 1)  # new output shape: (16, 1, 474, 392)
+        y_pred = class_list_output[:, 0].tolist()
+        y_true = mask_class_list
 
-    segmented_output = model.predict(input_images, batch_size = 1, verbose = 1)
+        from sklearn.metrics import confusion_matrix, matthews_corrcoef, f1_score, accuracy_score
+        accuracy = accuracy_score(y_true, y_pred)
+        tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
+        mcc = matthews_corrcoef(y_true, y_pred)
+        print(tn, fp, fn, tp, mcc, f1_score(y_true, y_pred), f1_score(y_true, y_pred, average='micro'), f1_score(y_true, y_pred, average='macro'), f1_score(y_true, y_pred, average='weighted'), accuracy)
 
-    segmented_output = 255 * segmented_output  # 0=black color and 255=white color
+    else:
+        if "feature_extractor" in str(constants.strategy_type):
+            segmented_output, style_output = model.predict(input_images, batch_size = 1, verbose = 1)
+            np.save(save_path + 'style_feature_vector.npy', style_output)
 
-    if "deeplabv3" == str(constants.strategy_type) or "EFF_B7" == str(constants.strategy_type) or "EFF_B7_no_preprocessing" == str(constants.strategy_type):
-        # move last channel to first channel
-        segmented_output = np.moveaxis(segmented_output, -1, 1)
-        print(segmented_output.shape)
-
-    for f in range(segmented_output.shape[0]):
-        if constants.strategy_type == 'movie3' or constants.strategy_type == 'movie3_loss':
-            out = segmented_output[f, 1, :, :]
+        elif "_3D" in str(constants.strategy_type):
+            input_images = input_images[np.newaxis,:32,:,:,:]  # image shape: depth, channel, width, height
+            input_images = np.moveaxis(input_images, 1, 2)  # new image shape: 1, channel, depth, width, height
+            segmented_output = model.predict(input_images, batch_size = 1, verbose = 1) # output shape (1, 1, 16, 474, 392)
+            segmented_output = np.moveaxis(segmented_output[0], 0, 1)  # new output shape: (16, 1, 474, 392)
         else:
-            out = segmented_output[f, 0, :, :]
-        cv2.imwrite(save_path + image_filenames[f], out)
+            segmented_output = model.predict(input_images, batch_size = 1, verbose = 1)
+
+        segmented_output = 255 * segmented_output  # 0=black color and 255=white color
+
+        if "deeplabv3" == str(constants.strategy_type) or "EFF_B7" == str(constants.strategy_type) or "EFF_B7_no_preprocessing" == str(constants.strategy_type):
+            # move last channel to first channel
+            segmented_output = np.moveaxis(segmented_output, -1, 1)
+            print(segmented_output.shape)
+
+        for f in range(segmented_output.shape[0]):
+            if constants.strategy_type == 'movie3' or constants.strategy_type == 'movie3_loss':
+                out = segmented_output[f, 1, :, :]
+            else:
+                out = segmented_output[f, 0, :, :]
+            cv2.imwrite(save_path + image_filenames[f], out)
+
     K.clear_session()
 
 
