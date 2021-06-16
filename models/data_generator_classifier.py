@@ -29,10 +29,10 @@ def get_data_generator_classifier(dataset_names, repeat_index, crop_mode, img_fo
 
     # load data
     images = np.asarray(read_color_images(img_filenames))
-    images = np.moveaxis(images, -1, 1)
-    images = preprocess_input(images)
+    original_images = np.moveaxis(images, -1, 1)
+    original_images, mask_class_list = unison_shuffle_ndarrays(original_images, mask_class_list)
+    images = preprocess_input(original_images)
     print('Images:', images.shape, images.dtype)
-    images, mask_class_list = unison_shuffle_ndarrays(images, mask_class_list)
 
     # split data
     if train_or_predict_mode == 'train':
@@ -41,7 +41,7 @@ def get_data_generator_classifier(dataset_names, repeat_index, crop_mode, img_fo
         return images_train, mask_class_dict_train, images_val, mask_class_dict_val
 
     elif train_or_predict_mode == 'predict':
-        return images, mask_class_list
+        return original_images, images, mask_class_list, img_filenames
 
     else:
         raise Exception('train_or_predict_mode is not correct', train_or_predict_mode)
@@ -60,12 +60,17 @@ def undersample_false_image_mask(img_filenames, mask_class_dict, train_or_predic
             false_img_filenames.append(img_filename)
 
     assert len(false_img_filenames) > len(true_img_filenames)
-    max_sample_size = len(false_img_filenames)
     print('True:', len(true_img_filenames), ' False:', len(false_img_filenames))
     # undersample
     if train_or_predict_mode == 'train':
-        max_sample_size = len(true_img_filenames)*10
-        false_img_filenames = false_img_filenames[:max_sample_size]
+        if len(false_img_filenames) > len(true_img_filenames)*20:
+            max_sample_size = len(true_img_filenames)*20
+        else:
+            max_sample_size = len(false_img_filenames)
+    else:
+        max_sample_size = len(false_img_filenames)
+        
+    false_img_filenames = false_img_filenames[:max_sample_size]
 
     # merge true_img_filenames and false_img_filenames
     mask_class_list = np.concatenate((np.ones(len(true_img_filenames)), np.zeros(max_sample_size)), axis=0)
@@ -82,6 +87,7 @@ def get_cropped_filenames_and_class_dict(dataset_names, repeat_index, crop_mode,
 
     for dataset_index, dataset_name in enumerate(dataset_names):
         crop_path = f'../crop/generated/crop_{crop_mode}_{dataset_name}/'
+        print(crop_path)
         crop_path_img = crop_path + f'img_repeat{repeat_index}/'
         crop_path_mask = crop_path + f'mask_repeat{repeat_index}/mask_class_dict.npy'
 

@@ -28,7 +28,7 @@ from UserParams import UserParams
 def crop_dataset(round_num, dataset_name, repeat_index, input_size, output_size, img_folder, mask_folder, dataset_folder, img_format, crop_mode, crop_patches, augmentation_factor):
 
     if 'classifier' in constants.strategy_type:
-        crop_generator = CropGeneratorClassifier(dataset_name, input_size, output_size, repeat_index, img_format, crop_mode, crop_patches, dataset_folder, img_folder, mask_folder)
+        crop_generator = CropGeneratorClassifier(dataset_name, input_size, output_size, repeat_index, img_format, dataset_folder, img_folder, mask_folder)
     else:
         crop_generator = CropGenerator(dataset_name, input_size, output_size, repeat_index, round_num, img_format, crop_mode, crop_patches, dataset_folder, img_folder, mask_folder)
 
@@ -59,7 +59,7 @@ def crop_dataset(round_num, dataset_name, repeat_index, input_size, output_size,
         for frame_index in tqdm(range(mask_train.shape[0])):
             for crop_index in range(mask_train.shape[1]):
                 img_filepath = root_path_img + f'{img_frame_names[frame_index]}_c{crop_index}_{crop_mode}.png'
-                # cv2.imwrite(img_filepath, img_train[frame_index, crop_index])
+                cv2.imwrite(img_filepath, img_train[frame_index, crop_index])
 
                 mask_area = np.sum(mask_train[frame_index, crop_index] > 0)
                 mask_class_dict[img_filepath] = mask_area > min_mask_area_threshold

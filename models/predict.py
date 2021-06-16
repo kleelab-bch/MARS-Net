@@ -13,6 +13,8 @@ from predict_data_generator import PredictDataGenerator
 from data_generator_classifier import get_data_generator_classifier
 from UserParams import UserParams
 from model_builder import build_model_predict
+from visualization.CAM import visualize_feature_activation_map
+from tqdm import tqdm
 
 
 def prediction(constants, frame, model_index, repeat_index, save_path):
@@ -24,6 +26,7 @@ def prediction(constants, frame, model_index, repeat_index, save_path):
 
     img_path = dataset_folder + dataset_name + img_folder
     mask_path = dataset_folder + dataset_name + mask_folder
+    args = constants.get_args()  # get hyper parameters
 
     if constants.self_training_type is None:
         save_path = save_path + '{}/frame{}_{}_repeat{}/'.format(dataset_name, str(frame), model_name, str(repeat_index))
@@ -39,7 +42,7 @@ def prediction(constants, frame, model_index, repeat_index, save_path):
         a_strategy = constants.strategy_type + '_normalize'
 
     if "classifier" in str(constants.strategy_type):
-        input_images, mask_class_list = get_data_generator_classifier([dataset_name], repeat_index, 'even', constants.img_format, 'predict')
+        orig_input_images, input_images, mask_class_list, image_filenames = get_data_generator_classifier([dataset_name], repeat_index, args.crop_mode, constants.img_format, 'predict')
         image_rows, image_cols = input_images.shape[2:]
         orig_rows, orig_cols = 0, 0
     else:
@@ -49,6 +52,11 @@ def prediction(constants, frame, model_index, repeat_index, save_path):
         print('img size:', image_rows, image_cols)
         print('orig img size:', orig_rows, orig_cols)
 
+    if "EFF_B" in str(constants.strategy_type):
+        K.set_image_data_format('channels_last')
+        input_images = np.moveaxis(input_images, 1, -1)  # first channel to last channel
+        print(input_images.dtype, input_images.shape)
+
     # ------------------- Load the trained Model -------------------
     model = build_model_predict(constants, frame, repeat_index, model_name, image_rows, image_cols, orig_rows, orig_cols)
     print('model layers: ', len(model.layers))
@@ -57,8 +65,7 @@ def prediction(constants, frame, model_index, repeat_index, save_path):
     # ------------------ Prediction and Save ------------------------------
     if "classifier" in str(constants.strategy_type):
         class_list_output = model.predict(input_images, batch_size=1, verbose=1)
-        # model.evaluate(input_images, mask_class_list, batch_size=1, verbose=1)
-
+        
         # thresholding prediction to calculate evaluation statistics
         class_list_output[class_list_output < 0.5] = 0
         class_list_output[class_list_output > 0] = 1
@@ -70,7 +77,22 @@ def prediction(constants, frame, model_index, repeat_index, save_path):
         accuracy = accuracy_score(y_true, y_pred)
         tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
         mcc = matthews_corrcoef(y_true, y_pred)
-        print(tn, fp, fn, tp, mcc, f1_score(y_true, y_pred), f1_score(y_true, y_pred, average='micro'), f1_score(y_true, y_pred, average='macro'), f1_score(y_true, y_pred, average='weighted'), accuracy)
+        print(tn, fp, fn, tp, mcc, f1_score(y_true, y_pred), accuracy)
+
+        # save images if fp, fn or tp
+        for i in tqdm(range(len(y_true))):
+            if y_true[i] == 1 and y_pred[i] == 0:
+                prefix = 'FN'
+            elif y_true[i] == 1 and y_pred[i] == 1:
+                prefix = 'TP'
+            elif y_true[i] == 0 and y_pred[i] == 1:
+                prefix = 'FP'
+            elif y_true[i] == 0 and y_pred[i] == 0:
+                prefix = 'TN'
+
+            if prefix != 'TN':
+                image_filename = image_filenames[i].split('/')[-1]
+                cv2.imwrite(save_path + f'{prefix}_' + image_filename, np.moveaxis(orig_input_images[i], 0, -1))
 
     else:
         if "feature_extractor" in str(constants.strategy_type):
@@ -87,7 +109,7 @@ def prediction(constants, frame, model_index, repeat_index, save_path):
 
         segmented_output = 255 * segmented_output  # 0=black color and 255=white color
 
-        if "deeplabv3" == str(constants.strategy_type) or "EFF_B7" == str(constants.strategy_type) or "EFF_B7_no_preprocessing" == str(constants.strategy_type):
+        if "deeplabv3" == str(constants.strategy_type) or "EFF_B" in str(constants.strategy_type):
             # move last channel to first channel
             segmented_output = np.moveaxis(segmented_output, -1, 1)
             print(segmented_output.shape)

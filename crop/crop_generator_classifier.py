@@ -19,8 +19,8 @@ import tensorflow as tf
 K.set_image_data_format('channels_last')
 
 class CropGeneratorClassifier:
-    def __init__(self, dataset_name, input_size, output_size, random_seed, img_format, crop_mode,
-                 crop_patches_num, root, img_folder, mask_folder):
+    def __init__(self, dataset_name, input_size, output_size, random_seed, img_format,
+                 root, img_folder, mask_folder):
         np.random.seed(random_seed)
         self.dataset_name = dataset_name
         self.input_size = input_size
@@ -28,8 +28,6 @@ class CropGeneratorClassifier:
         self.img_format = img_format
         self.img_folder = img_folder
         self.mask_folder = mask_folder
-        self.crop_patches_num = crop_patches_num
-        self.crop_mode = crop_mode
         self.root = root
 
         self.row, self.col, self.total_frames = self.get_row_col()
@@ -93,7 +91,7 @@ class CropGeneratorClassifier:
     def crop_even(self, images, masks):
         # crop images evenly, considering the mask image will be 68x68 from 128x128 for training
         # The cropped images will overlap but the cropped mask images will be right next to each other at 68x68
-        crop_overlap_percentage = 0  # 0.5 means 50%
+        crop_overlap_percentage = 0.5  # 0.5 means 50%
         crop_offset = math.floor(self.output_size * (1 - crop_overlap_percentage))
 
         num_x = int(np.ceil(float(self.row - self.input_size) / crop_offset))

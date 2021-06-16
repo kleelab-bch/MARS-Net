@@ -27,11 +27,9 @@ from model_builder import build_model_train
 from data_generator_classifier import get_data_generator_classifier
 from train_data_generator import get_data_generator
 from train_data_generator_3D import get_data_generator_3D, get_data_generator_3D_all
-from tf_image_classifier import tf_image_classifier
 
 
 def train_model(constants, model_index, frame, repeat_index, history_path):
-    print('VGG19D_temporal_distributed_v2' in constants.strategy_type )
     model_name = constants.model_names[model_index]
     print(' round_num:', constants.round_num, ' model name:', model_name, ' frame:', frame, ' repeat_index:', repeat_index)
     args = constants.get_args()  # get hyper parameters
@@ -62,19 +60,21 @@ def train_model(constants, model_index, frame, repeat_index, history_path):
         train_x, train_y, valid_x, valid_y = get_data_generator(constants.round_num, train_val_dataset_names,
                     model_name, frame, repeat_index, args.crop_mode, constants.img_format, aug_batch_size, process_type, history_path)
 
-    if "deeplabv3" == str(constants.strategy_type) or "EFF_B7" == str(constants.strategy_type) or \
-            "EFF_B7_no_preprocessing" == str(constants.strategy_type):
+    if "deeplabv3" == str(constants.strategy_type) or "EFF_B" in str(constants.strategy_type):
         K.set_image_data_format('channels_last')
         # first channel to last channel
         train_x = np.moveaxis(train_x, 1, -1)
-        train_y = np.moveaxis(train_y, 1, -1)
         valid_x = np.moveaxis(valid_x, 1, -1)
-        valid_y = np.moveaxis(valid_y, 1, -1)
-
-    print(train_y.shape, valid_y.shape)
+        if 'classifier' not in str(constants.strategy_type):
+            train_y = np.moveaxis(train_y, 1, -1)
+            valid_y = np.moveaxis(valid_y, 1, -1)
+    print('train_x', train_x.shape, 'valid_x', valid_x.shape, 'train_y', train_y.shape, 'valid_y', valid_y.shape)
+    
     # ------------ Build the model ------------
-    model = build_model_train(constants, args, frame, model_name)
-
+    # multiple gpu training
+    strategy = tf.distribute.MirroredStrategy()
+    with strategy.scope():
+        model = build_model_train(constants, args, frame, model_name)
     # ------------ Sanity check the model ------------
     print(model.summary())
     print('Num of layers: ', len(model.layers))
@@ -93,6 +93,7 @@ def train_model(constants, model_index, frame, repeat_index, history_path):
                                                                          str(frame), model_name,
                                                                          str(repeat_index)),
         monitor='val_loss', save_best_only=True)
+
     time_callback = TimeHistory()
     logdir = 'results/history_round{}_{}/tensorboard_frame{}_{}_repeat{}_{}'.format(constants.round_num,
                                                                                 constants.strategy_type, str(frame),
@@ -122,6 +123,7 @@ def train_model(constants, model_index, frame, repeat_index, history_path):
 
 
 if __name__ == "__main__":
+
     K.set_image_data_format('channels_first')
     print(K.image_data_format())
     constants = UserParams('train')

@@ -90,8 +90,36 @@ def calc_receptive_field(n_in, jump_in, r_in, center_in, orig_img_size, padding,
     return n_out, jump_out, r_out, center_out
 
 
+def calc_receptive_field_demo():
+    r_in = 1
+    jump_in = 1
+    n_in = 128
+    orig_img_size = n_in
+    center_in = 0.5
+    for layer_type in ['conv', 'conv', 'maxpool',
+                       'conv', 'conv', 'maxpool',
+                       'conv', 'conv', 'conv', 'conv', 'maxpool',
+                       'conv', 'conv', 'conv', 'conv', 'maxpool',
+                       'conv', 'conv', 'conv', 'conv']:
+        if layer_type == 'conv':
+            kernel_size = 3
+            stride = 1
+            padding = 1
+        elif layer_type == 'maxpool':
+            kernel_size = 2
+            stride = 2
+            padding = 0
+
+        n_in, jump_in, r_in, center_in = calc_receptive_field(n_in, jump_in, r_in, center_in, orig_img_size, padding,
+                                                              kernel_size, stride)
+        print(layer_type, 'n:', n_in, '  jump:', jump_in, '  r:', r_in, '  center_in:', center_in)
+
+
 if __name__ == "__main__":
-    # save_path = 'results/debugger/'
+    from tensorflow.python.client import device_lib
+    print(device_lib.list_local_devices())
+
+    save_path = 'results/debugger/'
     # constants = UserParams('predict')
     # frame = constants.frame_list[0]
     # dataset_name = constants.dataset[0]
@@ -103,25 +131,5 @@ if __name__ == "__main__":
     # print(temp_img.shape, temp_mask.shape)
     # show_cropped_image(temp_img, temp_mask, dataset_name, save_path)
 
-    # ---------------------------------------
-    r_in = 1
-    jump_in = 1
-    n_in = 128
-    orig_img_size = n_in
-    center_in = 0.5
-    for layer_type in ['conv','conv','maxpool',
-                       'conv','conv','maxpool',
-                       'conv','conv','conv','conv','maxpool',
-                       'conv','conv','conv','conv','maxpool',
-                       'conv','conv','conv','conv']:
-        if layer_type == 'conv':
-            kernel_size = 3
-            stride = 1
-            padding = 1
-        elif layer_type == 'maxpool':
-            kernel_size = 2
-            stride = 2
-            padding = 0
+    # calc_receptive_field_demo()
 
-        n_in, jump_in, r_in, center_in = calc_receptive_field(n_in, jump_in, r_in, center_in, orig_img_size, padding, kernel_size, stride)
-        print(layer_type, 'n:', n_in, '  jump:', jump_in, '  r:', r_in, '  center_in:', center_in)

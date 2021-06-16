@@ -6,28 +6,37 @@ To build model for train.py and predict.py
 '''
 
 from deeplabv3 import Deeplabv3
+from deep_neural_net_classifier import *
 from deep_neural_net import *
 from deep_neural_net_3D import *
 from deep_neural_net_attn import *
 import loss
 
+import numpy as np
 from tensorflow.keras import backend as K
-from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers import Adam, SGD
 import tensorflow_addons as tfa
+
 
 def build_model_predict(constants, frame, repeat_index, model_name, image_rows, image_cols, orig_rows, orig_cols):
     weights_path = constants.get_trained_weights_path(str(frame), model_name, str(repeat_index))
 
-    if "Res50V2" in str(constants.strategy_type):
+    if "VGG19_classifier" in str(constants.strategy_type):
+        model = VGG19_classifier(image_rows, image_cols, weights_path=weights_path)
+    elif "VGG19D_classifier" in str(constants.strategy_type):
+        model = VGG19D_classifier(image_rows, image_cols, weights_path=weights_path)
+    elif "EFF_B7_classifier" in str(constants.strategy_type):
+        model = EFF_B7_classifier(image_rows, image_cols, weights_path=weights_path)
+
+    # --------------------------------------------------------------------------------
+
+    elif "Res50V2" in str(constants.strategy_type):
         model = ResNet50V2Keras(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
     elif "Dense201" == str(constants.strategy_type):
         model = DenseNet201Keras(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
     elif "InceptionResV2" == str(constants.strategy_type):
         model = InceptionResV2(image_rows, image_cols, 0, image_cols - orig_cols, image_rows - orig_rows, weights_path=weights_path)
     elif "deeplabv3" == str(constants.strategy_type):
-        K.set_image_data_format('channels_last')
-        input_images = np.moveaxis(input_images, 1, -1)  # first channel to last channel
-        print(input_images.dtype, input_images.shape)
         model = Deeplabv3(input_shape=(image_rows, image_cols, 3), output_shape=(orig_rows, orig_cols))
         model.load_weights(weights_path, by_name=True)
 
@@ -45,11 +54,6 @@ def build_model_predict(constants, frame, repeat_index, model_name, image_rows, 
         model = VGG16_spp(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
     elif "VGG16" in str(constants.strategy_type):
         model = VGG16(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
-
-    elif "VGG19_classifier" in str(constants.strategy_type):
-        model = VGG19_classifier(image_rows, image_cols, weights_path=weights_path)
-    elif "VGG19D_classifier" in str(constants.strategy_type):
-        model = VGG19D_classifier(image_rows, image_cols, weights_path=weights_path)
 
     elif "VGG19D_temporal_context_residual" in str(constants.strategy_type):
         model = VGG19D_temporal_context_residual(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
@@ -85,9 +89,6 @@ def build_model_predict(constants, frame, repeat_index, model_name, image_rows, 
         model = VGG19(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path, encoder_weights=None)
 
     elif "EFF_B7" in str(constants.strategy_type):
-        K.set_image_data_format('channels_last')
-        input_images = np.moveaxis(input_images, 1, -1)  # first channel to last channel
-        print(input_images.dtype, input_images.shape)
         model = EFF_B7(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
 
     elif "unet_3D" in str(constants.strategy_type):
@@ -102,7 +103,22 @@ def build_model_predict(constants, frame, repeat_index, model_name, image_rows, 
 
 def build_model_train(constants, args, frame, model_name):
     pretrained_weights_path = constants.get_pretrained_weights_path(frame, model_name)
-    if "Res50V2" in str(constants.strategy_type):
+
+    if "VGG19_classifier" in str(constants.strategy_type):
+        model = VGG19_classifier(args.input_size, args.input_size, weights_path=pretrained_weights_path)
+        model.compile(optimizer=Adam(lr=1e-5), loss=[tfa.losses.SigmoidFocalCrossEntropy()], metrics=['accuracy'])
+
+    elif "VGG19D_classifier" in str(constants.strategy_type):
+        model = VGG19D_classifier(args.input_size, args.input_size, weights_path=pretrained_weights_path)
+        model.compile(optimizer=Adam(lr=1e-5), loss=[tfa.losses.SigmoidFocalCrossEntropy()], metrics=['accuracy'])
+
+    elif "EFF_B7_classifier" in str(constants.strategy_type):
+        model = EFF_B7_classifier(args.input_size, args.input_size, weights_path=pretrained_weights_path)
+        model.compile(optimizer=Adam(lr=1e-5), loss=[tfa.losses.SigmoidFocalCrossEntropy()], metrics=['accuracy'])
+
+    # --------------------------------------------------------------------------------
+
+    elif "Res50V2" in str(constants.strategy_type):
         model = ResNet50V2Keras(args.input_size, args.input_size, args.cropped_boundary, 0, 0,
                                 weights_path=pretrained_weights_path)
         model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
@@ -171,16 +187,6 @@ def build_model_train(constants, args, frame, model_name):
         model = VGG16(args.input_size, args.input_size, args.cropped_boundary, 0, 0,
                       weights_path=pretrained_weights_path)
         model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
-    # --------------------------------------------------------------------------------
-    elif "VGG19_classifier" in str(constants.strategy_type):
-        model = VGG19_classifier(args.input_size, args.input_size, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=[tfa.losses.SigmoidFocalCrossEntropy()], metrics=['accuracy'])
-
-    elif "VGG19D_classifier" in str(constants.strategy_type):
-        model = VGG19D_classifier(args.input_size, args.input_size, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=[tfa.losses.SigmoidFocalCrossEntropy()], metrics=['accuracy'])
-
-    # --------------------------------------------------------------------------------
 
     elif "VGG19D_crop_first" in str(constants.strategy_type):
         model = VGG19D_crop_first(args.input_size, args.input_size, args.cropped_boundary, 0, 0,
@@ -273,7 +279,7 @@ def build_model_train(constants, args, frame, model_name):
                       weights_path=pretrained_weights_path)
         model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
 
-    elif "EFF_B7" == str(constants.strategy_type) or "EFF_B7_no_preprocessing" == str(constants.strategy_type):
+    elif "EFF_B7" in str(constants.strategy_type):
         model = EFF_B7(args.input_size, args.input_size, args.cropped_boundary, 0, 0,
                        weights_path=pretrained_weights_path)
         model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])

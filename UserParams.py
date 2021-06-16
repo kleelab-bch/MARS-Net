@@ -7,7 +7,7 @@
 
 import os
 # tensorflow import must come after os.environ gpu setting
-os.environ["CUDA_VISIBLE_DEVICES"] = '0'
+os.environ["CUDA_VISIBLE_DEVICES"] = '1'
 import argparse
 import numpy as np
 import random
@@ -26,7 +26,7 @@ class UserParams:
         random.seed(42)
 
         self.round_num = 1 # [1,1,1,1,1,1,3] # [1,1,1,1] # # [1,1,1,1,1,1,1,1,1]  # [1,2]
-        self.strategy_type = 'FNA_VGG19D_classifier' # 'cryptic_VGG19D_temporal_context_residual' # 'single_micro_VGG19D_temporal_context_residual' # 'cryptic_VGG19D_temporal_distributed_v2' # 'single_micro_VGG19D' # 'organoid_VGG19_dropout_crop_even' # 'cryptic_VGG19_dropout_mm_patience_10' # ['unet', 'VGG16', 'VGG19', 'VGG16_dropout', 'VGG19_dropout', 'Res50V2', 'EFF_B7_no_preprocessing']  #'cryptic_VGG19_dropout_mm_patience_10_overfit'  # ['specialist_unet', 'generalist_unet', 'specialist_VGG19_dropout', 'generalist_VGG19_dropout']  # ['VGG19_dropout_input64', 'VGG19_dropout_input80', 'VGG19_dropout_input96', 'VGG19_dropout', 'VGG19_dropout_input192', 'VGG19_dropout_input256_crop200'] # ['mDia_raw_unet', 'mDia_raw_VGG19_dropout'] # ['paxillin_TIRF_normalize_cropped_unet_patience_10', 'paxillin_TIRF_normalize_cropped_VGG19_dropout_patience_10'] # ['unet', 'VGG16', 'VGG19', 'VGG16_dropout', 'VGG19_dropout', 'Res50V2', 'EFF_B7_no_preprocessing'] # ['VGG19_dropout', 'VGG19_dropout_input256_crop200'] # ['unet', 'VGG16_no_pretrain', 'VGG19_no_pretrain', 'VGG16', 'VGG19', 'VGG16_batchnorm', 'VGG19_batchnorm', 'VGG16_dropout', 'VGG19_dropout'] # ['paxillin_TIRF_normalize', 'paxillin_TIRF_normalize_2.5']  # '2.5_2frame'
+        self.strategy_type = 'unet_encoder_classifier' #'VGG16_classifier' # 'cryptic_VGG19D_temporal_context_residual' # 'single_micro_VGG19D_temporal_context_residual' # 'cryptic_VGG19D_temporal_distributed_v2' # 'single_micro_VGG19D' # 'organoid_VGG19_dropout_crop_even' # 'cryptic_VGG19_dropout_mm_patience_10' # ['unet', 'VGG16', 'VGG19', 'VGG16_dropout', 'VGG19_dropout', 'Res50V2', 'EFF_B7_no_preprocessing']  #'cryptic_VGG19_dropout_mm_patience_10_overfit'  # ['specialist_unet', 'generalist_unet', 'specialist_VGG19_dropout', 'generalist_VGG19_dropout']  # ['VGG19_dropout_input64', 'VGG19_dropout_input80', 'VGG19_dropout_input96', 'VGG19_dropout', 'VGG19_dropout_input192', 'VGG19_dropout_input256_crop200'] # ['mDia_raw_unet', 'mDia_raw_VGG19_dropout'] # ['paxillin_TIRF_normalize_cropped_unet_patience_10', 'paxillin_TIRF_normalize_cropped_VGG19_dropout_patience_10'] # ['unet', 'VGG16', 'VGG19', 'VGG16_dropout', 'VGG19_dropout', 'Res50V2', 'EFF_B7_no_preprocessing'] # ['VGG19_dropout', 'VGG19_dropout_input256_crop200'] # ['unet', 'VGG16_no_pretrain', 'VGG19_no_pretrain', 'VGG16', 'VGG19', 'VGG16_batchnorm', 'VGG19_batchnorm', 'VGG16_dropout', 'VGG19_dropout'] # ['paxillin_TIRF_normalize', 'paxillin_TIRF_normalize_2.5']  # '2.5_2frame'
         self.self_training_type = None
         self.final_round_num = 2
         self.dataset_folders = '../assets/'
@@ -245,7 +245,7 @@ class UserParams:
                     self.model_names = ['ABCD', 'ABCE', 'ABDE', 'ACDE', 'BCDE']
                     self.REPEAT_MAX = 1
 
-                elif 'VGG16' in self.strategy_type or 'VGG19' in self.strategy_type or self.strategy_type == 'movie3' or self.strategy_type == 'unet' or \
+                elif 'VGG16' in self.strategy_type or 'VGG19' in self.strategy_type or self.strategy_type == 'movie3' or 'unet_' in self.strategy_type or \
                      self.strategy_type == 'Res50V2' or self.strategy_type == 'Dense201' or self.strategy_type == 'deeplabv3' or self.strategy_type == 'EFF_B7' or \
                      self.strategy_type == 'EFF_B7_no_preprocessing' or self.strategy_type == 'InceptionResV2':
 
@@ -514,7 +514,7 @@ class UserParams:
                     self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
                     self.REPEAT_MAX = 1
 
-                elif 'VGG16' in self.strategy_type or 'VGG19' in self.strategy_type or self.strategy_type == 'movie3' or self.strategy_type == 'unet' or \
+                elif 'VGG16' in self.strategy_type or 'VGG19' in self.strategy_type or self.strategy_type == 'movie3' or 'unet_' in self.strategy_type or \
                      self.strategy_type == 'Res50V2' or self.strategy_type == 'Dense201' or self.strategy_type == 'deeplabv3' or self.strategy_type == 'EFF_B7' or \
                      self.strategy_type == 'EFF_B7_no_preprocessing' or self.strategy_type == 'InceptionResV2':
                     # self.img_folder = '/img/'
@@ -606,20 +606,29 @@ class UserParams:
             epochs = 100
 
         if 'input1024' in str(self.strategy_type):
+            crop_mode = crop_mode + '_input1024'
             input_size = 1024
             crop_patches = 12
             crop_batch_size = 8
+            train_batch_size = 16
+        elif 'input512' in str(self.strategy_type):
+            crop_mode = crop_mode + '_input512'
+            input_size = 512
+            crop_patches = 24
+            crop_batch_size = 16
             train_batch_size = 16
         elif "input256_crop200" in str(self.strategy_type):
             input_size = 256
             crop_patches = 200
             crop_batch_size = 128
         elif "input256" in str(self.strategy_type):
+            crop_mode = crop_mode + '_input256'
             input_size = 256
             crop_patches = 50
             crop_batch_size = 32
             train_batch_size = 32
         elif "input192" in str(self.strategy_type):
+            crop_mode = crop_mode + '_input192'
             input_size = 192
             crop_patches = 200
             crop_batch_size = 128

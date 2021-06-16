@@ -166,8 +166,7 @@ class CropGenerator:
     def crop_even(self, images, masks):
         # crop images evenly, considering the mask image will be 68x68 from 128x128 for training
         # The cropped images will overlap but the cropped mask images will be right next to each other at 68x68
-        print('--')
-        crop_overlap_percentage = 0  # 0.5 means 50%
+        crop_overlap_percentage = 0.5  # 0.5 means 50%
         crop_offset = math.floor(self.output_size * (1 - crop_overlap_percentage))
 
         num_x = int(np.ceil(float(self.row - self.input_size) / crop_offset))
@@ -199,9 +198,9 @@ class CropGenerator:
 
     def crop(self):
         images, masks, img_frame_names, mask_frame_names = self.read_img_mask()
-        if self.crop_mode == 'random':
+        if 'random' in self.crop_mode:
             imgs_train, masks_train = self.crop_random(images, masks)
-        elif self.crop_mode == 'even':
+        elif 'even' in self.crop_mode:
             imgs_train, masks_train = self.crop_even(images, masks)
         else:
             print('Crop Mode Error:', self.crop_mode)
