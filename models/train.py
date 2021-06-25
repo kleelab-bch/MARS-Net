@@ -8,6 +8,7 @@ referenced: https://medium.com/@mrgarg.rajat/training-on-large-datasets-that-don
 
 import sys
 sys.path.append('..')
+sys.path.append('../data_handle')
 
 import numpy as np
 import time
@@ -24,6 +25,7 @@ from debug_utils import *
 from UserParams import UserParams
 from custom_callback import TimeHistory
 from model_builder import build_model_train
+from data_generator_MTL import get_data_generator_MTL
 from data_generator_classifier import get_data_generator_classifier
 from train_data_generator import get_data_generator
 from train_data_generator_3D import get_data_generator_3D, get_data_generator_3D_all
@@ -45,8 +47,12 @@ def train_model(constants, model_index, frame, repeat_index, history_path):
         process_type = 'standardize'
 
     # ---------------------- Load Data Generator --------------------------
-    if 'classifier' in constants.strategy_type:
-        train_x, train_y, valid_x, valid_y = get_data_generator_classifier(train_val_dataset_names, repeat_index, args.crop_mode, constants.img_format, 'train')
+    if '_classifier' in constants.strategy_type or '_MTL' in constants.strategy_type:
+        train_x, train_y, valid_x, valid_y = get_data_generator_MTL(train_val_dataset_names, repeat_index, args.crop_mode, constants.img_format, 'train')
+        if '_classifier' in constants.strategy_type and 'regressor' not in constants.strategy_type:
+            # get mask class list only
+            train_y = train_y[2]
+            valid_y = valid_y[2]
 
     elif '_3D' in constants.strategy_type:
         train_x, train_y, valid_x, valid_y = get_data_generator_3D_all(train_val_dataset_names,
@@ -60,7 +66,7 @@ def train_model(constants, model_index, frame, repeat_index, history_path):
         train_x, train_y, valid_x, valid_y = get_data_generator(constants.round_num, train_val_dataset_names,
                     model_name, frame, repeat_index, args.crop_mode, constants.img_format, aug_batch_size, process_type, history_path)
 
-    if "deeplabv3" == str(constants.strategy_type) or "EFF_B" in str(constants.strategy_type):
+    if "deeplabv3" == str(constants.strategy_type) or "EFF_B" in str(constants.strategy_type) or 'unet_imagenet_pretrained' == str(constants.strategy_type):
         K.set_image_data_format('channels_last')
         # first channel to last channel
         train_x = np.moveaxis(train_x, 1, -1)
@@ -68,14 +74,15 @@ def train_model(constants, model_index, frame, repeat_index, history_path):
         if 'classifier' not in str(constants.strategy_type):
             train_y = np.moveaxis(train_y, 1, -1)
             valid_y = np.moveaxis(valid_y, 1, -1)
-    print('train_x', train_x.shape, 'valid_x', valid_x.shape, 'train_y', train_y.shape, 'valid_y', valid_y.shape)
+    print('train_x', train_x.shape, 'valid_x', valid_x.shape)
     
-    # ------------ Build the model ------------
+    # ---------------------- Build the model ----------------------
     # multiple gpu training
     strategy = tf.distribute.MirroredStrategy()
     with strategy.scope():
         model = build_model_train(constants, args, frame, model_name)
-    # ------------ Sanity check the model ------------
+
+    # ---------------------- Sanity Check the model ----------------------
     print(model.summary())
     print('Num of layers: ', len(model.layers))
     # print('FLOPS: ', get_flops())  # run this after model compilation
@@ -85,7 +92,7 @@ def train_model(constants, model_index, frame, repeat_index, history_path):
                                                                                   constants.strategy_type),
                    show_shapes=True, show_layer_names=True, dpi=144)
 
-    # ------------ Fit the Model ------------
+    # ---------------------- Fit the Model ----------------------
     print('Fit Model...', args.epochs, args.patience)
     earlyStopping = EarlyStopping(monitor='val_loss', patience=args.patience, verbose=0, mode='auto')  # args.patience
     model_checkpoint = ModelCheckpoint(
@@ -101,16 +108,26 @@ def train_model(constants, model_index, frame, repeat_index, history_path):
                                                                                 str(repeat_index),
                                                         datetime.now().strftime("%Y%m%d-%H%M%S"))
 
-    # reference https://github.com/tensorflow/tensorflow/blob/v2.4.1/tensorflow/python/keras/engine/training.py#L1823-L1861
-    hist = model.fit(train_x, train_y,
-                     epochs=args.epochs,
-                     verbose=1,
-                     workers=1,
-                     batch_size = args.train_batch_size,
-                     validation_data=(valid_x, valid_y),
-                     callbacks=[model_checkpoint, earlyStopping, time_callback, TensorBoard(log_dir=logdir)])
+    if 'classifier_regressor' in constants.strategy_type:
+        print(train_y[0].shape, train_y[1].shape, train_y[2].shape)
+        hist = model.fit(train_x, [train_y[1], train_y[2]],
+                         epochs=args.epochs,
+                         verbose=1,
+                         workers=1,
+                         batch_size = args.train_batch_size,
+                         validation_data=(valid_x, [valid_y[1], valid_y[2]]),
+                         callbacks=[model_checkpoint, earlyStopping, time_callback, TensorBoard(log_dir=logdir)])
+    else:
+        # reference https://github.com/tensorflow/tensorflow/blob/v2.4.1/tensorflow/python/keras/engine/training.py#L1823-L1861
+        hist = model.fit(train_x, train_y,
+                         epochs=args.epochs,
+                         verbose=1,
+                         workers=1,
+                         batch_size = args.train_batch_size,
+                         validation_data=(valid_x, valid_y),
+                         callbacks=[model_checkpoint, earlyStopping, time_callback, TensorBoard(log_dir=logdir)])
 
-    # ------------ Save the History ------------
+    # ----------------------  Save the Training History ----------------------
     hist.history['times'] = time_callback.times
     print('Save History...')
     np.save('results/history_round{}_{}/history_frame{}_{}_repeat{}.npy'.format(constants.round_num,

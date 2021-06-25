@@ -50,23 +50,24 @@ def crop_dataset(round_num, dataset_name, repeat_index, input_size, output_size,
         os.makedirs(root_path_mask)
 
     if 'classifier' in constants.strategy_type:
-        # convert mask to classes
-
+        # convert mask to areas
         assert img_train.shape[0:4] == mask_train.shape[0:4]
 
-        mask_class_dict = {}
-        min_mask_area_threshold = mask_train.shape[2] * mask_train.shape[3] * 0.01
+        mask_area_dict = {}
         for frame_index in tqdm(range(mask_train.shape[0])):
             for crop_index in range(mask_train.shape[1]):
                 img_filepath = root_path_img + f'{img_frame_names[frame_index]}_c{crop_index}_{crop_mode}.png'
+                mask_filepath = root_path_mask + f'{img_frame_names[frame_index]}_c{crop_index}_{crop_mode}.png'
                 cv2.imwrite(img_filepath, img_train[frame_index, crop_index])
+                cv2.imwrite(mask_filepath, mask_train[frame_index, crop_index])
 
                 mask_area = np.sum(mask_train[frame_index, crop_index] > 0)
-                mask_class_dict[img_filepath] = mask_area > min_mask_area_threshold
+                mask_area_dict[img_filepath] = mask_area
 
-        np.save(root_path_mask + 'mask_class_dict.npy', mask_class_dict)
+        np.save(root_path_mask + 'mask_area_dict.npy', mask_area_dict)
 
     else:
+        # two separate for loops becuase img_train can be larger than mask_train when video segmentation
         for frame_index in tqdm(range(img_train.shape[0])):
             for crop_index in range(img_train.shape[1]):
                 cv2.imwrite(root_path_img + f'f{img_frame_names[frame_index]}_c{crop_index}_{crop_mode}.png', img_train[frame_index, crop_index])

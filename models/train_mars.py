@@ -14,7 +14,7 @@ from sklearn.model_selection import train_test_split
 from deeplabv3 import Deeplabv3
 from deep_neural_net import *
 import loss # tensorflow import must come after os.environ gpu setting
-from debugger import *
+from debug_utils import *
 from UserParams import UserParams
 from custom_callback import TimeHistory
 
@@ -147,6 +147,7 @@ def get_training_dataset(constants, model_index, frame, repeat_index):
 def train_model(constants, model_index, frame, repeat_index):
     print(constants.model_names[model_index], ' frame:', frame, ' round_num:', constants.round_num, ' repeat_index:', repeat_index)
 
+    args = constants.get_args()
     training_dataset = get_training_dataset(constants, model_index, frame, repeat_index)
     comb_train = training_dataset['arr_0']
     comb_mask = training_dataset['arr_1']
@@ -161,7 +162,6 @@ def train_model(constants, model_index, frame, repeat_index):
 
     # ------------------- Model Creation ---------------------------
     # Set Model Hyper Parameters
-    args = constants.get_train_args()
     pretrained_weights_path = constants.get_pretrained_weights_path(frame, constants.model_names[model_index])
 
     print('Load Model...')
@@ -269,6 +269,14 @@ def train_model(constants, model_index, frame, repeat_index):
         model = UNet_feature_extractor(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
         model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy', loss.zero_loss], metrics=[loss.dice_coef, loss.zero_loss])
 
+    elif "unet_imagenet_pretrained" in str(constants.strategy_type):
+        K.set_image_data_format('channels_last')
+        comb_train = np.moveaxis(comb_train, 1, -1)  # first channel to last channel
+        comb_mask = np.moveaxis(comb_mask, 1, -1)
+
+        model = UNet_imagenet_pretrained(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
+        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
+
     elif "unet" in str(constants.strategy_type):
         model = UNet(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
         model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
@@ -290,11 +298,11 @@ def train_model(constants, model_index, frame, repeat_index):
     time_callback = TimeHistory()
 
     if "feature_extractor" in str(constants.strategy_type):
-        hist = model.fit(comb_train, [comb_mask,[]], batch_size = args.batch_size, epochs = args.epochs, validation_split = args.validation_split,
+        hist = model.fit(comb_train, [comb_mask,[]], batch_size = args.train_batch_size, epochs = args.epochs, validation_split = args.validation_split,
                          verbose=1, shuffle=True, callbacks=[model_checkpoint, earlyStopping, time_callback])
     else:
         x_train, x_val, y_train, y_val = train_test_split(comb_train, comb_mask, shuffle=True, test_size=0.2, random_state=repeat_index)
-        hist = model.fit(x_train, y_train, batch_size = args.batch_size, epochs = args.epochs,
+        hist = model.fit(x_train, y_train, batch_size = args.train_batch_size, epochs = args.epochs,
                          validation_data=(x_val, y_val), verbose=1, shuffle=True,
                          callbacks=[model_checkpoint, earlyStopping, time_callback])
 

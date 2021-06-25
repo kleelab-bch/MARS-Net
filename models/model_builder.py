@@ -7,6 +7,7 @@ To build model for train.py and predict.py
 
 from deeplabv3 import Deeplabv3
 from deep_neural_net_classifier import *
+from deep_neural_net_MTL import *
 from deep_neural_net import *
 from deep_neural_net_3D import *
 from deep_neural_net_attn import *
@@ -21,7 +22,9 @@ import tensorflow_addons as tfa
 def build_model_predict(constants, frame, repeat_index, model_name, image_rows, image_cols, orig_rows, orig_cols):
     weights_path = constants.get_trained_weights_path(str(frame), model_name, str(repeat_index))
 
-    if "VGG19_classifier" in str(constants.strategy_type):
+    if "VGG19_classifier_regressor" in str(constants.strategy_type):
+        model = VGG19_classifier_regressor(image_rows, image_cols, weights_path=weights_path)
+    elif "VGG19_classifier" in str(constants.strategy_type):
         model = VGG19_classifier(image_rows, image_cols, weights_path=weights_path)
     elif "VGG19D_classifier" in str(constants.strategy_type):
         model = VGG19D_classifier(image_rows, image_cols, weights_path=weights_path)
@@ -95,6 +98,10 @@ def build_model_predict(constants, frame, repeat_index, model_name, image_rows, 
         model = UNet_3D(32, image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
     elif "unet_feature_extractor" in str(constants.strategy_type):
         model = UNet_feature_extractor(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
+    elif "unet_imagenet_pretrained" in str(constants.strategy_type):
+        model = UNet_imagenet_pretrained(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
+    elif "small_unet" in str(constants.strategy_type):
+        model = UNet_small(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
     elif "unet" in str(constants.strategy_type):
         model = UNet(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
 
@@ -104,7 +111,12 @@ def build_model_predict(constants, frame, repeat_index, model_name, image_rows, 
 def build_model_train(constants, args, frame, model_name):
     pretrained_weights_path = constants.get_pretrained_weights_path(frame, model_name)
 
-    if "VGG19_classifier" in str(constants.strategy_type):
+    if "VGG19_classifier_regressor" in str(constants.strategy_type):
+        model = VGG19_classifier_regressor(args.input_size, args.input_size, weights_path=pretrained_weights_path)
+        model.compile(optimizer=Adam(lr=1e-5), loss=[tf.keras.losses.MeanSquaredError(), tfa.losses.sigmoid_focal_crossentropy],
+                      loss_weights={"regressor":1E-8,"classifier":1})
+
+    elif "VGG19_classifier" in str(constants.strategy_type):
         model = VGG19_classifier(args.input_size, args.input_size, weights_path=pretrained_weights_path)
         model.compile(optimizer=Adam(lr=1e-5), loss=[tfa.losses.SigmoidFocalCrossEntropy()], metrics=['accuracy'])
 
@@ -294,6 +306,16 @@ def build_model_train(constants, args, frame, model_name):
                                        weights_path=pretrained_weights_path)
         model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy', loss.zero_loss],
                       metrics=[loss.dice_coef, loss.zero_loss])
+
+    elif "small_unet" in str(constants.strategy_type):
+        model = UNet_small(args.input_size, args.input_size, args.cropped_boundary, 0, 0,
+                     weights_path=pretrained_weights_path)
+        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
+
+    elif "unet_imagenet_pretrained" in str(constants.strategy_type):
+        model = UNet_imagenet_pretrained(args.input_size, args.input_size, args.cropped_boundary, 0, 0,
+                     weights_path=pretrained_weights_path)
+        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
 
     elif "unet" in str(constants.strategy_type):
         model = UNet(args.input_size, args.input_size, args.cropped_boundary, 0, 0,

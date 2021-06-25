@@ -76,11 +76,16 @@ classdef GlobalConfig
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_cryptic_all_VGG19_dropout_mm_patience_10_overfit/';
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_cryptic_all_heq_VGG19_dropout_mm_patience_10_overfit/';}
 
-        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_cryptic_VGG19_dropout/';
-                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_cryptic_VGG19D_temporal_context_residual/';}
+%        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_cryptic_VGG19_dropout/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_cryptic_VGG19D_temporal_context_residual/';}
 
 %        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_unet/';
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_VGG19_dropout/';}
+%        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_unet/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_single_micro_unet/';}
+%        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_unet/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_unet_imagenet_pretrained/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_VGG16/';}
 %        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_VGG19_dropout/';
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_single_micro_VGG19_dropout/'};
 %        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_single_micro_VGG19_dropout/';
@@ -125,6 +130,9 @@ classdef GlobalConfig
 %                                 '../../models/results/predict_wholeframe_round1_Res50V2/';
 %                                 '../../models/results/predict_wholeframe_round1_EFF_B7_no_preprocessing/'};
 
+        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_Spheroid_unet/';
+                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_Spheroid_VGG16/';
+                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_Spheroid_VGG19/'};
 
 %        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_organoid_VGG19_dropout_crop_even/'};
 %% --------------------------------------------------------------
@@ -141,15 +149,18 @@ classdef GlobalConfig
 
 %% --------------------------------------------------------------
 %        display_names = {'Specialist U-Net'; 'Generalist U-Net'; 'Specialist VGG19-U-Net'; 'Generalist VGG19-U-Net'};
+%        display_names = {'U-Net'; 'U-Net pretrained'; 'VGG16'};
 %        display_names = {'VGG19D-U-Net'; 'VGG19D-U-Net temporal'};
 
-        display_names = {'cryptic VGG19D'; 'cryptic VGG19D temporal'};
+%        display_names = {'cryptic VGG19D'; 'cryptic VGG19D temporal'};
 %        display_names = {'cryptic VGG19D'; 'cryptic VGG19D pat10'; 'cryptic VGG19D sm'; 'cryptic VGG19D mm pat10';'cryptic VGG19D mm pat10 overfit';'cryptic VGG19D overfit';'cryptic VGG16'};
 %        display_names = {'cryptic_all VGG19D pat10'; 'cryptic_all VGG19D mm pat10'; 'cryptic_all heq VGG19D mm pat10'};
 %        display_names = {'VGG19D-U-Net'; 'VGG19D-U-Net input256'};
 %        display_names = {'U-Net';'VGG19-U-Net Dropout'};
 %        display_names = {'WF norm'; 'TIRF norm'};
 %        display_names = {'Teacher TIRF'; 'Student TIRF'};
+
+        display_names = {'spheroid unet'; 'vgg16'; 'vgg19'};
 
 %        display_names = {'64';'80';'96';'128'; '192'; '256'};
 %        display_names = {'U-Net';
@@ -176,7 +187,8 @@ classdef GlobalConfig
 % In the frame_list matrix,
 % each column corresponds to different number of traning frames and
 % each row separated by ; corresponds to the different models
-        frame_list = [2;2];
+        frame_list = [1;1;1];
+%        frame_list = [2;2];
 %        frame_list = [10;10;10];
 %        frame_list = [2;2;2;2];
 
@@ -329,6 +341,14 @@ classdef GlobalConfig
                     GlobalConfigObj.dataset_split_list = [length(GlobalConfigObj.dataset_list)];
                     GlobalConfigObj.dataset_interval_list = [1];
 
+                elseif contains(prediction_path, 'Spheroid')
+                    GlobalConfigObj.repeat_max = 1;
+                    GlobalConfigObj.img_root_path = '/media/bch_drive/Public/JunbongJang/Segmentation/assets/Spheroid/';
+                    GlobalConfigObj.mask_type = '/mask/';
+                    GlobalConfigObj.img_type = '/img/';
+                    GlobalConfigObj.dataset_list = {'1'; '2'; '3'; '4'; '5'; '6'; '7'; '8'; '9'; '10'; '11'; '12'; '13'; '14'; '15'; '16'; '17'; '18'; '19'; '20'; '21'; '22'; '23'};
+                    GlobalConfigObj.fold_name_list = {'A'; 'B'; 'C'; 'D'; 'E'; 'F'; 'G'; 'H'; 'I'; 'J'; 'K'; 'L'; 'M'; 'N'; 'O'; 'P'; 'Q'; 'R'; 'S'; 'T'; 'U'; 'V'; 'W'};
+                    GlobalConfigObj.max_dist_pixel = 3;
 
                 elseif contains(prediction_path, '_paxillin_WF')
                     GlobalConfigObj.repeat_max = 1;

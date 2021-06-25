@@ -72,110 +72,6 @@ def VGG19_classifier(img_rows, img_cols, weights_path):
 
 
 @log_function_call
-def UNet_encoder_classifier(img_rows, img_cols, weights_path):
-    inputs = Input(shape=[img_rows, img_cols, 3])
-
-    # Block 1
-    x = Conv2D(64, (3, 3), activation='relu', padding='same', name='conv1_1', kernel_regularizer=l2(0.0005))(inputs)
-    x = Conv2D(64, (3, 3), activation='relu', padding='same', name='conv1_2', kernel_regularizer=l2(0.0005))(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(x)
-
-    # Block 2
-    x = Conv2D(128, (3, 3), activation='relu', padding='same', name='conv2_1', kernel_regularizer=l2(0.0005))(x)
-    x = Conv2D(128, (3, 3), activation='relu', padding='same', name='conv2_2', kernel_regularizer=l2(0.0005))(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')(x)
-
-    # Block 3
-    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='conv3_1', kernel_regularizer=l2(0.0005))(x)
-    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='conv3_2', kernel_regularizer=l2(0.0005))(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool')(x)
-
-    # Block 4
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv4_1', kernel_regularizer=l2(0.0005))(x)
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv4_2', kernel_regularizer=l2(0.0005))(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool')(x)
-
-    # Block 5
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv5_1', kernel_regularizer=l2(0.0005))(x)
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv5_2', kernel_regularizer=l2(0.0005))(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool')(x)
-
-    x = Flatten(name='flatten')(x)
-    x = Dense(4096, activation='relu', kernel_regularizer=l2(0.0005))(x)
-    x = Dropout(0.5)(x)
-    x = Dense(4096, activation='relu', kernel_regularizer=l2(0.0005))(x)
-    x = Dropout(0.5)(x)
-    output = Dense(1000, activation='softmax', kernel_regularizer=l2(0.0005))(x)
-
-    model = Model(inputs=inputs, outputs=output)
-
-    # Load weights.
-    if weights_path != '':
-        model.load_weights(weights_path, by_name=True)
-
-    return model
-
-
-@log_function_call
-def VGG16_classifier(img_rows, img_cols, weights_path):
-    inputs = Input(shape=[img_rows, img_cols, 3])
-
-    # Block 1
-    x = Conv2D(64, (3, 3), activation='relu', padding='same', name='conv1_1', kernel_regularizer=l2(0.0005))(inputs)
-    block1_conv2 = Conv2D(64, (3, 3), activation='relu', padding='same', name='conv1_2', kernel_regularizer=l2(0.0005))(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(block1_conv2)
-
-    # Block 2
-    x = Conv2D(128, (3, 3), activation='relu', padding='same', name='conv2_1', kernel_regularizer=l2(0.0005))(x)
-    block2_conv2 = Conv2D(128, (3, 3), activation='relu', padding='same', name='conv2_2', kernel_regularizer=l2(0.0005))(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')(block2_conv2)
-
-    # Block 3
-    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='conv3_1', kernel_regularizer=l2(0.0005))(x)
-    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='conv3_2', kernel_regularizer=l2(0.0005))(x)
-    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='conv3_3', kernel_regularizer=l2(0.0005))(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool')(x)
-
-    # Block 4
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv4_1', kernel_regularizer=l2(0.0005))(x)
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv4_2', kernel_regularizer=l2(0.0005))(x)
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv4_3', kernel_regularizer=l2(0.0005))(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool')(x)
-
-    # Block 5
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv5_1', kernel_regularizer=l2(0.0005))(x)
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv5_2', kernel_regularizer=l2(0.0005))(x)
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv5_3', kernel_regularizer=l2(0.0005))(x)
-    x = MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool')(x)
-
-    x = Flatten(name='flatten')(x)
-    x = Dense(4096, activation='relu', kernel_regularizer=l2(0.0005))(x)
-    x = Dropout(0.5)(x)
-    x = Dense(4096, activation='relu', kernel_regularizer=l2(0.0005))(x)
-    x = Dropout(0.5)(x)
-    output = Dense(1000, activation='softmax', kernel_regularizer=l2(0.0005))(x)
-
-    model = Model(inputs=inputs, outputs=output)
-
-    # from tensorflow.python.keras.utils import data_utils
-    # WEIGHTS_PATH = ('https://storage.googleapis.com/tensorflow/keras-applications/'
-    #                 'vgg16/vgg16_weights_tf_dim_ordering_tf_kernels.h5')
-    # weights_path = data_utils.get_file(
-    #     'vgg16_weights_tf_dim_ordering_tf_kernels.h5',
-    #     WEIGHTS_PATH,
-    #     cache_subdir='models',
-    #     file_hash='64373286793e3c8b2b4e3219cbf3544b')
-    #
-    # model.load_weights(weights_path)
-
-    # Load weights.
-    if weights_path != '':
-        model.load_weights(weights_path, by_name=True)
-
-    return model
-
-
-@log_function_call
 def VGG19D_classifier(img_rows, img_cols, weights_path):
     inputs = Input(shape=[3, img_rows, img_cols])
     # Block 1
@@ -229,6 +125,149 @@ def VGG19D_classifier(img_rows, img_cols, weights_path):
             cache_subdir='models',
             file_hash='253f8cb515780f3b799900260a226db6')
     model.load_weights(weights_path, by_name=True)
+
+    return model
+
+
+@log_function_call
+def UNet_encoder_classifier(img_rows, img_cols, weights_path):
+    inputs = Input(shape=[img_rows, img_cols, 3])
+
+    # Block 1
+    x = Conv2D(64, (3, 3), activation='relu', padding='same', name='conv1_1', kernel_regularizer=l2(0.0005))(inputs)
+    x = Conv2D(64, (3, 3), activation='relu', padding='same', name='conv1_2', kernel_regularizer=l2(0.0005))(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(x)
+
+    # Block 2
+    x = Conv2D(128, (3, 3), activation='relu', padding='same', name='conv2_1', kernel_regularizer=l2(0.0005))(x)
+    x = Conv2D(128, (3, 3), activation='relu', padding='same', name='conv2_2', kernel_regularizer=l2(0.0005))(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')(x)
+
+    # Block 3
+    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='conv3_1', kernel_regularizer=l2(0.0005))(x)
+    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='conv3_2', kernel_regularizer=l2(0.0005))(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool')(x)
+
+    # Block 4
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv4_1', kernel_regularizer=l2(0.0005))(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv4_2', kernel_regularizer=l2(0.0005))(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool')(x)
+
+    # Block 5
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv5_1', kernel_regularizer=l2(0.0005))(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv5_2', kernel_regularizer=l2(0.0005))(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool')(x)
+
+    x = Flatten(name='flatten')(x)
+    x = Dense(4096, activation='relu', kernel_regularizer=l2(0.0005))(x)
+    x = Dropout(0.5)(x)
+    x = Dense(4096, activation='relu', kernel_regularizer=l2(0.0005))(x)
+    x = Dropout(0.5)(x)
+    output = Dense(1000, activation='softmax', kernel_regularizer=l2(0.0005))(x)
+
+    model = Model(inputs=inputs, outputs=output)
+
+    # Load weights.
+    if weights_path != '':
+        model.load_weights(weights_path, by_name=True)
+
+    return model
+
+
+@log_function_call
+def VGG16_imagenet_classifier(img_rows, img_cols, weights_path):
+    inputs = Input(shape=[img_rows, img_cols, 3])
+
+    # Block 1
+    x = Conv2D(64, (3, 3), activation='relu', padding='same', name='conv1_1', kernel_regularizer=l2(0.0005))(inputs)
+    block1_conv2 = Conv2D(64, (3, 3), activation='relu', padding='same', name='conv1_2', kernel_regularizer=l2(0.0005))(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(block1_conv2)
+
+    # Block 2
+    x = Conv2D(128, (3, 3), activation='relu', padding='same', name='conv2_1', kernel_regularizer=l2(0.0005))(x)
+    block2_conv2 = Conv2D(128, (3, 3), activation='relu', padding='same', name='conv2_2', kernel_regularizer=l2(0.0005))(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')(block2_conv2)
+
+    # Block 3
+    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='conv3_1', kernel_regularizer=l2(0.0005))(x)
+    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='conv3_2', kernel_regularizer=l2(0.0005))(x)
+    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='conv3_3', kernel_regularizer=l2(0.0005))(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool')(x)
+
+    # Block 4
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv4_1', kernel_regularizer=l2(0.0005))(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv4_2', kernel_regularizer=l2(0.0005))(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv4_3', kernel_regularizer=l2(0.0005))(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool')(x)
+
+    # Block 5
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv5_1', kernel_regularizer=l2(0.0005))(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv5_2', kernel_regularizer=l2(0.0005))(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv5_3', kernel_regularizer=l2(0.0005))(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool')(x)
+
+    x = Flatten(name='flatten')(x)
+    x = Dense(4096, activation='relu', kernel_regularizer=l2(0.0005))(x)
+    x = Dropout(0.5)(x)
+    x = Dense(4096, activation='relu', kernel_regularizer=l2(0.0005))(x)
+    x = Dropout(0.5)(x)
+    output = Dense(1000, activation='softmax', kernel_regularizer=l2(0.0005))(x)
+
+    model = Model(inputs=inputs, outputs=output)
+
+    # Load weights.
+    if weights_path != '':
+        model.load_weights(weights_path, by_name=True)
+
+    return model
+
+
+@log_function_call
+def VGG19_imagenet_classifier(img_rows, img_cols, weights_path):
+    inputs = Input(shape=[img_rows, img_cols, 3])
+    # Block 1
+    x = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv1', kernel_regularizer=l2(0.0005))(inputs)
+    block1_conv2 = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv2', kernel_regularizer=l2(0.0005))(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(block1_conv2)
+
+    # Block 2
+    x = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv1', kernel_regularizer=l2(0.0005))(x)
+    block2_conv2 = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv2', kernel_regularizer=l2(0.0005))(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')(block2_conv2)
+
+    # Block 3
+    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv1', kernel_regularizer=l2(0.0005))(x)
+    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv2', kernel_regularizer=l2(0.0005))(x)
+    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv3', kernel_regularizer=l2(0.0005))(x)
+    block3_conv4 = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv4', kernel_regularizer=l2(0.0005))(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool')(block3_conv4)
+
+    # Block 4
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv1', kernel_regularizer=l2(0.0005))(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv2', kernel_regularizer=l2(0.0005))(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv3', kernel_regularizer=l2(0.0005))(x)
+    block4_conv4 = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv4', kernel_regularizer=l2(0.0005))(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool')(block4_conv4)
+
+    # Block 5
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv1', kernel_regularizer=l2(0.0005))(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv2', kernel_regularizer=l2(0.0005))(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv3', kernel_regularizer=l2(0.0005))(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv4', kernel_regularizer=l2(0.0005))(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool')(x)
+
+    x = Flatten(name='flatten')(x)
+    x = Dense(4096, activation='relu', kernel_regularizer=l2(0.0005))(x)
+    x = Dropout(0.5)(x)
+    x = Dense(4096, activation='relu', kernel_regularizer=l2(0.0005))(x)
+    x = Dropout(0.5)(x)
+    output = Dense(1000, activation='softmax', kernel_regularizer=l2(0.0005))(x)
+
+    model = Model(inputs=inputs, outputs=output)
+
+    # Load weights.
+    if weights_path != '':
+        model.load_weights(weights_path, by_name=True)
 
     return model
 

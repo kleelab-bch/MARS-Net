@@ -1,5 +1,6 @@
 import sys
 sys.path.append('..')
+sys.path.append('../data_handle')
 
 import gc
 import numpy as np
@@ -7,17 +8,19 @@ import cv2
 import os.path
 from tensorflow.keras import backend as K
 from tensorflow.keras.utils import plot_model
+from tensorflow.keras.models import Model
 
 import debug_utils
 from predict_data_generator import PredictDataGenerator
-from data_generator_classifier import get_data_generator_classifier
+from data_generator_classifier import get_data_generator_classifier, threshold_mask_area_list
+from data_generator_MTL import get_data_generator_MTL
 from UserParams import UserParams
 from model_builder import build_model_predict
 from visualization.CAM import visualize_feature_activation_map
 from tqdm import tqdm
 
 
-def prediction(constants, frame, model_index, repeat_index, save_path):
+def prediction(constants, frame, model_index, repeat_index):
     model_name = constants.model_names[model_index]
     dataset_folder = constants.dataset_folders[model_index]
     dataset_name = constants.dataset_names[model_index]
@@ -28,23 +31,19 @@ def prediction(constants, frame, model_index, repeat_index, save_path):
     mask_path = dataset_folder + dataset_name + mask_folder
     args = constants.get_args()  # get hyper parameters
 
-    if constants.self_training_type is None:
-        save_path = save_path + '{}/frame{}_{}_repeat{}/'.format(dataset_name, str(frame), model_name, str(repeat_index))
-    else:
-        save_path = save_path + '{}_{}/frame{}_repeat{}/'.format(model_name, dataset_name, str(frame), str(repeat_index))
-    print('save_path:', save_path)
-    if os.path.isdir(save_path) == 0:
-        os.makedirs(save_path)
+    save_path = constants.get_save_prediction_path(dataset_name, model_name, frame, repeat_index)
 
     # ------------------- Data loading -------------------
     a_strategy = constants.strategy_type
     if 'TIRF' in dataset_name and 'specialist' in constants.strategy_type:
         a_strategy = constants.strategy_type + '_normalize'
 
-    if "classifier" in str(constants.strategy_type):
-        orig_input_images, input_images, mask_class_list, image_filenames = get_data_generator_classifier([dataset_name], repeat_index, args.crop_mode, constants.img_format, 'predict')
+    if "classifier" in str(constants.strategy_type) or 'MTL' in str(constants.strategy_type):
+        orig_input_images, input_images, masks, image_filenames = get_data_generator_MTL([dataset_name], repeat_index, args.crop_mode, constants.img_format, 'predict')
+        masks, mask_area_list, mask_classes = masks[0], masks[1], masks[2]
         image_rows, image_cols = input_images.shape[2:]
         orig_rows, orig_cols = 0, 0
+    
     else:
         prediction_data_generator = PredictDataGenerator(img_path, mask_path, a_strategy, img_format=constants.img_format)
         input_images, image_filenames, image_cols, image_rows, orig_cols, orig_rows = prediction_data_generator.get_expanded_whole_frames()
@@ -52,7 +51,7 @@ def prediction(constants, frame, model_index, repeat_index, save_path):
         print('img size:', image_rows, image_cols)
         print('orig img size:', orig_rows, orig_cols)
 
-    if "EFF_B" in str(constants.strategy_type):
+    if "deeplabv3" == str(constants.strategy_type) or "EFF_B" in str(constants.strategy_type) or "unet_imagenet_pretrained" in str(constants.strategy_type):
         K.set_image_data_format('channels_last')
         input_images = np.moveaxis(input_images, 1, -1)  # first channel to last channel
         print(input_images.dtype, input_images.shape)
@@ -63,23 +62,41 @@ def prediction(constants, frame, model_index, repeat_index, save_path):
     plot_model(model, to_file='model_plots/model_round{}_{}_predict.png'.format(constants.round_num, constants.strategy_type), show_shapes=True, show_layer_names=True, dpi=144)
 
     # ------------------ Prediction and Save ------------------------------
-    if "classifier" in str(constants.strategy_type):
-        class_list_output = model.predict(input_images, batch_size=1, verbose=1)
-        
+
+    if "classifier" in str(constants.strategy_type) or "MTL" in str(constants.strategy_type):
+        from sklearn.metrics import confusion_matrix, matthews_corrcoef, precision_score, recall_score, f1_score, accuracy_score, mean_squared_error
+        if "classifier" in str(constants.strategy_type) and 'regressor' not in str(constants.strategy_type):
+            model = Model(inputs=model.input, outputs=[model.output, model.get_layer('global_average_pooling2d').output])
+            pred_class_list, encoded_feature_vector = model.predict(input_images, batch_size=1, verbose=1)
+            print(pred_class_list.shape, encoded_feature_vector.shape)
+
+        else:
+            model = Model(inputs=model.input, outputs=model.output + [model.get_layer('global_average_pooling2d').output])
+            pred_mask_area_list, pred_class_list, encoded_feature_vector = model.predict(input_images, batch_size=1, verbose=1)
+            print(pred_mask_area_list.shape, pred_class_list.shape, encoded_feature_vector.shape)
+            np.save(save_path + 'mask_area_list.npy', pred_mask_area_list)
+            print('regression:', mean_squared_error(mask_area_list, pred_mask_area_list))
+        np.save(save_path + 'class_list_pred.npy', pred_class_list)
+        np.save(save_path + 'feature_vector.npy', encoded_feature_vector)
+
         # thresholding prediction to calculate evaluation statistics
-        class_list_output[class_list_output < 0.5] = 0
-        class_list_output[class_list_output > 0] = 1
+        prediction_threshold = 0.5
+        pred_class_list[pred_class_list < prediction_threshold] = 0
+        pred_class_list[pred_class_list > 0] = 1
 
-        y_pred = class_list_output[:, 0].tolist()
-        y_true = mask_class_list
+        y_pred = pred_class_list[:, 0].tolist()
+        y_true = threshold_mask_area_list(orig_rows, orig_cols, mask_area_list)
+        np.save(save_path + 'class_list_true.npy', y_true)
 
-        from sklearn.metrics import confusion_matrix, matthews_corrcoef, f1_score, accuracy_score
         accuracy = accuracy_score(y_true, y_pred)
+        print(y_true, y_pred)
         tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
         mcc = matthews_corrcoef(y_true, y_pred)
-        print(tn, fp, fn, tp, mcc, f1_score(y_true, y_pred), accuracy)
+        print('classification:', tn, fp, fn, tp, mcc,
+              precision_score(y_true, y_pred), recall_score(y_true, y_pred), f1_score(y_true, y_pred), accuracy)
 
         # save images if fp, fn or tp
+        prediction_result_list = []
         for i in tqdm(range(len(y_true))):
             if y_true[i] == 1 and y_pred[i] == 0:
                 prefix = 'FN'
@@ -89,11 +106,13 @@ def prediction(constants, frame, model_index, repeat_index, save_path):
                 prefix = 'FP'
             elif y_true[i] == 0 and y_pred[i] == 0:
                 prefix = 'TN'
-
             if prefix != 'TN':
                 image_filename = image_filenames[i].split('/')[-1]
                 cv2.imwrite(save_path + f'{prefix}_' + image_filename, np.moveaxis(orig_input_images[i], 0, -1))
 
+            prediction_result_list.append(prefix)
+
+        np.save(save_path + 'prediction_result_list.npy', prediction_result_list)
     else:
         if "feature_extractor" in str(constants.strategy_type):
             segmented_output, style_output = model.predict(input_images, batch_size = 1, verbose = 1)
@@ -109,7 +128,7 @@ def prediction(constants, frame, model_index, repeat_index, save_path):
 
         segmented_output = 255 * segmented_output  # 0=black color and 255=white color
 
-        if "deeplabv3" == str(constants.strategy_type) or "EFF_B" in str(constants.strategy_type):
+        if "deeplabv3" == str(constants.strategy_type) or "EFF_B" in str(constants.strategy_type) or "unet_imagenet_pretrained" in str(constants.strategy_type):
             # move last channel to first channel
             segmented_output = np.moveaxis(segmented_output, -1, 1)
             print(segmented_output.shape)
@@ -138,8 +157,6 @@ if __name__ == "__main__":
     K.set_image_data_format('channels_first')
     constants = UserParams('predict')
 
-    root_prediciton_path = "results/predict_wholeframe_round{}_{}/".format(constants.round_num, constants.strategy_type)
-
     if len(constants.model_names) != 1 and len(constants.dataset_names) != len(constants.model_names):
         raise Exception('Length of Dataset names and Model names are not the same')
 
@@ -148,5 +165,5 @@ if __name__ == "__main__":
     for repeat_index in range(constants.REPEAT_MAX):
         for frame in constants.frame_list:
             for model_index in range(len(constants.model_names)):
-                prediction(constants, frame, model_index, repeat_index, root_prediciton_path)
+                prediction(constants, frame, model_index, repeat_index)
             gc.collect()

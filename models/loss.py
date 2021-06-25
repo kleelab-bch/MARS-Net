@@ -29,8 +29,20 @@ def f1(y_true, y_pred):
     precision = precision(y_true, y_pred)
     recall = recall(y_true, y_pred)
     return 2*((precision*recall)/(precision+recall + K.epsilon()))
-       
-       
+
+
+def normalized_MSE(y_true, y_pred):
+    # nmse = K.mean(K.square(y_true - y_pred)/K.square(y_true), axis=-1)
+    nmse = K.mean(K.square(y_true - y_pred))
+
+    # tf.print('---', K.max(y_true), K.max(y_pred), K.square(y_true - y_pred))
+    # tf.print('nmse', nmse)
+    # tf.print("ksquare @@@@@@@@@@@@@@@", K.square(y_true - y_pred))
+    # tf.print('denominator', (K.square(y_true) + K.square(y_pred)))
+
+    return nmse
+
+
 def weighted_cross_entropy(beta):
   def convert_to_logits(y_pred):
       # see https://github.com/tensorflow/tensorflow/blob/r1.10/tensorflow/python/keras/backend.py#L3525

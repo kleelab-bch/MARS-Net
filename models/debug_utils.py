@@ -7,6 +7,7 @@ Contains debugging functions useful for deep learning research
 '''
 import sys
 sys.path.append('..')
+sys.path.append('../data_handle')
 from UserParams import UserParams
 from data_processor import get_std_mean_from_images
 
@@ -116,8 +117,19 @@ def calc_receptive_field_demo():
 
 
 if __name__ == "__main__":
-    from tensorflow.python.client import device_lib
-    print(device_lib.list_local_devices())
+    # test gpu for tensorflow
+    # from tensorflow.python.client import device_lib
+    # print(device_lib.list_local_devices())
+
+    # test numpy
+    first_array = np.asarray([[[1, 1, 1], [2, 2, 2]], [[3, 3, 3], [4, 4, 4]], [[5, 5, 5], [6, 6, 6]]])
+    second_array = np.asarray([[1, 5, 5], [6, 6, 2]])
+
+    print(first_array, first_array.shape)
+    first_array[1, second_array > 4] = 5
+    print(first_array)
+    # new_first_array = np.moveaxis(first_array, 0, -1)
+    # print(new_first_array, new_first_array.shape)
 
     save_path = 'results/debugger/'
     # constants = UserParams('predict')
