@@ -54,9 +54,9 @@ end
 
 function visualize_boundary_overlay_mask_prediction(img, mask, img_model1, img_model2)
     se = strel('diamond',1);
-%    mask = imdilate(mask,se);
-%    img_model1 = imdilate(img_model1,se);
-%    img_model2 = imdilate(img_model2,se);
+    mask = imdilate(mask,se);
+    img_model1 = imdilate(img_model1,se);
+    img_model2 = imdilate(img_model2,se);
 
 %    img = imlocalbrighten(img);
 

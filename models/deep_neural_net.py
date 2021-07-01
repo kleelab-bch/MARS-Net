@@ -543,9 +543,9 @@ def VGG16_instancenorm(img_rows, img_cols, crop_margin, right_crop, bottom_crop,
 
 ## --------------------------------------------------------------------------------------
 
-
 @log_function_call
 def VGG19(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path, encoder_weights='imagenet'):
+    print('encoder_weights', encoder_weights)
     inputs = Input(shape=[3, img_rows, img_cols])
 
     # Create the feature extraction model
@@ -557,6 +557,7 @@ def VGG19(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path
         'block4_conv4',  # 512x16x16
         'block5_conv4'  # 512x8x8
     ]
+
     layers = [base_model.get_layer(name).output for name in layer_names]
 
     encoder_model = tf.keras.Model(inputs=base_model.input, outputs=layers)
@@ -595,6 +596,120 @@ def VGG19(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path
         model.load_weights(weights_path, by_name=True)
 
     return model
+
+
+@log_function_call
+def VGG19_imagenet_pretrained(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
+    print('encoder_weights', encoder_weights)
+    inputs = Input(shape=[img_rows, img_cols, 3])
+
+    # Create the feature extraction model
+    base_model = tf.keras.applications.VGG19(input_shape=[img_rows, img_cols, 3], include_top=False, weights=None)
+    layer_names = [
+        'block1_conv2',  # 64x128x128
+        'block2_conv2',  # 128x64x64
+        'block3_conv4',  # 256x32x32
+        'block4_conv4',  # 512x16x16
+        'block5_conv4'  # 512x8x8
+    ]
+
+    layers = [base_model.get_layer(name).output for name in layer_names]
+
+    encoder_model = tf.keras.Model(inputs=base_model.input, outputs=layers)
+    plot_model(encoder_model, to_file='model_plots/encoder_VGG19.png', show_shapes=True, show_layer_names=True, dpi=144)
+
+    skips = encoder_model(inputs)
+
+    # upsampling model
+    up6 = concatenate([UpSampling2D(size=(2, 2))(skips[4]), skips[3]], axis=-1)
+    conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(up6)
+    conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(conv6)
+
+    up7 = concatenate([UpSampling2D(size=(2, 2))(conv6), skips[2]], axis=-1)
+    conv7 = Conv2D(256, (3, 3), activation='relu', padding='same')(up7)
+    conv7 = Conv2D(256, (3, 3), activation='relu', padding='same')(conv7)
+
+    up8 = concatenate([UpSampling2D(size=(2, 2))(conv7), skips[1]], axis=-1)
+    conv8 = Conv2D(128, (3, 3), activation='relu', padding='same')(up8)
+    conv8 = Conv2D(128, (3, 3), activation='relu', padding='same')(conv8)
+
+    up9 = concatenate([UpSampling2D(size=(2, 2))(conv8), skips[0]], axis=-1)
+    conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(up9)
+    conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(conv9)
+
+    conv10 = Conv2D(1, (1, 1), activation='sigmoid')(conv9)
+    if bottom_crop == 0:
+        conv10 = Cropping2D(cropping=((crop_margin, crop_margin), (crop_margin, crop_margin)))(
+            conv10)  # ((top_crop, bottom_crop), (left_crop, right_crop)) for training
+    else:
+        conv10 = Cropping2D(cropping=((0, bottom_crop), (0, right_crop)))(
+            conv10)  # remove reflected portion from the image for prediction
+
+    model = Model(inputs=inputs, outputs=conv10)
+
+    if weights_path != '':
+        model.load_weights(weights_path, by_name=True)
+
+    return model
+
+
+@log_function_call
+def VGG19_freeze(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path, encoder_weights='imagenet'):
+    print('encoder_weights', encoder_weights)
+    inputs = Input(shape=[3, img_rows, img_cols])
+
+    # Create the feature extraction model
+    base_model = tf.keras.applications.VGG19(input_shape=[3, img_rows, img_cols], include_top=False, weights=encoder_weights)
+    layer_names = [
+        'block1_conv2',  # 64x128x128
+        'block2_conv2',  # 128x64x64
+        'block3_conv4',  # 256x32x32
+        'block4_conv4',  # 512x16x16
+        'block5_conv4'  # 512x8x8
+    ]
+
+    for i in range(21):  # first 21 layers of the pre-trained VGG model
+        base_model.layers[i].trainable = False
+
+    layers = [base_model.get_layer(name).output for name in layer_names]
+
+    encoder_model = tf.keras.Model(inputs=base_model.input, outputs=layers)
+    plot_model(encoder_model, to_file='model_plots/encoder_VGG19.png', show_shapes=True, show_layer_names=True, dpi=144)
+
+    skips = encoder_model(inputs)
+
+    # upsampling model
+    up6 = concatenate([UpSampling2D(size=(2, 2))(skips[4]), skips[3]], axis=1)
+    conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(up6)
+    conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(conv6)
+
+    up7 = concatenate([UpSampling2D(size=(2, 2))(conv6), skips[2]], axis=1)
+    conv7 = Conv2D(256, (3, 3), activation='relu', padding='same')(up7)
+    conv7 = Conv2D(256, (3, 3), activation='relu', padding='same')(conv7)
+
+    up8 = concatenate([UpSampling2D(size=(2, 2))(conv7), skips[1]], axis=1)
+    conv8 = Conv2D(128, (3, 3), activation='relu', padding='same')(up8)
+    conv8 = Conv2D(128, (3, 3), activation='relu', padding='same')(conv8)
+
+    up9 = concatenate([UpSampling2D(size=(2, 2))(conv8), skips[0]], axis=1)
+    conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(up9)
+    conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(conv9)
+
+    conv10 = Conv2D(1, (1, 1), activation='sigmoid')(conv9)
+    if bottom_crop == 0:
+        conv10 = Cropping2D(cropping=((crop_margin, crop_margin), (crop_margin, crop_margin)))(
+            conv10)  # ((top_crop, bottom_crop), (left_crop, right_crop)) for training
+    else:
+        conv10 = Cropping2D(cropping=((0, bottom_crop), (0, right_crop)))(
+            conv10)  # remove reflected portion from the image for prediction
+
+    model = Model(inputs=inputs, outputs=conv10)
+
+    if weights_path != '':
+        model.load_weights(weights_path, by_name=True)
+
+    return model
+
 
 
 @log_function_call

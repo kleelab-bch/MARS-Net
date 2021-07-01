@@ -42,7 +42,8 @@ def get_data_generator_MTL(dataset_names, repeat_index, crop_mode, img_format, t
 
     # images, masks, img_filenames, mask_filenames = unison_shuffle_multiple_ndarrays(images, masks, img_filenames, mask_filenames)
     print('original_images:', original_images.shape, original_images.dtype, 'Images:', images.shape, images.dtype, 'masks:', masks.shape, masks.dtype)
-
+    threshold_mask_area_percentage = 0.01
+    print('threshold_mask_area_percentage', threshold_mask_area_percentage)
     height, width = masks.shape[1], masks.shape[2]
     # split data
     if train_or_predict_mode == 'train':
@@ -52,8 +53,8 @@ def get_data_generator_MTL(dataset_names, repeat_index, crop_mode, img_format, t
         train_y_areas = convert_masks_to_areas(masks_train).astype(np.int32)
         valid_y_areas = convert_masks_to_areas(masks_val).astype(np.int32)
         print('train_y_areas', train_y_areas.shape, train_y_areas[:10], train_y_areas.dtype)
-        train_y_classes = np.asarray(threshold_mask_area_list(height, width, train_y_areas), dtype=np.float32)
-        valid_y_classes = np.asarray(threshold_mask_area_list(height, width, valid_y_areas), dtype=np.float32)
+        train_y_classes = np.asarray(threshold_mask_area_list(height, width, train_y_areas, threshold_mask_area_percentage), dtype=np.float32)
+        valid_y_classes = np.asarray(threshold_mask_area_list(height, width, valid_y_areas, threshold_mask_area_percentage), dtype=np.float32)
         print('train_y_classes', train_y_classes.shape, train_y_classes[:10], train_y_classes.dtype)
 
         return images_train, [masks_train, train_y_areas, train_y_classes], images_val, [masks_val, valid_y_areas, valid_y_classes]
@@ -61,7 +62,7 @@ def get_data_generator_MTL(dataset_names, repeat_index, crop_mode, img_format, t
     elif train_or_predict_mode == 'predict':
         mask_areas = convert_masks_to_areas(masks).astype(np.int32)
         print('mask_areas', mask_areas.shape, mask_areas[:10])
-        mask_classes = np.asarray(threshold_mask_area_list(height, width, mask_areas), dtype=np.float32)
+        mask_classes = np.asarray(threshold_mask_area_list(height, width, mask_areas, threshold_mask_area_percentage), dtype=np.float32)
         print('mask_classes', mask_classes.shape, mask_classes.dtype)
 
         return original_images, images, [masks, mask_areas, mask_classes], img_filenames
@@ -90,9 +91,11 @@ def undersample_false_image_mask(img_filenames, mask_filenames, mask_area_dict, 
     print('True:', len(true_img_filenames), len(true_mask_filenames), ' False:', len(false_img_filenames), len(false_mask_filenames))
 
     # undersample
+    train_undersample_ratio = 10
     max_sample_size = len(false_img_filenames)
-    if train_or_predict_mode == 'train' and max_sample_size > len(true_img_filenames)*20:
-        max_sample_size = len(true_img_filenames)*10
+    if train_or_predict_mode == 'train' and max_sample_size > len(true_img_filenames)*train_undersample_ratio:
+        max_sample_size = len(true_img_filenames)*train_undersample_ratio
+    # max_sample_size = len(true_img_filenames)
 
     false_img_filenames = false_img_filenames[:max_sample_size]
     false_mask_filenames = false_mask_filenames[:max_sample_size]

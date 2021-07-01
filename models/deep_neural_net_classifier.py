@@ -5,11 +5,12 @@ Date: 6/9/2020
 Store functions that define deep learning classifiers
 """
 import tensorflow as tf
-from tensorflow.keras.models import Model
+from tensorflow.keras import Model, Sequential
 from tensorflow.keras.applications import ResNet50, ResNet50V2, DenseNet201, InceptionResNetV2
 from tensorflow.keras.layers import (Activation, Add, Input, concatenate, Conv2D, MaxPooling2D,
 AveragePooling2D, ZeroPadding2D, UpSampling2D, Cropping2D, Conv2DTranspose,BatchNormalization, Dropout, GaussianNoise,
 GlobalAveragePooling2D, Dense, Flatten, ReLU)
+from tensorflow.keras import layers
 from tensorflow.keras.initializers import glorot_uniform
 from tensorflow.keras.regularizers import l2
 import deep_neural_net_blocks as net_block
@@ -125,6 +126,136 @@ def VGG19D_classifier(img_rows, img_cols, weights_path):
             cache_subdir='models',
             file_hash='253f8cb515780f3b799900260a226db6')
     model.load_weights(weights_path, by_name=True)
+
+    return model
+
+
+class Patches(layers.Layer):
+    def __init__(self, patch_size):
+        super(Patches, self).__init__()
+        self.patch_size = patch_size
+
+    def call(self, images):
+        batch_size = tf.shape(images)[0]
+        patches = tf.image.extract_patches(
+            images=images,
+            sizes=[1, self.patch_size, self.patch_size, 1],
+            strides=[1, self.patch_size, self.patch_size, 1],
+            rates=[1, 1, 1, 1],
+            padding="VALID",
+        )
+        patch_dims = patches.shape[-1]
+        patches = tf.reshape(patches, [batch_size, -1, patch_dims])
+        return patches
+
+    def get_config(self):
+        config = super().get_config().copy()
+        config.update({
+            'patch_size': self.patch_size
+        })
+        return config
+
+
+class PatchEncoder(layers.Layer):
+    def __init__(self, num_patches, projection_dim):
+        super(PatchEncoder, self).__init__()
+        self.num_patches = num_patches
+        self.projection = layers.Dense(units=projection_dim)
+        self.position_embedding = layers.Embedding(
+            input_dim=num_patches, output_dim=projection_dim
+        )
+
+    def call(self, patch):
+        positions = tf.range(start=0, limit=self.num_patches, delta=1)
+        encoded = self.projection(patch) + self.position_embedding(positions)
+        return encoded
+
+    def get_config(self):
+        config = super().get_config().copy()
+        config.update({
+            'num_patches': self.num_patches,
+            'projection': self.projection,
+            'position_embedding': self.position_embedding
+        })
+        return config
+
+
+@log_function_call
+def vit_classifier(img_rows, img_cols, num_classes, weights_path):
+    image_size = 224  # resize input images to this size
+    patch_size = 32  # Size of the patches to be extract from the input images
+    num_patches = (image_size // patch_size) ** 2
+    projection_dim = 768
+    num_heads = 12
+    transformer_units = [
+        projection_dim,
+        projection_dim,
+    ]  # Size of the transformer layers
+    transformer_layers = 12
+    mlp_head_units = [3072]  # Size of the dense layers of the final classifier
+
+    def mlp(x, hidden_units, dropout_rate):
+        for units in hidden_units:
+            x = layers.Dense(units, activation=tf.nn.gelu)(x)
+            x = layers.Dropout(dropout_rate)(x)
+        return x
+
+    # ------- Data augmentation ------------
+    #   layers.experimental.preprocessing.Normalization(),
+    data_augmentation = Sequential(
+        [
+            layers.experimental.preprocessing.Resizing(image_size, image_size),
+            layers.experimental.preprocessing.RandomFlip("horizontal"),
+            layers.experimental.preprocessing.RandomRotation(factor=0.02),
+            layers.experimental.preprocessing.RandomZoom(
+                height_factor=0.2, width_factor=0.2
+            ),
+        ],
+        name="data_augmentation",
+    )
+    # Compute the mean and the variance of the training data for normalization.
+    # data_augmentation.layers[0].adapt(x_train)
+
+    inputs = layers.Input(shape=[img_rows, img_cols, 3])
+    # Augment data.
+    augmented = data_augmentation(inputs)
+    # Create patches.
+    patches = Patches(patch_size)(augmented)
+    # Encode patches.
+    encoded_patches = PatchEncoder(num_patches, projection_dim)(patches)
+
+    # Create multiple layers of the Transformer block.
+    for _ in range(transformer_layers):
+        # Layer normalization 1.
+        x1 = layers.LayerNormalization(epsilon=1e-6)(encoded_patches)
+        # Create a multi-head attention layer.
+        attention_output = layers.MultiHeadAttention(num_heads=num_heads, key_dim=projection_dim, dropout=0.1)(x1, x1)
+        # Skip connection 1.
+        x2 = layers.Add()([attention_output, encoded_patches])
+        # Layer normalization 2.
+        x3 = layers.LayerNormalization(epsilon=1e-6)(x2)
+        # MLP.
+        x3 = mlp(x3, hidden_units=transformer_units, dropout_rate=0.1)
+        # Skip connection 2.
+        encoded_patches = layers.Add()([x3, x2])
+
+    # Create a [batch_size, projection_dim] tensor.
+    representation = layers.LayerNormalization(epsilon=1e-6)(encoded_patches)
+    representation = layers.Flatten()(representation)
+    representation = layers.Dropout(0.5)(representation)
+    # Add MLP.
+    features = mlp(representation, hidden_units=mlp_head_units, dropout_rate=0.5)
+
+    if num_classes == 1:
+        final_output = layers.Dense(num_classes, activation='sigmoid', name='top_dense_sigmoid')(features)
+    else:
+        final_output = layers.Dense(num_classes, activation='softmax', name='top_dense_softmax')(features)
+
+    model = Model(inputs=inputs, outputs=final_output)
+
+    # Load weights.
+    if weights_path != '':
+        model.load_weights(weights_path, by_name=True)
 
     return model
 

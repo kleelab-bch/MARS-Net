@@ -251,6 +251,14 @@ def train_model(constants, model_index, frame, repeat_index):
         model = VGG19(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path, encoder_weights = None)
         model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
 
+    elif "VGG19_imagenet_pretrained" in str(constants.strategy_type):
+        K.set_image_data_format('channels_last')
+        comb_train = np.moveaxis(comb_train, 1, -1)  # first channel to last channel
+        comb_mask = np.moveaxis(comb_mask, 1, -1)
+
+        model = VGG19_imagenet_pretrained(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
+        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
+
     elif "VGG19" in str(constants.strategy_type):
         model = VGG19(args.input_size, args.input_size, args.cropped_boundary, 0, 0, weights_path=pretrained_weights_path)
         model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])

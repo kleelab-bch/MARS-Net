@@ -1,4 +1,5 @@
 function draw_boxplot(data, saved_folder, metric_type, graph_colors, display_names)
+    disp('draw_boxplot')
     size(data)
     figure;
     output_fig_size = [1452, 834];
@@ -8,7 +9,7 @@ function draw_boxplot(data, saved_folder, metric_type, graph_colors, display_nam
     hold on
     for a_col=1:size(data,2)
         scatter(ones(size(data(:,a_col))).*(a_col+(rand(size(data(:,a_col)))-0.5)/(8/size(data,2))), data(:,a_col), 2, ...
-       'filled', 'MarkerFaceColor', graph_colors(a_col,:), 'MarkerFaceAlpha',0.2);
+       'filled', 'MarkerFaceColor', graph_colors(a_col,:), 'MarkerFaceAlpha',0.6); % MarkerFaceAlpha
     end
 
     boxplot(data, 'boxstyle', 'outline',  'Symbol', '', 'Labels', {});
@@ -31,7 +32,8 @@ function draw_boxplot(data, saved_folder, metric_type, graph_colors, display_nam
     min_data = min(data,[],'all');
     max_data = max(data,[],'all');
     top_offset = (max_data-min_data)/6;
-    ylim([min_data-0.05, max_data+top_offset]);
+    bottom_offset = 0.01 % 0.05
+    ylim([min_data - bottom_offset, max_data+top_offset]);
     axis square;
     box on;
     set(gca, 'fontsize', 10, 'fontname', 'Arial');

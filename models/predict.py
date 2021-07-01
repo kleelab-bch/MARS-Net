@@ -51,10 +51,12 @@ def prediction(constants, frame, model_index, repeat_index):
         print('img size:', image_rows, image_cols)
         print('orig img size:', orig_rows, orig_cols)
 
-    if "deeplabv3" == str(constants.strategy_type) or "EFF_B" in str(constants.strategy_type) or "unet_imagenet_pretrained" in str(constants.strategy_type):
+    if "deeplabv3" == str(constants.strategy_type) or "EFF_B" in str(constants.strategy_type) \
+        or "imagenet_pretrained" in str(constants.strategy_type) \
+        or "vit_classifier" in str(constants.strategy_type):
         K.set_image_data_format('channels_last')
         input_images = np.moveaxis(input_images, 1, -1)  # first channel to last channel
-        print(input_images.dtype, input_images.shape)
+        print('input_images', input_images.dtype, input_images.shape)
 
     # ------------------- Load the trained Model -------------------
     model = build_model_predict(constants, frame, repeat_index, model_name, image_rows, image_cols, orig_rows, orig_cols)
@@ -65,10 +67,17 @@ def prediction(constants, frame, model_index, repeat_index):
 
     if "classifier" in str(constants.strategy_type) or "MTL" in str(constants.strategy_type):
         from sklearn.metrics import confusion_matrix, matthews_corrcoef, precision_score, recall_score, f1_score, accuracy_score, mean_squared_error
-        if "classifier" in str(constants.strategy_type) and 'regressor' not in str(constants.strategy_type):
+        if "classifier" in str(constants.strategy_type) and 'regressor' not in str(constants.strategy_type)\
+                and 'vit_classifier' not in str(constants.strategy_type):
             model = Model(inputs=model.input, outputs=[model.output, model.get_layer('global_average_pooling2d').output])
             pred_class_list, encoded_feature_vector = model.predict(input_images, batch_size=1, verbose=1)
             print(pred_class_list.shape, encoded_feature_vector.shape)
+            np.save(save_path + 'class_list_pred.npy', pred_class_list)
+            np.save(save_path + 'feature_vector.npy', encoded_feature_vector)
+        elif 'vit_classifier' in str(constants.strategy_type):
+            pred_class_list = model.predict(input_images, batch_size=1, verbose=1)
+            print('pred_class_list', pred_class_list.shape)
+            np.save(save_path + 'class_list_pred.npy', pred_class_list)
 
         else:
             model = Model(inputs=model.input, outputs=model.output + [model.get_layer('global_average_pooling2d').output])
@@ -76,8 +85,9 @@ def prediction(constants, frame, model_index, repeat_index):
             print(pred_mask_area_list.shape, pred_class_list.shape, encoded_feature_vector.shape)
             np.save(save_path + 'mask_area_list.npy', pred_mask_area_list)
             print('regression:', mean_squared_error(mask_area_list, pred_mask_area_list))
-        np.save(save_path + 'class_list_pred.npy', pred_class_list)
-        np.save(save_path + 'feature_vector.npy', encoded_feature_vector)
+
+            np.save(save_path + 'class_list_pred.npy', pred_class_list)
+            np.save(save_path + 'feature_vector.npy', encoded_feature_vector)
 
         # thresholding prediction to calculate evaluation statistics
         prediction_threshold = 0.5
@@ -85,15 +95,17 @@ def prediction(constants, frame, model_index, repeat_index):
         pred_class_list[pred_class_list > 0] = 1
 
         y_pred = pred_class_list[:, 0].tolist()
-        y_true = threshold_mask_area_list(orig_rows, orig_cols, mask_area_list)
+        y_true = mask_classes
         np.save(save_path + 'class_list_true.npy', y_true)
+        print(y_pred[:10])
+        print(y_true[:10])
 
         accuracy = accuracy_score(y_true, y_pred)
-        print(y_true, y_pred)
         tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
         mcc = matthews_corrcoef(y_true, y_pred)
-        print('classification:', tn, fp, fn, tp, mcc,
-              precision_score(y_true, y_pred), recall_score(y_true, y_pred), f1_score(y_true, y_pred), accuracy)
+        print('classification:', round(tn, 4), round(fp, 4), round(fn, 4), round(tp, 4), round(mcc, 4),
+                round(precision_score(y_true, y_pred), 4), round(recall_score(y_true, y_pred), 4),
+                round(f1_score(y_true, y_pred), 4), round(accuracy, 4))
 
         # save images if fp, fn or tp
         prediction_result_list = []
@@ -113,6 +125,8 @@ def prediction(constants, frame, model_index, repeat_index):
             prediction_result_list.append(prefix)
 
         np.save(save_path + 'prediction_result_list.npy', prediction_result_list)
+
+    # For segmentation outputs
     else:
         if "feature_extractor" in str(constants.strategy_type):
             segmented_output, style_output = model.predict(input_images, batch_size = 1, verbose = 1)
@@ -128,7 +142,7 @@ def prediction(constants, frame, model_index, repeat_index):
 
         segmented_output = 255 * segmented_output  # 0=black color and 255=white color
 
-        if "deeplabv3" == str(constants.strategy_type) or "EFF_B" in str(constants.strategy_type) or "unet_imagenet_pretrained" in str(constants.strategy_type):
+        if "deeplabv3" == str(constants.strategy_type) or "EFF_B" in str(constants.strategy_type) or "imagenet_pretrained" in str(constants.strategy_type):
             # move last channel to first channel
             segmented_output = np.moveaxis(segmented_output, -1, 1)
             print(segmented_output.shape)

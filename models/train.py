@@ -66,7 +66,9 @@ def train_model(constants, model_index, frame, repeat_index, history_path):
         train_x, train_y, valid_x, valid_y = get_data_generator(constants.round_num, train_val_dataset_names,
                     model_name, frame, repeat_index, args.crop_mode, constants.img_format, aug_batch_size, process_type, history_path)
 
-    if "deeplabv3" == str(constants.strategy_type) or "EFF_B" in str(constants.strategy_type) or 'unet_imagenet_pretrained' == str(constants.strategy_type):
+    if "deeplabv3" == str(constants.strategy_type) or "EFF_B" in str(constants.strategy_type) \
+            or 'imagenet_pretrained' in str(constants.strategy_type)\
+            or 'vit_classifier' in str(constants.strategy_type):
         K.set_image_data_format('channels_last')
         # first channel to last channel
         train_x = np.moveaxis(train_x, 1, -1)
@@ -78,9 +80,9 @@ def train_model(constants, model_index, frame, repeat_index, history_path):
     
     # ---------------------- Build the model ----------------------
     # multiple gpu training
-    strategy = tf.distribute.MirroredStrategy()
-    with strategy.scope():
-        model = build_model_train(constants, args, frame, model_name)
+    # strategy = tf.distribute.MirroredStrategy()
+    # with strategy.scope():
+    model = build_model_train(constants, args, frame, model_name)
 
     # ---------------------- Sanity Check the model ----------------------
     print(model.summary())

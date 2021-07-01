@@ -7,7 +7,7 @@
 
 import os
 # tensorflow import must come after os.environ gpu setting
-os.environ["CUDA_VISIBLE_DEVICES"] = '1'
+os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 import argparse
 import numpy as np
 import random
@@ -18,9 +18,9 @@ class UserParams:
         """
         mode must be crop, train, predict, or eval
         """
-        if mode not in ['crop', 'train', 'predict', 'eval']:
-            print('UserParams: mode is not crop, train, predict, or eval')
-            exit()
+        # if mode not in ['crop', 'train', 'predict', 'eval']:
+        #     print('UserParams: mode is not crop, train, predict, or eval')
+        #     exit()
 
         np.random.seed(seed=42)
         random.seed(42)
@@ -32,8 +32,7 @@ class UserParams:
         # ['unet', 'VGG16_no_pretrain', 'VGG19_no_pretrain', 'VGG16', 'VGG19', 'VGG16_batchnorm', 'VGG19_batchnorm', 'VGG16_dropout', 'VGG19_dropout']
         # ['mDia_raw_unet', 'mDia_raw_VGG19_dropout']
         # ['paxillin_TIRF_normalize_cropped_unet_patience_10', 'paxillin_TIRF_normalize_cropped_VGG19_dropout_patience_10']
-        # ['paxillin_TIRF_normalize', 'paxillin_TIRF_normalize_2.5']
-        self.strategy_type = 'FNA_VGG19_classifier_regressor_input256' # 'VGG19_imagenet_classifier' #'unet_encoder_classifier' #'spheroid_VGG16' #'single_micro_small_unet' # 'FNA_VGG19_classifier_regressor_input256' # 'unet_imagenet_pretrained' # 'unet_encoder_classifier' #'FNA_VGG19_classifier_input256' # 'cryptic_VGG19D_temporal_context_residual' # 'single_micro_VGG19D_temporal_context_residual' # 'cryptic_VGG19D_temporal_distributed_v2' # 'organoid_VGG19_dropout_crop_even' # 'cryptic_VGG19_dropout_mm_patience_10'
+        self.strategy_type = 'VGG19_imagenet_pretrained' # 'FNA_VGG19_classifier_regressor_input256' #'vit_imagenet_classifier' #spheroid_VGG19_no_pretrain # 'FNA_VGG19_classifier_regressor_input256' # 'spheroid_VGG19' # 'FNA_vit_classifier_input256' # 'VGG19_imagenet_classifier' #'unet_encoder_classifier' #'single_micro_small_unet' # 'unet_imagenet_pretrained' # 'unet_encoder_classifier' # 'cryptic_VGG19D_temporal_context_residual' # 'single_micro_VGG19D_temporal_context_residual' # 'cryptic_VGG19D_temporal_distributed_v2' # 'organoid_VGG19_dropout_crop_even' # 'cryptic_VGG19_dropout_mm_patience_10'
         self.self_training_type = None
         self.final_round_num = 2
         self.dataset_folders = '../assets/'
@@ -258,7 +257,7 @@ class UserParams:
                     self.frame_list = [2]
                     self.dataset_names = ['040119_PtK1_S01_01_phase_2_DMSO_nd_02', '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2','040119_PtK1_S01_01_phase']
                     self.model_names = ['ABCD']
-                    
+
                 elif self.strategy_type == 'dice' or self.strategy_type == 'l2' or self.strategy_type == "VGG16_input256" or self.strategy_type == "VGG16_dac_input256" or self.strategy_type == "VGG16_spp_input256":
                     self.img_folder = '/img/'
                     self.frame_list = [2]
@@ -304,7 +303,7 @@ class UserParams:
                     self.frame_list = [110]
                     self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
                     self.dataset_folders = '../../../HeeJune/Segmentation_Image/Cryptic Lamellipodia/CellMask-05152014-Control-1/'
-                
+
                 elif self.self_training_type == 2:
                     self.img_folder = '/img/'
                     self.crop_split_constant = 1
@@ -317,7 +316,7 @@ class UserParams:
                     self.frame_list = [1,2,6,10,22,34]
                     self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03', '040119_PtK1_S01_01_phase_2_DMSO_nd_02', '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2','040119_PtK1_S01_01_phase']
                     self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
-                
+
                 elif self.self_training_type in [5,6]:
                     self.frame_list = [2,6,10,22,34,70]
                     self.dataset_names = ['040119_PtK1_S01_01_phase_2_DMSO_nd_02', '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2','040119_PtK1_S01_01_phase']
@@ -328,7 +327,7 @@ class UserParams:
                     self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03']
                     self.frame_list = [200]
                     self.model_names = ['ABCD']
-                    
+
                 elif self.strategy_type == 'movie3' or self.strategy_type == 'movie3_loss' or self.strategy_type == 'movie3_proc':
                     self.frame_list = [34]
                     self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03', '040119_PtK1_S01_01_phase_2_DMSO_nd_02', '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2','040119_PtK1_S01_01_phase']
@@ -636,11 +635,11 @@ class UserParams:
                     self.model_names = ['ABCDE']
                     self.REPEAT_MAX = 1
 
-                    
+
         elif mode in ['eval']:
             self.predict_path_list = ['../../models/results/predict_wholeframe_round{}_{}/'.format(a_round_num, a_strategy_type) for a_strategy_type, a_round_num in zip(self.strategy_type, self.round_num)]
 
-        if mode not in ['eval']:
+        if mode in ['crop', 'train', 'predict']:
             if not self.model_names or not self.dataset_names or not self.frame_list:
                 print('UserParams: Wrong Mode or settings @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
                 exit()
@@ -797,6 +796,7 @@ class UserParams:
                     self.strategy_type == 'VGG19_batchnorm' or self.strategy_type == 'VGG19_dropout_batchnorm' or \
                     self.strategy_type == 'Res50V2' or self.strategy_type == 'Dense201' or \
                     self.strategy_type == 'deeplabv3' or self.strategy_type == 'EFF_B7' or self.strategy_type == 'InceptionResV2' or \
+                    'imagenet_pretrained' in self.strategy_type or \
                     'unet' in self.strategy_type or self.strategy_type == 'dice' or self.strategy_type == 'l2':
                 root_path = '../crop/crop_results/crop_round1_VGG16/'
 
@@ -843,6 +843,8 @@ class UserParams:
             weights_path = '../models/results/model_round1_VGG19_dropout/model_frame34_ABCD_repeat0.hdf5'
         elif 'VGG19_dropout_mm' in str(self.strategy_type):
             weights_path = '../models/results/model_round1_generalist_VGG19_dropout/model_frame2_A_repeat0.hdf5'
+        elif 'VGG19_imagenet_pretrained' in str(self.strategy_type):
+            weights_path = '../models/results/model_round1_VGG19_imagenet_classifier/model_frame0_A_repeat0.hdf5'
         elif 'unet_imagenet_pretrained' in str(self.strategy_type):
             weights_path = '../models/results/model_round1_unet_encoder_classifier/model_frame0_A_repeat0.hdf5'
         elif "mask_denoising" == str(self.strategy_type):
@@ -961,6 +963,30 @@ class UserParams:
                     if "one_generalist" in str(predict_path):
                         self.dataset_folders = '../../assets/test_one_generalist/'
                         self.model_names = ['All']
+                    self.REPEAT_MAX = 1
+
+                elif 'spheroid' in str(predict_path):
+                    self.dataset_folders = ['../assets/Spheroid/','../assets/Spheroid/','../assets/Spheroid/',
+                                            '../assets/Spheroid/','../assets/Spheroid/','../assets/Spheroid/',
+                                            '../assets/Spheroid/','../assets/Spheroid/','../assets/Spheroid/',
+                                            '../assets/Spheroid/','../assets/Spheroid/','../assets/Spheroid/',
+                                            '../assets/Spheroid/','../assets/Spheroid/','../assets/Spheroid/',
+                                            '../assets/Spheroid/','../assets/Spheroid/','../assets/Spheroid/',
+                                            '../assets/Spheroid/','../assets/Spheroid/','../assets/Spheroid/',
+                                            '../assets/Spheroid/','../assets/Spheroid/']
+                    self.img_folders = ['/img/','/img/','/img/','/img/','/img/','/img/','/img/','/img/','/img/','/img/',
+                                        '/img/','/img/','/img/','/img/','/img/','/img/','/img/','/img/','/img/','/img/',
+                                        '/img/','/img/','/img/']
+                    self.mask_folders = ['/mask/','/mask/','/mask/','/mask/','/mask/','/mask/','/mask/','/mask/','/mask/','/mask/',
+                                         '/mask/','/mask/','/mask/','/mask/','/mask/','/mask/','/mask/','/mask/','/mask/','/mask/',
+                                         '/mask/','/mask/','/mask/']
+
+                    self.frame_list = [1]
+                    self.dataset_names = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10',
+                                          '11', '12', '13', '14', '15', '16', '17', '18', '19',
+                                          '20', '21', '22', '23']
+                    self.model_names = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+                                        'Q', 'R', 'S', 'T', 'U', 'V', 'W']
                     self.REPEAT_MAX = 1
 
                 elif "predict_wholeframe_round1_mDia" in str(predict_path):

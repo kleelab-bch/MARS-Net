@@ -66,11 +66,13 @@ if __name__ == '__main__':
     root_path = f'./dice_generated/round{constants.round_num}_{constants.strategy_type}'
     # if os.path.exists(root_path) and os.path.isdir(root_path):
     #     shutil.rmtree(root_path)
+    if not os.path.exists(root_path):
+        os.makedirs(root_path)
 
     for repeat_index in range(constants.REPEAT_MAX):
 
         # TODO mark the last column index with -1 since 50 is bigger than total mask images
-        dice_value = np.zeros((len(constants.model_names), 50))
+        dice_value = np.zeros((len(constants.model_names), 1))
         image_list_dict = {}
 
         for model_index in range(len(constants.model_names)):
@@ -79,12 +81,10 @@ if __name__ == '__main__':
             for a_frame in constants.frame_list:
 
                 suffix = f'frame{str(a_frame)}_{constants.model_names[model_index]}_repeat{str(repeat_index)}'
-                saved_path = f'{root_path}/{suffix}/'
+                # saved_path = f'{root_path}/{suffix}/'
                 predict_path = f'../../models/results/predict_wholeframe_round{constants.round_num}_{constants.strategy_type}/{constants.dataset_names[model_index]}/{suffix}/'
 
                 if os.path.isdir(predict_path):
-                    if not os.path.exists(saved_path):
-                        os.makedirs(saved_path)
                     mask_filenames = glob.glob(ground_truth_path + '*.png')
                     mask_filenames.sort()
                     image_list = []
@@ -112,7 +112,6 @@ if __name__ == '__main__':
                         K.clear_session()
 
                     # saved the dice coefficient into the created folder.
-                    print('saved_path', saved_path)
                     image_list_dict[str(model_index)] = image_list
 
                 else:  # skip it in this case

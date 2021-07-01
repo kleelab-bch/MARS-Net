@@ -34,12 +34,12 @@ from imagenet_classid_to_label import *
 
 K.set_image_data_format('channels_last')
 print(K.image_data_format())
-constants = UserParams('train')
+constants = UserParams('imagenet')
 repeat_index = 0
 model_name = 'A'
 frame = 0
 input_size = 224
-batch_size = 128
+batch_size = 64
 
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import image_ops
@@ -181,6 +181,20 @@ def get_filenames_from_directory(directory_path):
 
 # -----------------------------------------------------------
 
+def get_model(input_size, weights_path):
+    if constants.strategy_type == 'unet_encoder_classifier':
+        model = UNet_encoder_classifier(input_size, input_size, weights_path)
+    elif constants.strategy_type == 'VGG16_imagenet_classifier':
+        model = VGG16_imagenet_classifier(input_size, input_size, weights_path)
+    elif constants.strategy_type == 'VGG19_imagenet_classifier':
+        model = VGG19_imagenet_classifier(input_size, input_size, weights_path)
+    elif constants.strategy_type == 'vit_imagenet_classifier':
+        model = vit_classifier(input_size, input_size, 1000, weights_path)
+    else:
+        model = None
+
+    return model
+
 def train():
     # Data pipeline that reads imagenet data in directory and process them before training
     # referenced https://cs230.stanford.edu/blog/datapipeline/
@@ -219,20 +233,14 @@ def train():
     strategy = tf.distribute.MirroredStrategy()
     with strategy.scope():
         epochs = 74
-        if constants.strategy_type == 'unet_encoder_classifier':
-            model = UNet_encoder_classifier(input_size, input_size, '')
-        elif constants.strategy_type == 'VGG16_imagenet_classifier':
-            model = VGG16_imagenet_classifier(input_size, input_size, '')
-        elif constants.strategy_type == 'VGG19_imagenet_classifier':
-            model = VGG19_imagenet_classifier(input_size, input_size, '')
-        else:
-            model = None
+
+        model = get_model(input_size, '')
+
         top_1_accuracy = tf.keras.metrics.SparseTopKCategoricalAccuracy(k=1, name="top_1_categorical_accuracy")
         top_5_accuracy = tf.keras.metrics.SparseTopKCategoricalAccuracy(k=5, name="top_5_categorical_accuracy")
 
         model.compile(optimizer=SGD(learning_rate=0.01, momentum=0.9, nesterov=False, name="SGD_momentum"),
-                      loss=[
-                          tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False, name='categorical_crossentropy')],
+                      loss=[tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False, name='categorical_crossentropy')],
                       metrics=[top_1_accuracy, top_5_accuracy])
 
     # for debugging
@@ -322,14 +330,8 @@ def evaluate():
 
     # ------------------- Load trained model ---------------------
     weights_path = constants.get_trained_weights_path(str(frame), model_name, str(repeat_index))
-    if constants.strategy_type == 'unet_encoder_classifier':
-        model = UNet_encoder_classifier(input_size, input_size, weights_path)
-    elif constants.strategy_type == 'VGG16_imagenet_classifier':
-        model = VGG16_imagenet_classifier(input_size, input_size, weights_path)
-    elif constants.strategy_type == 'VGG19_imagenet_classifier':
-        model = VGG19_imagenet_classifier(input_size, input_size, weights_path)
-    else:
-        model = None
+
+    model = get_model(input_size, weights_path)
 
     # ------------------- Predict ----------------------
     y_pred = model.predict(full_dataset, batch_size=1, verbose=1)

@@ -22,6 +22,14 @@ matplotlib.rc('font', **font)
 
 
 def traning_curve_compare_two_models(color_list, list_max, frame_num, ylim_bottom_top):
+    '''
+    draw all training curves from each model for both models in one graph
+    :param color_list:
+    :param list_max:
+    :param frame_num:
+    :param ylim_bottom_top:
+    :return:
+    '''
     constants = UserParams('eval')
     constants.update_eval_config(0)
     save_folder = f'generated/training_curves/{constants.get_eval_folder_name()}'
@@ -36,9 +44,8 @@ def traning_curve_compare_two_models(color_list, list_max, frame_num, ylim_botto
         for strategy_index, (round_num, strategy_type) in enumerate(zip(constants.round_num, constants.strategy_type)):
             for model_name in constants.model_names:
                 print('------------------')
-                print(repeat_index, model_name, strategy_type)
+                print(strategy_type, model_name, frame_num, repeat_index)
                 folder_path = '../models/results/history_round{}_{}'.format(round_num, strategy_type)
-
                 try:
                     data = np.load(
                         folder_path + '/history_frame{}_{}_repeat{}.npy'.format(frame_num, model_name, repeat_index),
@@ -212,9 +219,9 @@ if __name__ == "__main__":
     color_list = ['#0071bc', '#d85218']
     ylim_bottom_top = (0.01, 0.12)
     list_max = 100
-    frame_num = 2
+    frame_num = 1
 
     # traning_curve_compare_two_models(color_list, list_max, frame_num, ylim_bottom_top)
-    # traning_curve_compare_two_models_aggregate(color_list, list_max, frame_num, ylim_bottom_top)
+    traning_curve_compare_two_models_aggregate(color_list, list_max, frame_num, ylim_bottom_top)
     # training_curve_per_model(frame_num)
-    test_open_data()
+    # test_open_data()

@@ -15,23 +15,6 @@ import tensorflow_addons as tfa
 import matplotlib.pyplot as plt
 
 
-learning_rate = 0.001
-weight_decay = 0.0001
-batch_size = 256
-num_epochs = 100
-image_size = 72  # We'll resize input images to this size
-patch_size = 6  # Size of the patches to be extract from the input images
-num_patches = (image_size // patch_size) ** 2
-projection_dim = 64
-num_heads = 4
-transformer_units = [
-    projection_dim * 2,
-    projection_dim,
-]  # Size of the transformer layers
-transformer_layers = 8
-mlp_head_units = [2048, 1024]  # Size of the dense layers of the final classifier
-
-
 def mlp(x, hidden_units, dropout_rate):
     for units in hidden_units:
         x = layers.Dense(units, activation=tf.nn.gelu)(x)
@@ -73,7 +56,19 @@ class PatchEncoder(layers.Layer):
         return encoded
 
 
-def create_vit_classifier():
+def create_vit_classifier(input_shape, num_classes, x_train):
+    image_size = 72  # We'll resize input images to this size
+    patch_size = 6  # Size of the patches to be extract from the input images
+    num_patches = (image_size // patch_size) ** 2
+    projection_dim = 64
+    num_heads = 4
+    transformer_units = [
+        projection_dim * 2,
+        projection_dim,
+    ]  # Size of the transformer layers
+    transformer_layers = 8
+    mlp_head_units = [2048, 1024]  # Size of the dense layers of the final classifier
+
     # ------- Data augmentation ------------
     data_augmentation = keras.Sequential(
         [
@@ -128,7 +123,12 @@ def create_vit_classifier():
     return model
 
 
-def run_experiment(model):
+def run_experiment(model, x_train, y_train, x_test, y_test):
+    learning_rate = 0.001
+    weight_decay = 0.0001
+    batch_size = 256
+    num_epochs = 100
+
     optimizer = tfa.optimizers.AdamW(
         learning_rate=learning_rate, weight_decay=weight_decay
     )
@@ -142,7 +142,7 @@ def run_experiment(model):
         ],
     )
 
-    checkpoint_filepath = "./tmp/checkpoint"
+    checkpoint_filepath = "./results/vit/checkpoint"
     checkpoint_callback = keras.callbacks.ModelCheckpoint(
         checkpoint_filepath,
         monitor="val_accuracy",
@@ -199,8 +199,8 @@ if __name__ == "__main__":
     print(y_train[:10])
     print(f"x_train shape: {x_train.shape} - y_train shape: {y_train.shape}")
     print(f"x_test shape: {x_test.shape} - y_test shape: {y_test.shape}")
+    print(y_train)
+    # display_patches_in_sample_image(x_train)
 
-    display_patches_in_sample_image(x_train)
-
-    vit_classifier = create_vit_classifier()
-    history = run_experiment(vit_classifier)
+    vit_classifier = create_vit_classifier(input_shape, num_classes, x_train)
+    history = run_experiment(vit_classifier, x_train, y_train, x_test, y_test)

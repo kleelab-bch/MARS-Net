@@ -26,9 +26,10 @@ for prediction_num = 1 : length(constants_struct.prediction_path_list)
                 prediction_path = [prediction_path_root, dataset_name, '/frame', num2str(frame_num), '_' fold_name , '_repeat', num2str(repeat_index-1), '/'];
                 save_path = [constants_struct.root_path, 'evaluation_f1/results/', constants_struct.concat_display_names(), ...
                             '/repeat', num2str(repeat_index), '/', ...
-                             constants_struct.display_names{prediction_num} ,'_', dataset_name, '_', fold_name, '/'];
+                             constants_struct.display_names{prediction_num} ,'_', dataset_name, '_', fold_name, '/']
+                 constants_struct.concat_display_names()
 
-                overlap_mask_prediction(prediction_path, mask_path, img_path, frame_num, constants_struct.max_dist_pixel, visualize_bool,  save_path);
+                overlap_mask_prediction(prediction_path, mask_path, img_path, frame_num, constants_struct.max_dist_pixel, visualize_bool, save_path);
 %                overlap_mask_only(mask_path, img_path, save_path);
 %                draw_edge_evolution(prediction_path, img_path, frame_num, save_path);
             end
