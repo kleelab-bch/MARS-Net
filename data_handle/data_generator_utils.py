@@ -11,8 +11,8 @@ import re
 from joblib import Parallel, delayed
 
 
-def threshold_mask_area_list(image_height, image_width, mask_area_list, threshold):
-    min_mask_area_threshold = image_height * image_width * threshold
+def threshold_mask_area_list(image_height, image_width, mask_area_list, threshold_percentage):
+    min_mask_area_threshold = image_height * image_width * threshold_percentage * 0.01
     return [mask_area > min_mask_area_threshold for mask_area in mask_area_list]
 
 

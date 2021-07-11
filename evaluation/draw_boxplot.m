@@ -32,7 +32,7 @@ function draw_boxplot(data, saved_folder, metric_type, graph_colors, display_nam
     min_data = min(data,[],'all');
     max_data = max(data,[],'all');
     top_offset = (max_data-min_data)/6;
-    bottom_offset = 0.01 % 0.05
+    bottom_offset = 0.01; % 0.05
     ylim([min_data - bottom_offset, max_data+top_offset]);
     axis square;
     box on;

@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     for repeat_index in range(constants.REPEAT_MAX):
         for frame in constants.frame_list:
-            for model_index in range(len(constants.model_names)):
+            for model_index in range(1):  # len(constants.model_names)
 
                 model_name = constants.model_names[model_index]
                 dataset_folder = constants.dataset_folders[model_index]
@@ -60,14 +60,19 @@ if __name__ == "__main__":
 
                 # ----------- CAM cropped images ----------------
                 args = constants.get_args()  # get hyper parameters
-                orig_images, images, masks, image_filenames = get_data_generator_MTL(
-                    [dataset_name], repeat_index, args.crop_mode, constants.img_format, 'predict')
+                original_images, images, original_masks, image_filenames = get_data_generator_MTL(
+                    [dataset_name], repeat_index, args.crop_mode, constants.img_format, 'CAM')
 
                 image_rows, image_cols = images.shape[2:]
                 orig_rows, orig_cols = 0, 0
                 model = build_model_predict(constants, frame, repeat_index, model_name, image_rows, image_cols, orig_rows, orig_cols)
 
-                class_list_output = model.predict(images, batch_size=1, verbose=1)
+                if '_MTL' in str(constants.strategy_type):
+                    pred_mask, pred_mask_area_list, class_list_output = model.predict(images, batch_size=1, verbose=1)
+                elif 'classifier_regressor' in str(constants.strategy_type):
+                    pred_mask_area_list, class_list_output = model.predict(images, batch_size=1, verbose=1)
+                else:
+                    class_list_output = model.predict(images, batch_size=1, verbose=1)
                 print(class_list_output.shape, len(image_filenames))
 
                 # thresholding prediction to calculate evaluation statistics
@@ -75,7 +80,7 @@ if __name__ == "__main__":
                 class_list_output[class_list_output > 0] = 1
 
                 y_pred = class_list_output[:, 0].tolist()
-                mask_class_list = convert_masks_to_classes(image_rows, image_cols, masks)
+                mask_class_list = convert_masks_to_classes(image_rows, image_cols, original_masks)
                 y_true = mask_class_list
                 print(y_true.shape, len(y_pred))
 
@@ -97,9 +102,9 @@ if __name__ == "__main__":
                     filtered_image_index_list.append(i)
 
                 images = images[filtered_image_index_list]
-                masks = masks[filtered_image_index_list]
-                orig_images = orig_images[filtered_image_index_list]
-                print(images.shape, orig_images.shape, masks.shape)
+                original_masks = original_masks[filtered_image_index_list]
+                original_images = original_images[filtered_image_index_list]
+                print('--', images.shape, original_images.shape, original_masks.shape)
                 
                 for i, image_name in enumerate(tqdm(filtered_image_filenames)):
-                    visualize_feature_activation_map(model, images[i], orig_images[i], masks[i], image_name, save_path)
+                    visualize_feature_activation_map(model, images[i], original_images[i], original_masks[i], image_name, save_path)

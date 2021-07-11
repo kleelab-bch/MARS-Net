@@ -25,7 +25,6 @@ from data_generator_utils import convert_masks_to_areas, threshold_mask_area_lis
 
 def get_data_generator_MTL(dataset_names, repeat_index, crop_mode, img_format, train_or_predict_mode):
     img_filenames, mask_filenames, mask_area_dict = get_cropped_filenames_and_class_dict(dataset_names, repeat_index, crop_mode, img_format)
-
     img_filenames, mask_filenames = undersample_false_image_mask(img_filenames, mask_filenames, mask_area_dict, train_or_predict_mode)
 
     # load images
@@ -35,28 +34,36 @@ def get_data_generator_MTL(dataset_names, repeat_index, crop_mode, img_format, t
 
     # load masks
     masks = np.asarray(read_images(mask_filenames))
+    masks = masks[:,np.newaxis,:,:]
     masks = preprocess_output(masks)
+    original_masks = masks
+    masks = original_masks[:, :, 30:original_masks.shape[2] - 30, 30:original_masks.shape[2] - 30]
     # for i in range(0,50):
     #     cv2.imwrite(f'test_image{i}.png', np.moveaxis( original_images[i], 0, -1))
     #     cv2.imwrite(f'test_mask{i}.png', np.moveaxis( masks[i]*255, 0, -1))
 
     # images, masks, img_filenames, mask_filenames = unison_shuffle_multiple_ndarrays(images, masks, img_filenames, mask_filenames)
-    print('original_images:', original_images.shape, original_images.dtype, 'Images:', images.shape, images.dtype, 'masks:', masks.shape, masks.dtype)
-    threshold_mask_area_percentage = 0.01
+    print('-----------get_data_generator_MTL------------')
+    print('original_images:', original_images.shape, original_images.dtype)
+    print('Images:', images.shape, images.dtype)
+    print('masks:', masks.shape, masks.dtype)
+    threshold_mask_area_percentage = 1
     print('threshold_mask_area_percentage', threshold_mask_area_percentage)
-    height, width = masks.shape[1], masks.shape[2]
-    # split data
+    height, width = masks.shape[2], masks.shape[3]
     if train_or_predict_mode == 'train':
+        # split data if training
         images_train, images_val, masks_train, masks_val = train_test_split(
             images, masks, shuffle=True, test_size=0.2, random_state=repeat_index)
+        print('masks split', masks_train.shape, masks_val.shape)
 
         train_y_areas = convert_masks_to_areas(masks_train).astype(np.int32)
         valid_y_areas = convert_masks_to_areas(masks_val).astype(np.int32)
-        print('train_y_areas', train_y_areas.shape, train_y_areas[:10], train_y_areas.dtype)
+        print('train_y_areas', train_y_areas.shape, train_y_areas.dtype, train_y_areas[:100])
         train_y_classes = np.asarray(threshold_mask_area_list(height, width, train_y_areas, threshold_mask_area_percentage), dtype=np.float32)
         valid_y_classes = np.asarray(threshold_mask_area_list(height, width, valid_y_areas, threshold_mask_area_percentage), dtype=np.float32)
-        print('train_y_classes', train_y_classes.shape, train_y_classes[:10], train_y_classes.dtype)
-
+        print('train_y_classes', train_y_classes.shape, train_y_classes.dtype, train_y_classes[:100])
+        print('True:', np.count_nonzero(train_y_classes > 0) + np.count_nonzero(valid_y_classes > 0) )
+        print('False:', np.count_nonzero(train_y_classes == 0) + np.count_nonzero(valid_y_classes == 0) )
         return images_train, [masks_train, train_y_areas, train_y_classes], images_val, [masks_val, valid_y_areas, valid_y_classes]
 
     elif train_or_predict_mode == 'predict':
@@ -64,8 +71,13 @@ def get_data_generator_MTL(dataset_names, repeat_index, crop_mode, img_format, t
         print('mask_areas', mask_areas.shape, mask_areas[:10])
         mask_classes = np.asarray(threshold_mask_area_list(height, width, mask_areas, threshold_mask_area_percentage), dtype=np.float32)
         print('mask_classes', mask_classes.shape, mask_classes.dtype)
+        print('True:', np.count_nonzero(mask_classes > 0) )
+        print('False:', np.count_nonzero(mask_classes == 0) )
 
         return original_images, images, [masks, mask_areas, mask_classes], img_filenames
+
+    elif train_or_predict_mode == 'CAM':
+        return original_images, images, original_masks, img_filenames
 
     else:
         raise Exception('train_or_predict_mode is not correct', train_or_predict_mode)
@@ -88,14 +100,15 @@ def undersample_false_image_mask(img_filenames, mask_filenames, mask_area_dict, 
             false_mask_filenames.append(mask_filename)
 
     assert len(false_img_filenames) > len(true_img_filenames)
-    print('True:', len(true_img_filenames), len(true_mask_filenames), ' False:', len(false_img_filenames), len(false_mask_filenames))
+    assert len(true_img_filenames) == len(true_mask_filenames)
+    print('True:', len(true_img_filenames), ' False:', len(false_img_filenames))
 
     # undersample
     train_undersample_ratio = 10
     max_sample_size = len(false_img_filenames)
     if train_or_predict_mode == 'train' and max_sample_size > len(true_img_filenames)*train_undersample_ratio:
         max_sample_size = len(true_img_filenames)*train_undersample_ratio
-    # max_sample_size = len(true_img_filenames)
+    max_sample_size = len(true_img_filenames)
 
     false_img_filenames = false_img_filenames[:max_sample_size]
     false_mask_filenames = false_mask_filenames[:max_sample_size]
@@ -117,7 +130,6 @@ def get_cropped_filenames_and_class_dict(dataset_names, repeat_index, crop_mode,
 
     for dataset_index, dataset_name in enumerate(dataset_names):
         crop_path = f'../crop/generated/crop_{crop_mode}_{dataset_name}/'
-        print(crop_path)
         crop_path_img = crop_path + f'img_repeat{repeat_index}/'
         crop_path_mask = crop_path + f'mask_repeat{repeat_index}/'
 
@@ -135,5 +147,8 @@ def get_cropped_filenames_and_class_dict(dataset_names, repeat_index, crop_mode,
     all_img_filenames = np.asarray(all_img_filenames)
     all_mask_filenames = np.asarray(all_mask_filenames)
     print('get_cropped_filenames_and_class_dict', all_img_filenames.shape, all_mask_filenames.shape, len(all_mask_area_dict))
+    #
+    # all_img_filenames = all_img_filenames[:500]
+    # all_mask_filenames = all_mask_filenames[:500]
 
     return all_img_filenames, all_mask_filenames, all_mask_area_dict

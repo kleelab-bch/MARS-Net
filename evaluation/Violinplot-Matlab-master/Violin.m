@@ -136,7 +136,8 @@ classdef Violin < handle
             end
             jitter = 2*(rand(size(data))-0.5);
             obj.ScatterPlot = ...
-                scatter(pos + jitter.*jitterstrength, data, 3, 'filled');
+                scatter(pos + jitter.*jitterstrength, data, 10, 'filled');
+%                scatter(pos + jitter.*jitterstrength, data, 3, 'filled');
 
             % plot the violin
             obj.ViolinPlot =  ... % plot color will be overwritten later
@@ -172,7 +173,9 @@ classdef Violin < handle
             if ~isempty(lowhisker) && ~isempty(hiwhisker)
                 obj.WhiskerPlot = plot([pos pos], [lowhisker hiwhisker]);
             end
-            obj.MedianPlot = scatter(pos, quartiles(2), 10, [1 1 1], 'filled');
+            % To draw line for median, referenced https://www.mathworks.com/matlabcentral/fileexchange/45134-violin-plot
+%            plot([interp1(U(:,i),F(:,i)+i,MED(:,i)), interp1(flipud(U(:,i)), flipud(i-F(:,i)), MED(:,i)) ],[MED(:,i) MED(:,i)],medc,'LineWidth',2);
+            obj.MedianPlot = scatter([pos-0.01, pos pos+0.01], [quartiles(2), quartiles(2), quartiles(2)], 'filled', 'Marker', '_', 'MarkerEdgeColor', 'white', 'LineWidth', 1);
 
             obj.NotchPlots = ...
                  scatter(pos, quartiles(2)-1.57*IQR/sqrt(length(data)), ...
@@ -225,7 +228,7 @@ classdef Violin < handle
                 obj.BoxPlot.FaceColor = color;
                 obj.BoxPlot.EdgeColor = color;
                 obj.WhiskerPlot.Color = color;
-                obj.MedianPlot.MarkerEdgeColor = color;
+%                obj.MedianPlot.MarkerEdgeColor = color;
                 obj.NotchPlots(1).MarkerFaceColor = color;
                 obj.NotchPlots(2).MarkerFaceColor = color;
             end

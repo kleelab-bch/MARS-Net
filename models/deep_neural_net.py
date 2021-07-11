@@ -565,7 +565,7 @@ def VGG19(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path
 
     skips = encoder_model(inputs)
 
-    # upsampling model
+    # decoder
     up6 = concatenate([UpSampling2D(size=(2, 2))(skips[4]), skips[3]], axis=1)
     conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(up6)
     conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(conv6)
@@ -600,7 +600,6 @@ def VGG19(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path
 
 @log_function_call
 def VGG19_imagenet_pretrained(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
-    print('encoder_weights', encoder_weights)
     inputs = Input(shape=[img_rows, img_cols, 3])
 
     # Create the feature extraction model

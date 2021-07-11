@@ -78,13 +78,16 @@ def prediction(constants, frame, model_index, repeat_index):
             pred_class_list = model.predict(input_images, batch_size=1, verbose=1)
             print('pred_class_list', pred_class_list.shape)
             np.save(save_path + 'class_list_pred.npy', pred_class_list)
-
         else:
             model = Model(inputs=model.input, outputs=model.output + [model.get_layer('global_average_pooling2d').output])
-            pred_mask_area_list, pred_class_list, encoded_feature_vector = model.predict(input_images, batch_size=1, verbose=1)
+            if '_MTL' in str(constants.strategy_type):
+                pred_mask, pred_mask_area_list, pred_class_list, encoded_feature_vector = model.predict(input_images, batch_size=1, verbose=1)
+            else:
+                pred_mask_area_list, pred_class_list, encoded_feature_vector = model.predict(input_images, batch_size=1, verbose=1)
             print(pred_mask_area_list.shape, pred_class_list.shape, encoded_feature_vector.shape)
             np.save(save_path + 'mask_area_list.npy', pred_mask_area_list)
             print('regression:', mean_squared_error(mask_area_list, pred_mask_area_list))
+            print('pred_mask_area_list', pred_mask_area_list[pred_mask_area_list>1])
 
             np.save(save_path + 'class_list_pred.npy', pred_class_list)
             np.save(save_path + 'feature_vector.npy', encoded_feature_vector)

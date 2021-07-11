@@ -9,8 +9,8 @@ addpath('evaluation_dice')
 constants_struct = GlobalConfig().update_config('');
 
 %% For comparing two model at one specific frame
-chosen_first_model_index = 2;
-chosen_second_model_index = 1;
+chosen_first_model_index = 1;
+chosen_second_model_index = 4;
 prediction_counter = 1;
 %for prediction_counter = 1:length(constants_struct.prediction_path_list)-1
 %    chosen_first_model_index = prediction_counter
@@ -192,10 +192,10 @@ prediction_counter = 1;
     draw_boxplot([data_repeat_combined_first_model_dice_coeff, data_repeat_combined_second_model_dice_coeff], saved_path, 'Dice', constants_struct.graph_colors, constants_struct.display_names)
 
     %% violinplot for comparing two methods at one frame across datasets
-    violinplot_two_models(data_repeat_combined_first_model_f1, data_repeat_combined_second_model_f1, constants_struct.violin_compare_ylim, saved_path, 'F1', 'Model Comparison', constants_struct.display_names{chosen_first_model_index}, constants_struct.display_names{chosen_second_model_index});
-    violinplot_two_models(data_repeat_combined_first_model_precision, data_repeat_combined_second_model_precision, constants_struct.violin_compare_ylim, saved_path, 'Precision', 'Model Comparison', constants_struct.display_names{chosen_first_model_index}, constants_struct.display_names{chosen_second_model_index});
-    violinplot_two_models(data_repeat_combined_first_model_recall, data_repeat_combined_second_model_recall, constants_struct.violin_compare_ylim, saved_path, 'Recall', 'Model Comparison', constants_struct.display_names{chosen_first_model_index}, constants_struct.display_names{chosen_second_model_index});
-    violinplot_two_models(data_repeat_combined_first_model_dice_coeff, data_repeat_combined_second_model_dice_coeff, constants_struct.violin_compare_ylim, saved_path, 'Dice', 'Model Comparison', constants_struct.display_names{chosen_first_model_index}, constants_struct.display_names{chosen_second_model_index});
+    violinplot_two_models(data_repeat_combined_first_model_f1, data_repeat_combined_second_model_f1, saved_path, 'F1', 'Model Comparison', constants_struct.display_names{chosen_first_model_index}, constants_struct.display_names{chosen_second_model_index}, constants_struct.graph_colors);
+    violinplot_two_models(data_repeat_combined_first_model_precision, data_repeat_combined_second_model_precision, saved_path, 'Precision', 'Model Comparison', constants_struct.display_names{chosen_first_model_index}, constants_struct.display_names{chosen_second_model_index}, constants_struct.graph_colors);
+    violinplot_two_models(data_repeat_combined_first_model_recall, data_repeat_combined_second_model_recall, saved_path, 'Recall', 'Model Comparison', constants_struct.display_names{chosen_first_model_index}, constants_struct.display_names{chosen_second_model_index}, constants_struct.graph_colors);
+    violinplot_two_models(data_repeat_combined_first_model_dice_coeff, data_repeat_combined_second_model_dice_coeff, saved_path, 'Dice', 'Model Comparison', constants_struct.display_names{chosen_first_model_index}, constants_struct.display_names{chosen_second_model_index}, constants_struct.graph_colors);
 
     violinplot_diff(data_repeat_combined_second_model_f1 - data_repeat_combined_first_model_f1, ...
                      data_repeat_combined_second_model_precision - data_repeat_combined_first_model_precision, ...

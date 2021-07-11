@@ -85,7 +85,8 @@ classdef GlobalConfig
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_single_micro_unet/';}
 %        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_unet/';
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_unet_imagenet_pretrained/';
-%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_VGG16/';}
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_VGG19/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_VGG19_imagenet_pretrained/'}
 %        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_VGG19_dropout/';
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_single_micro_VGG19_dropout/'};
 %        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_single_micro_VGG19_dropout/';
@@ -112,9 +113,13 @@ classdef GlobalConfig
 %        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_paxillin_WF_normalize/';
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_paxillin_TIRF_normalize/';};
 
+
+%        prediction_path_list = {'../../models/results/predict_wholeframe_round1_unet/';
+%                                 '../../models/results/predict_wholeframe_round1_unet_imagenet_pretrained/';};
 %        prediction_path_list = {'../../models/results/predict_wholeframe_round1_unet/';
 %                                 '../../models/results/predict_wholeframe_round1_VGG16_no_pretrain/';
 %                                 '../../models/results/predict_wholeframe_round1_VGG19_no_pretrain/';
+%                                 '../../models/results/predict_wholeframe_round1_unet_imagenet_pretrained/';
 %                                 '../../models/results/predict_wholeframe_round1_VGG16/';
 %                                 '../../models/results/predict_wholeframe_round1_VGG19/';
 %                                 '../../models/results/predict_wholeframe_round1_VGG16_batchnorm/';
@@ -132,6 +137,7 @@ classdef GlobalConfig
 
         prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_unet/';
                                 '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_VGG19_no_pretrain_freeze/';
+                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_VGG19_no_pretrain/';
                                 '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_VGG19/'};
 
 %        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_organoid_VGG19_dropout_crop_even/'};
@@ -149,7 +155,7 @@ classdef GlobalConfig
 
 %% --------------------------------------------------------------
 %        display_names = {'Specialist U-Net'; 'Generalist U-Net'; 'Specialist VGG19-U-Net'; 'Generalist VGG19-U-Net'};
-%        display_names = {'U-Net'; 'U-Net pretrained'; 'VGG16'};
+%        display_names = {'U-Net'; 'U-Net pretrained'; 'VGG19'; 'VGG19 pretrained'};
 %        display_names = {'VGG19D-U-Net'; 'VGG19D-U-Net temporal'};
 
 %        display_names = {'cryptic VGG19D'; 'cryptic VGG19D temporal'};
@@ -160,12 +166,14 @@ classdef GlobalConfig
 %        display_names = {'WF norm'; 'TIRF norm'};
 %        display_names = {'Teacher TIRF'; 'Student TIRF'};
 
-        display_names = {'spheroid_unet'; 'spheroid_VGG19_no_pretrain_freeze'; 'spheroid_VGG19'};
+        display_names = {'spheroid_unet'; 'spheroid_VGG19_no_pretrain_freeze'; 'spheroid_VGG19_no_pretrain'; 'spheroid_VGG19'};
 
 %        display_names = {'64';'80';'96';'128'; '192'; '256'};
+%        display_names = {'U-Net'; 'U-Net pretrained';};
 %        display_names = {'U-Net';
 %                         'VGG16P-U-Net';
 %                         'VGG19P-U-Net';
+%                         'U-Net P';
 %                         'VGG16-U-Net';
 %                         'VGG19-U-Net';
 %                         'VGG16B-U-Net';
@@ -187,14 +195,12 @@ classdef GlobalConfig
 % In the frame_list matrix,
 % each column corresponds to different number of traning frames and
 % each row separated by ; corresponds to the different models
-        frame_list = [1;1;1];
+        frame_list = [1;1;1;1];
 %        frame_list = [2;2];
-%        frame_list = [10;10;10];
-%        frame_list = [2;2;2;2];
+%        frame_list = [10;10;10;10];
 
 %         frame_list = [34;34];
-%        frame_list =[10;10;10;10];
-%        frame_list =[10];
+%        frame_list =[10;10];
 
 %        frame_list = [10;10;10;10;10;10;10];
 %        frame_list = [10;10;10;10;10;10];
@@ -206,7 +212,7 @@ classdef GlobalConfig
 %                      200];
 
 %        frame_list = [10;10;10;10;10;
-%                      10;10;10;10;10];
+%                      10;10;10;10;10;10];
 %        frame_list = [1,2,6,10,22,34;
 %                     1,2,6,10,22,34;
 %                     1,2,6,10,22,34;
@@ -414,8 +420,21 @@ classdef GlobalConfig
 %                                    [0.4940, 0.1840, 0.5560]];
 
                     % blue, pink, skyblue, red, green, light yellow, gray, yellow, orange, violet
+%                    GlobalConfigObj.graph_colors = [[0, 0.4470, 0.7410];
+%                                    [247,129,191]/255;
+%                                    [0.3010, 0.7450, 0.9330];
+%                                    [0.6350, 0.0780, 0.1840];
+%                                    [0.4660, 0.6740, 0.1880];
+%                                    [255,255,153]/255;
+%                                    [153,153,153]/255;
+%                                    [0.9290, 0.6940, 0.1250];
+%                                    [0.8500, 0.3250, 0.0980];
+%                                    [0.4940, 0.1840, 0.5560]];
+
+                    % blue, pink, darkgray, skyblue, red, green, light yellow, gray, yellow, orange, violet
                     GlobalConfigObj.graph_colors = [[0, 0.4470, 0.7410];
                                     [247,129,191]/255;
+                                    [53,53,53]/255;
                                     [0.3010, 0.7450, 0.9330];
                                     [0.6350, 0.0780, 0.1840];
                                     [0.4660, 0.6740, 0.1880];
@@ -520,7 +539,7 @@ classdef GlobalConfig
             upper_bound = (top_n+1)*0.005;
 
             if upper_offset_bool == 1
-                upper_bound_offset = (upper_bound-lower_bound)/4;
+                upper_bound_offset = (upper_bound-lower_bound)/6;
                 upper_bound = upper_bound + upper_bound_offset;
             end
 

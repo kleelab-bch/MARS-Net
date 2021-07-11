@@ -221,7 +221,7 @@ if __name__ == "__main__":
     list_max = 100
     frame_num = 1
 
-    # traning_curve_compare_two_models(color_list, list_max, frame_num, ylim_bottom_top)
-    traning_curve_compare_two_models_aggregate(color_list, list_max, frame_num, ylim_bottom_top)
+    traning_curve_compare_two_models(color_list, list_max, frame_num, ylim_bottom_top)
+    # traning_curve_compare_two_models_aggregate(color_list, list_max, frame_num, ylim_bottom_top)
     # training_curve_per_model(frame_num)
     # test_open_data()

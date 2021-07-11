@@ -23,7 +23,7 @@ from tensorflow.keras.utils import plot_model
 
 from debug_utils import *
 from UserParams import UserParams
-from custom_callback import TimeHistory
+from custom_callback import TimeHistory, EpochPrinterCallback
 from model_builder import build_model_train
 from data_generator_MTL import get_data_generator_MTL
 from data_generator_classifier import get_data_generator_classifier
@@ -53,6 +53,11 @@ def train_model(constants, model_index, frame, repeat_index, history_path):
             # get mask class list only
             train_y = train_y[2]
             valid_y = valid_y[2]
+
+        elif '_classifier_regressor' in constants.strategy_type:
+            # get mask area list and class list
+            train_y = (train_y[1], train_y[2])
+            valid_y = (valid_y[1], valid_y[2])
 
     elif '_3D' in constants.strategy_type:
         train_x, train_y, valid_x, valid_y = get_data_generator_3D_all(train_val_dataset_names,
@@ -95,6 +100,7 @@ def train_model(constants, model_index, frame, repeat_index, history_path):
                    show_shapes=True, show_layer_names=True, dpi=144)
 
     # ---------------------- Fit the Model ----------------------
+
     print('Fit Model...', args.epochs, args.patience)
     earlyStopping = EarlyStopping(monitor='val_loss', patience=args.patience, verbose=0, mode='auto')  # args.patience
     model_checkpoint = ModelCheckpoint(
@@ -104,23 +110,31 @@ def train_model(constants, model_index, frame, repeat_index, history_path):
         monitor='val_loss', save_best_only=True)
 
     time_callback = TimeHistory()
+    epoch_printer_Callback = EpochPrinterCallback(model)
     logdir = 'results/history_round{}_{}/tensorboard_frame{}_{}_repeat{}_{}'.format(constants.round_num,
                                                                                 constants.strategy_type, str(frame),
                                                                                 model_name,
                                                                                 str(repeat_index),
                                                         datetime.now().strftime("%Y%m%d-%H%M%S"))
 
-    if 'classifier_regressor' in constants.strategy_type:
-        print(train_y[0].shape, train_y[1].shape, train_y[2].shape)
-        hist = model.fit(train_x, [train_y[1], train_y[2]],
+    # reference https://github.com/tensorflow/tensorflow/blob/v2.4.1/tensorflow/python/keras/engine/training.py#L1823-L1861
+    if "VGG19_classifier" in str(constants.strategy_type):
+        hist = model.fit([train_x, train_y],
                          epochs=args.epochs,
                          verbose=1,
                          workers=1,
-                         batch_size = args.train_batch_size,
-                         validation_data=(valid_x, [valid_y[1], valid_y[2]]),
-                         callbacks=[model_checkpoint, earlyStopping, time_callback, TensorBoard(log_dir=logdir)])
+                         batch_size=args.train_batch_size,
+                         validation_data=([valid_x, valid_y]),
+                         callbacks=[model_checkpoint, earlyStopping, time_callback, epoch_printer_Callback, TensorBoard(log_dir=logdir)])
+    elif "VGG19_MTL_auto" in str(constants.strategy_type):
+        hist = model.fit([train_x, train_y[0], train_y[1], train_y[2]],
+                         epochs=args.epochs,
+                         verbose=1,
+                         workers=1,
+                         batch_size=args.train_batch_size,
+                         validation_data=([valid_x, valid_y[0], valid_y[1], valid_y[2]]),
+                         callbacks=[model_checkpoint, earlyStopping, time_callback, epoch_printer_Callback, TensorBoard(log_dir=logdir)])
     else:
-        # reference https://github.com/tensorflow/tensorflow/blob/v2.4.1/tensorflow/python/keras/engine/training.py#L1823-L1861
         hist = model.fit(train_x, train_y,
                          epochs=args.epochs,
                          verbose=1,

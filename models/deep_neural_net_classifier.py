@@ -7,7 +7,7 @@ Store functions that define deep learning classifiers
 import tensorflow as tf
 from tensorflow.keras import Model, Sequential
 from tensorflow.keras.applications import ResNet50, ResNet50V2, DenseNet201, InceptionResNetV2
-from tensorflow.keras.layers import (Activation, Add, Input, concatenate, Conv2D, MaxPooling2D,
+from tensorflow.keras.layers import (Layer, Activation, Add, Input, concatenate, Conv2D, MaxPooling2D,
 AveragePooling2D, ZeroPadding2D, UpSampling2D, Cropping2D, Conv2DTranspose,BatchNormalization, Dropout, GaussianNoise,
 GlobalAveragePooling2D, Dense, Flatten, ReLU)
 from tensorflow.keras import layers
@@ -52,7 +52,7 @@ def VGG19_classifier(img_rows, img_cols, weights_path):
     block5_conv4 = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv4')(x)
 
     x = GlobalAveragePooling2D()(block5_conv4)
-    output = Dense(1, activation='sigmoid')(x)
+    output = Dense(1, activation='sigmoid', name='classifier')(x)
 
     model = Model(inputs=inputs, outputs=output)
 
@@ -143,9 +143,10 @@ class Patches(layers.Layer):
             strides=[1, self.patch_size, self.patch_size, 1],
             rates=[1, 1, 1, 1],
             padding="VALID",
-        )
+        ) # patches.shape = (None, 14, 14, 768)
         patch_dims = patches.shape[-1]
-        patches = tf.reshape(patches, [batch_size, -1, patch_dims])
+        patches = tf.reshape(patches, [batch_size, -1, patch_dims]) # patches.shape = (None, None, 768)
+
         return patches
 
     def get_config(self):
@@ -174,6 +175,7 @@ class PatchEncoder(layers.Layer):
         config = super().get_config().copy()
         config.update({
             'num_patches': self.num_patches,
+            'projection_dim':self.projection_dim,
             'projection': self.projection,
             'position_embedding': self.position_embedding
         })
@@ -183,23 +185,23 @@ class PatchEncoder(layers.Layer):
 @log_function_call
 def vit_classifier(img_rows, img_cols, num_classes, weights_path):
     image_size = 224  # resize input images to this size
-    patch_size = 32  # Size of the patches to be extract from the input images
+    patch_size = 16  # Size of the patches to be extract from the input images
     num_patches = (image_size // patch_size) ** 2
     projection_dim = 768
     num_heads = 12
     transformer_units = [
-        projection_dim,
+        projection_dim*2,
         projection_dim,
     ]  # Size of the transformer layers
     transformer_layers = 12
-    mlp_head_units = [3072]  # Size of the dense layers of the final classifier
+    mlp_head_units = [2048,1024]  # Size of the dense layers of the final classifier
 
     def mlp(x, hidden_units, dropout_rate):
         for units in hidden_units:
             x = layers.Dense(units, activation=tf.nn.gelu)(x)
             x = layers.Dropout(dropout_rate)(x)
         return x
-
+    # 372.989 Million params --> 680.604 Million params
     # ------- Data augmentation ------------
     #   layers.experimental.preprocessing.Normalization(),
     data_augmentation = Sequential(
@@ -229,7 +231,7 @@ def vit_classifier(img_rows, img_cols, num_classes, weights_path):
         # Layer normalization 1.
         x1 = layers.LayerNormalization(epsilon=1e-6)(encoded_patches)
         # Create a multi-head attention layer.
-        attention_output = layers.MultiHeadAttention(num_heads=num_heads, key_dim=projection_dim, dropout=0.1)(x1, x1)
+        attention_output = layers.MultiHeadAttention(num_heads=num_heads, key_dim=projection_dim//num_heads, dropout=0.1)(x1, x1)
         # Skip connection 1.
         x2 = layers.Add()([attention_output, encoded_patches])
         # Layer normalization 2.
@@ -244,7 +246,8 @@ def vit_classifier(img_rows, img_cols, num_classes, weights_path):
     representation = layers.Flatten()(representation)
     representation = layers.Dropout(0.5)(representation)
     # Add MLP.
-    features = mlp(representation, hidden_units=mlp_head_units, dropout_rate=0.5)
+    # features = mlp(representation, hidden_units=mlp_head_units, dropout_rate=0.5)
+    features = representation
 
     if num_classes == 1:
         final_output = layers.Dense(num_classes, activation='sigmoid', name='top_dense_sigmoid')(features)

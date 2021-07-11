@@ -32,7 +32,7 @@ class UserParams:
         # ['unet', 'VGG16_no_pretrain', 'VGG19_no_pretrain', 'VGG16', 'VGG19', 'VGG16_batchnorm', 'VGG19_batchnorm', 'VGG16_dropout', 'VGG19_dropout']
         # ['mDia_raw_unet', 'mDia_raw_VGG19_dropout']
         # ['paxillin_TIRF_normalize_cropped_unet_patience_10', 'paxillin_TIRF_normalize_cropped_VGG19_dropout_patience_10']
-        self.strategy_type = 'VGG19_imagenet_pretrained' # 'FNA_VGG19_classifier_regressor_input256' #'vit_imagenet_classifier' #spheroid_VGG19_no_pretrain # 'FNA_VGG19_classifier_regressor_input256' # 'spheroid_VGG19' # 'FNA_vit_classifier_input256' # 'VGG19_imagenet_classifier' #'unet_encoder_classifier' #'single_micro_small_unet' # 'unet_imagenet_pretrained' # 'unet_encoder_classifier' # 'cryptic_VGG19D_temporal_context_residual' # 'single_micro_VGG19D_temporal_context_residual' # 'cryptic_VGG19D_temporal_distributed_v2' # 'organoid_VGG19_dropout_crop_even' # 'cryptic_VGG19_dropout_mm_patience_10'
+        self.strategy_type = 'FNA_VGG19_MTL_auto_input256' # 'spheroid_VGG19_freeze' # 'FNA_VGG19_classifier_regressor_input256' # 'FNA_VGG19_classifier_input256' # 'FNA_vit_classifier_input256' # 'spheroid_unet' # 'spheroid_VGG16_no_pretrain' # 'unet_imagenet_pretrained' # 'FNA_VGG19_classifier_regressor_input256' # 'spheroid_VGG19' # 'VGG19_imagenet_classifier' #'unet_encoder_classifier' #'single_micro_small_unet' # 'unet_imagenet_pretrained' # 'cryptic_VGG19D_temporal_context_residual' # 'single_micro_VGG19D_temporal_context_residual' # 'cryptic_VGG19D_temporal_distributed_v2' # 'organoid_VGG19_dropout_crop_even' # 'cryptic_VGG19_dropout_mm_patience_10'
         self.self_training_type = None
         self.final_round_num = 2
         self.dataset_folders = '../assets/'
@@ -285,7 +285,7 @@ class UserParams:
                     self.frame_list = [10]
                     self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03', '040119_PtK1_S01_01_phase_2_DMSO_nd_02', '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2','040119_PtK1_S01_01_phase']
                     self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
-                    self.REPEAT_MAX = 1
+                    self.REPEAT_MAX = 5
 
             elif self.round_num == 2:  # self-training
                 self.img_folder = '/img_all/'
@@ -582,7 +582,7 @@ class UserParams:
                                           '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2',
                                           '040119_PtK1_S01_01_phase']
                     self.model_names = ['ABCD', 'ABCE', 'ABDE', 'ACDE', 'BCDE']
-                    self.REPEAT_MAX = 1
+                    self.REPEAT_MAX = 5
 
                     # self.img_folders = ['/raw/','/raw/','/raw/','/raw/','/raw/',
                     #                     '/img_cropped/','/img_cropped/','/img_cropped/','/img_cropped/','/img_cropped/','/img_cropped/']
@@ -847,6 +847,8 @@ class UserParams:
             weights_path = '../models/results/model_round1_VGG19_imagenet_classifier/model_frame0_A_repeat0.hdf5'
         elif 'unet_imagenet_pretrained' in str(self.strategy_type):
             weights_path = '../models/results/model_round1_unet_encoder_classifier/model_frame0_A_repeat0.hdf5'
+        # elif 'VGG19_MTL_auto' in str(self.strategy_type):
+        #     weights_path = '../models/results/model_round1_FNA_VGG19_MTL_input256/model_frame2_training_repeat0.hdf5'
         elif "mask_denoising" == str(self.strategy_type):
             weights_path = 'results/model_round{}_{}/model'.format(self.round_num, self.strategy_type)+str(frame)+'_' + model_name +'.hdf5'
 
@@ -1080,4 +1082,8 @@ class UserParams:
             os.makedirs(save_path)
 
         return save_path
-    
+
+    import re
+    def find_param_after_string(self, string):
+        regex = re.compile(f'{string}([0-9]*)')
+        print(regex.findall(string))

@@ -23,6 +23,7 @@ function draw_violinplot(data, saved_folder, metric_type, graph_colors, display_
 %    top_offset = (max_data-min_data)/6;
     top_offset = (max_data-min_data)/20;
     bottom_offset = (max_data-min_data)/20;
+    
     ylim([min_data-bottom_offset, max_data+top_offset]);
     if size(data,2) == 4
         xlim([0.4,size(data,2)+0.6]);

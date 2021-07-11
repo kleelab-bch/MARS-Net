@@ -11,18 +11,23 @@ from deep_neural_net_MTL import *
 from deep_neural_net import *
 from deep_neural_net_3D import *
 from deep_neural_net_attn import *
+from deep_neural_net_layer import *
 import loss
 
 import numpy as np
 from tensorflow.keras import backend as K
 from tensorflow.keras.optimizers import Adam, SGD
-import tensorflow_addons as tfa
+if tf.__version__.split('.')[0] == '2':
+    import tensorflow_addons as tfa
+from sam import SAMModel
 
 
 def build_model_predict(constants, frame, repeat_index, model_name, image_rows, image_cols, orig_rows, orig_cols):
     weights_path = constants.get_trained_weights_path(str(frame), model_name, str(repeat_index))
 
-    if "VGG19_classifier_regressor" in str(constants.strategy_type):
+    if "VGG19_MTL" in str(constants.strategy_type):
+        model = VGG19_MTL(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
+    elif "VGG19_classifier_regressor" in str(constants.strategy_type):
         model = VGG19_classifier_regressor(image_rows, image_cols, weights_path=weights_path)
     elif "VGG19_classifier" in str(constants.strategy_type):
         model = VGG19_classifier(image_rows, image_cols, weights_path=weights_path)
@@ -93,7 +98,7 @@ def build_model_predict(constants, frame, repeat_index, model_name, image_rows, 
     elif "VGG19_freeze" in str(constants.strategy_type):
         model = VGG19_freeze(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path, encoder_weights=None)
     elif "VGG19_imagenet_pretrained" in str(constants.strategy_type):
-        model = VGG19_imagenet_pretrained(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path, encoder_weights=None)
+        model = VGG19_imagenet_pretrained(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
     elif "VGG19" in str(constants.strategy_type):
         model = VGG19(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path, encoder_weights=None)
 
@@ -117,14 +122,49 @@ def build_model_predict(constants, frame, repeat_index, model_name, image_rows, 
 def build_model_train(constants, args, frame, model_name):
     pretrained_weights_path = constants.get_pretrained_weights_path(frame, model_name)
 
-    if "VGG19_classifier_regressor" in str(constants.strategy_type):
+    if "VGG19_MTL" in str(constants.strategy_type):
+        model = VGG19_MTL(args.input_size, args.input_size, args.cropped_boundary, 0, 0, weights_path=pretrained_weights_path)
+        if "auto" in str(constants.strategy_type):
+            print('------------- MTL AUTO -------------')
+            def get_trainable_model(prediction_model):
+                inp = Input(shape=[3, args.input_size,args.input_size], name='inp')
+                y1_pred, y2_pred, y3_pred = prediction_model(inp)
+                y1_true = Input(shape=[1, args.input_size-60,args.input_size-60], name='y1_true')
+                y2_true = Input(shape=[1,], name='y2_true')
+                y3_true = Input(shape=[1,], name='y3_true')
+                print(inp.shape, y1_true.shape, y2_true.shape, y3_true.shape, y1_pred.shape, y2_pred.shape, y3_pred.shape)
+                out = CustomMultiLossLayer(nb_outputs=3)([y1_true, y2_true, y3_true, y1_pred, y2_pred, y3_pred])
+                return Model([inp, y1_true, y2_true, y3_true], out)
+
+            model = get_trainable_model(model)
+
+            model.compile(optimizer=Adam(lr=1e-5), loss=None)
+            print(model.layers)
+            print(model.layers[-1].trainable_weights)
+            print(len(model.layers[-1].trainable_weights), len(model.losses))  # three log_vars, one for each output
+        else:
+            model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy', tf.keras.losses.MeanSquaredLogarithmicError(), tfa.losses.sigmoid_focal_crossentropy],
+                          loss_weights={"segmentation":0.75,"regressor":0.01,"classifier":1})
+
+    elif "VGG19_classifier_regressor" in str(constants.strategy_type):
         model = VGG19_classifier_regressor(args.input_size, args.input_size, weights_path=pretrained_weights_path)
         model.compile(optimizer=Adam(lr=1e-5), loss=[tf.keras.losses.MeanSquaredLogarithmicError(), tfa.losses.sigmoid_focal_crossentropy],
-                      loss_weights={"regressor":0.1,"classifier":1})
+                      loss_weights={"regressor":0.01,"classifier":1})
 
     elif "VGG19_classifier" in str(constants.strategy_type):
         model = VGG19_classifier(args.input_size, args.input_size, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=[tfa.losses.SigmoidFocalCrossEntropy()], metrics=['accuracy'])
+
+        def get_trainable_model(prediction_model):
+            inp = Input(shape=[3, args.input_size, args.input_size], name='inp')
+            y_pred = prediction_model(inp)
+            y_true = Input(shape=[1, ], name='y_true')
+            print('get_trainable_model', inp.shape, y_true.shape, y_pred.shape)
+            out = CustomLossLayer()(y_true, y_pred)
+            return Model([inp, y_true], out)
+
+        model = get_trainable_model(model)
+        model.compile(optimizer=Adam(lr=1e-5), loss=None)
+        # model.compile(optimizer=Adam(lr=1e-5), loss=[tfa.losses.SigmoidFocalCrossEntropy()], metrics=['accuracy'])
 
     elif "VGG19D_classifier" in str(constants.strategy_type):
         model = VGG19D_classifier(args.input_size, args.input_size, weights_path=pretrained_weights_path)
@@ -136,6 +176,7 @@ def build_model_train(constants, args, frame, model_name):
 
     elif "vit_classifier" in str(constants.strategy_type):
         model = vit_classifier(args.input_size, args.input_size, 1, weights_path=pretrained_weights_path)
+        # model = SAMModel(model)
         model.compile(optimizer=Adam(lr=1e-5), loss=[tfa.losses.SigmoidFocalCrossEntropy()], metrics=['accuracy'])
 
     # --------------------------------------------------------------------------------
@@ -303,6 +344,11 @@ def build_model_train(constants, args, frame, model_name):
 
     elif "VGG19_imagenet_pretrained" in str(constants.strategy_type):
         model = VGG19_imagenet_pretrained(args.input_size, args.input_size, args.cropped_boundary, 0, 0,
+                      weights_path=pretrained_weights_path)
+        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
+
+    elif "VGG19_freeze" in str(constants.strategy_type):
+        model = VGG19_freeze(args.input_size, args.input_size, args.cropped_boundary, 0, 0,
                       weights_path=pretrained_weights_path)
         model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
 

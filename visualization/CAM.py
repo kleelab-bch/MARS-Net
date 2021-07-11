@@ -39,7 +39,7 @@ def visualize_feature_activation_map(model, image, orig_image, mask, image_name,
     final_conv_layer = model.get_layer(name='block5_conv4')
     get_output = K.function([model.layers[0].input], [final_conv_layer.output])
     conv_output = np.squeeze(get_output(np.expand_dims(image, axis=0))[0])  # 512 x 8 x 8
-    dense_weights = model.get_layer(name='dense').get_weights()[0]  # 512 x 1
+    dense_weights = model.get_layer(name='classifier').get_weights()[0]  # 512 x 1
     dense_weights = np.expand_dims(dense_weights, axis=-1)  # 512 x 1 x 1
 
     # generate heatmap
@@ -51,10 +51,9 @@ def visualize_feature_activation_map(model, image, orig_image, mask, image_name,
     # print(image.shape, image.dtype, conv_output.shape, cam.shape, heatmap.shape, heatmap.dtype)
 
     # cv2.imwrite(f'mask_{image_name}', np.moveaxis(mask*255, 0, -1))
-
     # overlay mask on original image
-    mask = cv2.Canny(np.uint8(mask*255),100,200)
-    orig_image[1, mask>0] = 255
+    mask = cv2.Canny(np.uint8(mask[0]*255),100,200)
+    orig_image[1, mask>0] = 255 # draw mask outline in the green channel,
 
     # overlay heatmap on original image
     alpha = 0.9

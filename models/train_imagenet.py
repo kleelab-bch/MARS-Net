@@ -181,14 +181,14 @@ def get_filenames_from_directory(directory_path):
 
 # -----------------------------------------------------------
 
-def get_model(input_size, weights_path):
-    if constants.strategy_type == 'unet_encoder_classifier':
+def get_model(input_size, weights_path, strategy_type):
+    if strategy_type == 'unet_encoder_classifier':
         model = UNet_encoder_classifier(input_size, input_size, weights_path)
-    elif constants.strategy_type == 'VGG16_imagenet_classifier':
+    elif strategy_type == 'VGG16_imagenet_classifier':
         model = VGG16_imagenet_classifier(input_size, input_size, weights_path)
-    elif constants.strategy_type == 'VGG19_imagenet_classifier':
+    elif strategy_type == 'VGG19_imagenet_classifier':
         model = VGG19_imagenet_classifier(input_size, input_size, weights_path)
-    elif constants.strategy_type == 'vit_imagenet_classifier':
+    elif strategy_type == 'vit_imagenet_classifier':
         model = vit_classifier(input_size, input_size, 1000, weights_path)
     else:
         model = None
@@ -230,18 +230,18 @@ def train():
     # ---------- Train -----------
     # learning rate decreased by a factor of 10 when the validation set accuracy stopped improving
     # stopped after 370K iterations (74 epochs).
-    strategy = tf.distribute.MirroredStrategy()
-    with strategy.scope():
-        epochs = 74
+    # strategy = tf.distribute.MirroredStrategy()
+    # with strategy.scope():
+    epochs = 74
 
-        model = get_model(input_size, '')
+    model = get_model(input_size, '', constants.strategy_type)
 
-        top_1_accuracy = tf.keras.metrics.SparseTopKCategoricalAccuracy(k=1, name="top_1_categorical_accuracy")
-        top_5_accuracy = tf.keras.metrics.SparseTopKCategoricalAccuracy(k=5, name="top_5_categorical_accuracy")
+    top_1_accuracy = tf.keras.metrics.SparseTopKCategoricalAccuracy(k=1, name="top_1_categorical_accuracy")
+    top_5_accuracy = tf.keras.metrics.SparseTopKCategoricalAccuracy(k=5, name="top_5_categorical_accuracy")
 
-        model.compile(optimizer=SGD(learning_rate=0.01, momentum=0.9, nesterov=False, name="SGD_momentum"),
-                      loss=[tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False, name='categorical_crossentropy')],
-                      metrics=[top_1_accuracy, top_5_accuracy])
+    model.compile(optimizer=SGD(learning_rate=0.01, momentum=0.9, nesterov=False, name="SGD_momentum"),
+                  loss=[tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False, name='categorical_crossentropy')],
+                  metrics=[top_1_accuracy, top_5_accuracy])
 
     # for debugging
     # y_true = np.asarray(list(train_dataset.take(1).as_numpy_iterator())[0][1])
@@ -331,7 +331,7 @@ def evaluate():
     # ------------------- Load trained model ---------------------
     weights_path = constants.get_trained_weights_path(str(frame), model_name, str(repeat_index))
 
-    model = get_model(input_size, weights_path)
+    model = get_model(input_size, weights_path, constants.strategy_type)
 
     # ------------------- Predict ----------------------
     y_pred = model.predict(full_dataset, batch_size=1, verbose=1)
