@@ -25,6 +25,7 @@ evaluation/generated
 **/*.rtf
 **/*.db
 **/*.pickle
+**/*.zip
 **/checkpoint*
 **/extended-berkeley-segmentation-benchmark-master-linux
 !.gitignore

@@ -121,6 +121,7 @@ if __name__ == "__main__":
     # from tensorflow.python.client import device_lib
     # print(device_lib.list_local_devices())
 
+    # --------------------------------------------------
     # test numpy
     first_array = np.asarray([[[1, 1, 1], [2, 2, 2]], [[3, 3, 3], [4, 4, 4]], [[5, 5, 5], [6, 6, 6]]])
     second_array = np.asarray([[1, 5, 5], [6, 6, 2]])
@@ -131,7 +132,8 @@ if __name__ == "__main__":
     # new_first_array = np.moveaxis(first_array, 0, -1)
     # print(new_first_array, new_first_array.shape)
 
-    save_path = 'results/debugger/'
+    # --------------------------------------------------
+    # save_path = 'results/debugger/'
     # constants = UserParams('predict')
     # frame = constants.frame_list[0]
     # dataset_name = constants.dataset[0]
@@ -143,5 +145,4 @@ if __name__ == "__main__":
     # print(temp_img.shape, temp_mask.shape)
     # show_cropped_image(temp_img, temp_mask, dataset_name, save_path)
 
-    # calc_receptive_field_demo()
 

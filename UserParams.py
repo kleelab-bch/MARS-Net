@@ -6,8 +6,9 @@
 '''
 
 import os
+from models.models_utils import get_available_gpu, find_param_after_string
 # tensorflow import must come after os.environ gpu setting
-os.environ["CUDA_VISIBLE_DEVICES"] = '0'
+os.environ["CUDA_VISIBLE_DEVICES"] = get_available_gpu()
 import argparse
 import numpy as np
 import random
@@ -1082,8 +1083,3 @@ class UserParams:
             os.makedirs(save_path)
 
         return save_path
-
-    import re
-    def find_param_after_string(self, string):
-        regex = re.compile(f'{string}([0-9]*)')
-        print(regex.findall(string))

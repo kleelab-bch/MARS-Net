@@ -71,12 +71,11 @@ def prediction(constants, frame, model_index, repeat_index):
                 and 'vit_classifier' not in str(constants.strategy_type):
             model = Model(inputs=model.input, outputs=[model.output, model.get_layer('global_average_pooling2d').output])
             pred_class_list, encoded_feature_vector = model.predict(input_images, batch_size=1, verbose=1)
-            print(pred_class_list.shape, encoded_feature_vector.shape)
+            print('pred_class_list', pred_class_list.shape, encoded_feature_vector.shape, pred_class_list[:100, 0])
             np.save(save_path + 'class_list_pred.npy', pred_class_list)
             np.save(save_path + 'feature_vector.npy', encoded_feature_vector)
         elif 'vit_classifier' in str(constants.strategy_type):
             pred_class_list = model.predict(input_images, batch_size=1, verbose=1)
-            print('pred_class_list', pred_class_list.shape)
             np.save(save_path + 'class_list_pred.npy', pred_class_list)
         else:
             model = Model(inputs=model.input, outputs=model.output + [model.get_layer('global_average_pooling2d').output])
@@ -106,9 +105,13 @@ def prediction(constants, frame, model_index, repeat_index):
         accuracy = accuracy_score(y_true, y_pred)
         tn, fp, fn, tp = confusion_matrix(y_true, y_pred).ravel()
         mcc = matthews_corrcoef(y_true, y_pred)
-        print('classification:', round(tn, 4), round(fp, 4), round(fn, 4), round(tp, 4), round(mcc, 4),
-                round(precision_score(y_true, y_pred), 4), round(recall_score(y_true, y_pred), 4),
-                round(f1_score(y_true, y_pred), 4), round(accuracy, 4))
+        print('classification tn,fp,fn,tp', round(tn, 4), round(fp, 4), round(fn, 4), round(tp, 4),
+              '\nmcc',round(mcc, 4),
+              '\nprecision',round(precision_score(y_true, y_pred), 4),
+              '\nrecall',round(recall_score(y_true, y_pred), 4),
+              '\nf1',round(f1_score(y_true, y_pred), 4),
+              '\naccuracy', round(accuracy, 4),
+              '\n-----------------------------')
 
         # save images if fp, fn or tp
         prediction_result_list = []
@@ -123,7 +126,7 @@ def prediction(constants, frame, model_index, repeat_index):
                 prefix = 'TN'
             if prefix != 'TN':
                 image_filename = image_filenames[i].split('/')[-1]
-                cv2.imwrite(save_path + f'{prefix}_' + image_filename, np.moveaxis(orig_input_images[i], 0, -1))
+                # cv2.imwrite(save_path + f'{prefix}_' + image_filename, np.moveaxis(orig_input_images[i], 0, -1))
 
             prediction_result_list.append(prefix)
 
@@ -181,6 +184,6 @@ if __name__ == "__main__":
     # for test set prediction, ABCD model predicts the dataset E
     for repeat_index in range(constants.REPEAT_MAX):
         for frame in constants.frame_list:
-            for model_index in range(len(constants.model_names)):
+            for model_index in range(1): # len(constants.model_names)
                 prediction(constants, frame, model_index, repeat_index)
             gc.collect()

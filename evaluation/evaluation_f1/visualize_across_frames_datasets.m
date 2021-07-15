@@ -58,6 +58,19 @@ for prediction_num = 1:constants_struct.total_prediction_path_num
 %    dice_across_frame_across_dataset_across_predictions = [dice_across_frame_across_dataset_across_predictions; dice_across_frame_across_dataset];
 end
 
+% get dice data
+disp('--------')
+dice_across_frame_across_dataset_across_predictions = [];
+for i = 1:size(constants_struct.display_names,1)
+    dice_folder = [constants_struct.root_path, 'evaluation_dice/dice_generated/round1_', constants_struct.display_names{i}];
+    data_repeat_combined_model_dice_coeff = readNPY([dice_folder '/dice_value.npy']);
+    data_repeat_combined_model_dice_coeff = data_repeat_combined_model_dice_coeff';
+
+    dice_across_frame_across_dataset_across_predictions = [dice_across_frame_across_dataset_across_predictions; data_repeat_combined_model_dice_coeff];
+end
+
+assert(size(dice_across_frame_across_dataset_across_predictions,1) == size(f1_across_frame_across_dataset_across_predictions,1))
+assert(size(dice_across_frame_across_dataset_across_predictions,2) == size(f1_across_frame_across_dataset_across_predictions,2))
 % ------------------- Multiple Line plots across frames for each dataset --------
 % draw_line_with_error(precision_mean_across_frame_across_dataset, precision_errorci_across_frame_across_dataset, 'Datasets', 'Precision', saved_folder, constants_struct.frame_list, constants_struct.fold_name_list);
 % draw_line_with_error(recall_mean_across_frame_across_dataset, recall_errorci_across_frame_across_dataset, 'Datasets', 'Recall', saved_folder, constants_struct.frame_list, constants_struct.fold_name_list);
@@ -67,7 +80,7 @@ end
 draw_violinplot(f1_across_frame_across_dataset_across_predictions.', saved_folder, 'F1', constants_struct.graph_colors, constants_struct.display_names);
 draw_violinplot(recall_across_frame_across_dataset_across_predictions.', saved_folder, 'Recall', constants_struct.graph_colors, constants_struct.display_names);
 draw_violinplot(precision_across_frame_across_dataset_across_predictions.', saved_folder, 'Precision', constants_struct.graph_colors, constants_struct.display_names);
-%draw_violinplot(dice_across_frame_across_dataset_across_predictions.', saved_folder, 'Dice', constants_struct.graph_colors, constants_struct.display_names);
+draw_violinplot(dice_across_frame_across_dataset_across_predictions.', saved_folder, 'Dice', constants_struct.graph_colors, constants_struct.display_names);
 
 %draw_boxplot(f1_across_frame_across_dataset_across_predictions.', saved_folder, 'F1', constants_struct.graph_colors, constants_struct.display_names);
 %draw_boxplot(recall_across_frame_across_dataset_across_predictions.', saved_folder, 'Recall', constants_struct.graph_colors, constants_struct.display_names);

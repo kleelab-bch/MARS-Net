@@ -118,7 +118,7 @@ def train_model(constants, model_index, frame, repeat_index, history_path):
                                                         datetime.now().strftime("%Y%m%d-%H%M%S"))
 
     # reference https://github.com/tensorflow/tensorflow/blob/v2.4.1/tensorflow/python/keras/engine/training.py#L1823-L1861
-    if "VGG19_classifier" in str(constants.strategy_type):
+    if "VGG19_classifier_custom_loss" in str(constants.strategy_type):
         hist = model.fit([train_x, train_y],
                          epochs=args.epochs,
                          verbose=1,
@@ -169,7 +169,7 @@ if __name__ == "__main__":
         os.makedirs('results/model_round{}_{}/'.format(constants.round_num, constants.strategy_type))
     for repeat_index in range(constants.REPEAT_MAX):
         for frame_index in range(len(constants.frame_list)):
-            for model_index in range(0,len(constants.model_names)):
+            for model_index in range(0,1): # len(constants.model_names)
                 frame = constants.frame_list[frame_index]
                 start_time = time.time()
                 train_model(constants, model_index, frame, repeat_index, history_path)

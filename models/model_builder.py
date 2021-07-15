@@ -122,62 +122,40 @@ def build_model_predict(constants, frame, repeat_index, model_name, image_rows, 
 def build_model_train(constants, args, frame, model_name):
     pretrained_weights_path = constants.get_pretrained_weights_path(frame, model_name)
 
-    if "VGG19_MTL" in str(constants.strategy_type):
+    if "VGG19_MTL_auto" in str(constants.strategy_type):
+        model = VGG19_MTL_auto(args.input_size, args.input_size, args.cropped_boundary, 0, 0, weights_path=pretrained_weights_path)
+        model.compile(optimizer=Adam(lr=1e-5), loss=None)
+
+    elif "VGG19_MTL" in str(constants.strategy_type):
         model = VGG19_MTL(args.input_size, args.input_size, args.cropped_boundary, 0, 0, weights_path=pretrained_weights_path)
-        if "auto" in str(constants.strategy_type):
-            print('------------- MTL AUTO -------------')
-            def get_trainable_model(prediction_model):
-                inp = Input(shape=[3, args.input_size,args.input_size], name='inp')
-                y1_pred, y2_pred, y3_pred = prediction_model(inp)
-                y1_true = Input(shape=[1, args.input_size-60,args.input_size-60], name='y1_true')
-                y2_true = Input(shape=[1,], name='y2_true')
-                y3_true = Input(shape=[1,], name='y3_true')
-                print(inp.shape, y1_true.shape, y2_true.shape, y3_true.shape, y1_pred.shape, y2_pred.shape, y3_pred.shape)
-                out = CustomMultiLossLayer(nb_outputs=3)([y1_true, y2_true, y3_true, y1_pred, y2_pred, y3_pred])
-                return Model([inp, y1_true, y2_true, y3_true], out)
-
-            model = get_trainable_model(model)
-
-            model.compile(optimizer=Adam(lr=1e-5), loss=None)
-            print(model.layers)
-            print(model.layers[-1].trainable_weights)
-            print(len(model.layers[-1].trainable_weights), len(model.losses))  # three log_vars, one for each output
-        else:
-            model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy', tf.keras.losses.MeanSquaredLogarithmicError(), tfa.losses.sigmoid_focal_crossentropy],
-                          loss_weights={"segmentation":0.75,"regressor":0.01,"classifier":1})
+        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy', tf.keras.losses.MeanSquaredLogarithmicError(), tfa.losses.sigmoid_focal_crossentropy],
+                      loss_weights={"segmentation":0.75,"regressor":0.01,"classifier":1})
 
     elif "VGG19_classifier_regressor" in str(constants.strategy_type):
         model = VGG19_classifier_regressor(args.input_size, args.input_size, weights_path=pretrained_weights_path)
         model.compile(optimizer=Adam(lr=1e-5), loss=[tf.keras.losses.MeanSquaredLogarithmicError(), tfa.losses.sigmoid_focal_crossentropy],
                       loss_weights={"regressor":0.01,"classifier":1})
 
+    elif "VGG19_classifier_custom_loss" in str(constants.strategy_type):
+        model = VGG19_classifier_custom_loss(args.input_size, args.input_size, weights_path=pretrained_weights_path)
+        model.compile(optimizer=Adam(lr=1e-5), loss=None)
+
     elif "VGG19_classifier" in str(constants.strategy_type):
         model = VGG19_classifier(args.input_size, args.input_size, weights_path=pretrained_weights_path)
-
-        def get_trainable_model(prediction_model):
-            inp = Input(shape=[3, args.input_size, args.input_size], name='inp')
-            y_pred = prediction_model(inp)
-            y_true = Input(shape=[1, ], name='y_true')
-            print('get_trainable_model', inp.shape, y_true.shape, y_pred.shape)
-            out = CustomLossLayer()(y_true, y_pred)
-            return Model([inp, y_true], out)
-
-        model = get_trainable_model(model)
-        model.compile(optimizer=Adam(lr=1e-5), loss=None)
-        # model.compile(optimizer=Adam(lr=1e-5), loss=[tfa.losses.SigmoidFocalCrossEntropy()], metrics=['accuracy'])
+        model.compile(optimizer=Adam(lr=1e-5), loss=[tfa.losses.SigmoidFocalCrossEntropy(alpha=0.5)], metrics=['accuracy'])
 
     elif "VGG19D_classifier" in str(constants.strategy_type):
         model = VGG19D_classifier(args.input_size, args.input_size, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=[tfa.losses.SigmoidFocalCrossEntropy()], metrics=['accuracy'])
+        model.compile(optimizer=Adam(lr=1e-5), loss=[tfa.losses.SigmoidFocalCrossEntropy(alpha=0.5)], metrics=['accuracy'])
 
     elif "EFF_B7_classifier" in str(constants.strategy_type):
         model = EFF_B7_classifier(args.input_size, args.input_size, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=[tfa.losses.SigmoidFocalCrossEntropy()], metrics=['accuracy'])
+        model.compile(optimizer=Adam(lr=1e-5), loss=[tfa.losses.SigmoidFocalCrossEntropy(alpha=0.5)], metrics=['accuracy'])
 
     elif "vit_classifier" in str(constants.strategy_type):
         model = vit_classifier(args.input_size, args.input_size, 1, weights_path=pretrained_weights_path)
         # model = SAMModel(model)
-        model.compile(optimizer=Adam(lr=1e-5), loss=[tfa.losses.SigmoidFocalCrossEntropy()], metrics=['accuracy'])
+        model.compile(optimizer=Adam(lr=1e-5), loss=[tfa.losses.SigmoidFocalCrossEntropy(alpha=0.5)], metrics=['accuracy'])
 
     # --------------------------------------------------------------------------------
 

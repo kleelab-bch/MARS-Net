@@ -136,8 +136,8 @@ classdef GlobalConfig
 %                                 '../../models/results/predict_wholeframe_round1_EFF_B7_no_preprocessing/'};
 
         prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_unet/';
-                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_VGG19_no_pretrain_freeze/';
                                 '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_VGG19_no_pretrain/';
+                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_VGG19_freeze/';
                                 '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_VGG19/'};
 
 %        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_organoid_VGG19_dropout_crop_even/'};
@@ -166,7 +166,7 @@ classdef GlobalConfig
 %        display_names = {'WF norm'; 'TIRF norm'};
 %        display_names = {'Teacher TIRF'; 'Student TIRF'};
 
-        display_names = {'spheroid_unet'; 'spheroid_VGG19_no_pretrain_freeze'; 'spheroid_VGG19_no_pretrain'; 'spheroid_VGG19'};
+        display_names = {'spheroid_unet'; 'spheroid_VGG19_no_pretrain'; 'spheroid_VGG19_freeze'; 'spheroid_VGG19'};
 
 %        display_names = {'64';'80';'96';'128'; '192'; '256'};
 %        display_names = {'U-Net'; 'U-Net pretrained';};
@@ -355,6 +355,12 @@ classdef GlobalConfig
                     GlobalConfigObj.dataset_list = {'1'; '2'; '3'; '4'; '5'; '6'; '7'; '8'; '9'; '10'; '11'; '12'; '13'; '14'; '15'; '16'; '17'; '18'; '19'; '20'; '21'; '22'; '23'};
                     GlobalConfigObj.fold_name_list = {'A'; 'B'; 'C'; 'D'; 'E'; 'F'; 'G'; 'H'; 'I'; 'J'; 'K'; 'L'; 'M'; 'N'; 'O'; 'P'; 'Q'; 'R'; 'S'; 'T'; 'U'; 'V'; 'W'};
                     GlobalConfigObj.max_dist_pixel = 3;
+
+                    % blue, dark gray, gray, orange
+                    GlobalConfigObj.graph_colors = [[0, 0.4470, 0.7410];
+                                                    [53,53,53]/255;
+                                                    [153,153,153]/255;
+                                                    [0.8500, 0.3250, 0.0980];];
                     GlobalConfigObj.dataset_split_list = [length(GlobalConfigObj.dataset_list)];
                     GlobalConfigObj.dataset_interval_list = [1];
 

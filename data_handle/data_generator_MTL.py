@@ -47,7 +47,7 @@ def get_data_generator_MTL(dataset_names, repeat_index, crop_mode, img_format, t
     print('original_images:', original_images.shape, original_images.dtype)
     print('Images:', images.shape, images.dtype)
     print('masks:', masks.shape, masks.dtype)
-    threshold_mask_area_percentage = 1
+    threshold_mask_area_percentage = 3
     print('threshold_mask_area_percentage', threshold_mask_area_percentage)
     height, width = masks.shape[2], masks.shape[3]
     if train_or_predict_mode == 'train':
@@ -108,7 +108,7 @@ def undersample_false_image_mask(img_filenames, mask_filenames, mask_area_dict, 
     max_sample_size = len(false_img_filenames)
     if train_or_predict_mode == 'train' and max_sample_size > len(true_img_filenames)*train_undersample_ratio:
         max_sample_size = len(true_img_filenames)*train_undersample_ratio
-    max_sample_size = len(true_img_filenames)
+    # max_sample_size = len(true_img_filenames)
 
     false_img_filenames = false_img_filenames[:max_sample_size]
     false_mask_filenames = false_mask_filenames[:max_sample_size]
@@ -147,8 +147,8 @@ def get_cropped_filenames_and_class_dict(dataset_names, repeat_index, crop_mode,
     all_img_filenames = np.asarray(all_img_filenames)
     all_mask_filenames = np.asarray(all_mask_filenames)
     print('get_cropped_filenames_and_class_dict', all_img_filenames.shape, all_mask_filenames.shape, len(all_mask_area_dict))
-    #
-    # all_img_filenames = all_img_filenames[:500]
-    # all_mask_filenames = all_mask_filenames[:500]
+
+    # all_img_filenames = all_img_filenames[:5000]
+    # all_mask_filenames = all_mask_filenames[:5000]
 
     return all_img_filenames, all_mask_filenames, all_mask_area_dict

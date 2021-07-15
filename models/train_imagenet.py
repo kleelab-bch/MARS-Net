@@ -195,6 +195,7 @@ def get_model(input_size, weights_path, strategy_type):
 
     return model
 
+
 def train():
     # Data pipeline that reads imagenet data in directory and process them before training
     # referenced https://cs230.stanford.edu/blog/datapipeline/

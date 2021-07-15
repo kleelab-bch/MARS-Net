@@ -174,8 +174,8 @@ classdef Violin < handle
                 obj.WhiskerPlot = plot([pos pos], [lowhisker hiwhisker]);
             end
             % To draw line for median, referenced https://www.mathworks.com/matlabcentral/fileexchange/45134-violin-plot
-%            plot([interp1(U(:,i),F(:,i)+i,MED(:,i)), interp1(flipud(U(:,i)), flipud(i-F(:,i)), MED(:,i)) ],[MED(:,i) MED(:,i)],medc,'LineWidth',2);
-            obj.MedianPlot = scatter([pos-0.01, pos pos+0.01], [quartiles(2), quartiles(2), quartiles(2)], 'filled', 'Marker', '_', 'MarkerEdgeColor', 'white', 'LineWidth', 1);
+            obj.MedianPlot = scatter(pos, quartiles(2), 'filled', 'Marker', '_', 'MarkerEdgeColor', 'white', 'LineWidth', 1);
+%            obj.MedianPlot = scatter([pos-0.01, pos pos+0.01], [quartiles(2), quartiles(2), quartiles(2)], 'filled', 'Marker', '_', 'MarkerEdgeColor', 'white', 'LineWidth', 1);
 
             obj.NotchPlots = ...
                  scatter(pos, quartiles(2)-1.57*IQR/sqrt(length(data)), ...

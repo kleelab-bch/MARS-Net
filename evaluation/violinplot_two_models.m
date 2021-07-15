@@ -26,7 +26,7 @@ function violinplot_two_models(model1, model2, saved_path, metric_type, title_su
     min_data = min([model1, model2],[],'all');
     max_data = max([model1, model2],[],'all');
     top_offset = (max_data-min_data)/20;
-    bottom_offset = (max_data-min_data)/20;
+    bottom_offset = (max_data-min_data)/6;  % 20
     ylim([min_data-bottom_offset, max_data+top_offset]);
 
     xticklabels({condition_one, condition_two});
@@ -34,13 +34,13 @@ function violinplot_two_models(model1, model2, saved_path, metric_type, title_su
 
 %    title([metric_type, ' ', title_suffix], 'fontsize', 16);
 
-    dim = [.15 0.27 0 0];
+    dim = [0.45 0.4 0 0]; % x, y, width, height
     str = [condition_one, ' mean: ', num2str( round(mean(model1), 3) ), newline, ...
         condition_two, ' mean: ', num2str( round(mean(model2), 3) ), newline, ...
         'Wilcoxon test: ', num2str(p), ' signedrank: ', num2str( round(stats.signedrank, 3) ), newline, ...
         'ks test: ', num2str(kstest_p), ' k:', num2str(kstest_k), newline, ...
         't-test: ', num2str(ttest_p), '  normality test: ', num2str(lillie_p), ' ', num2str(shaprio_p)];
-%    annotation('textbox',dim,'String',str,'FitBoxToText','on', 'EdgeColor','none');
+    annotation('textbox',dim,'String',str,'FitBoxToText','on', 'EdgeColor','none', 'fontsize', 7);
 
     box on;
     set(gca, 'fontsize', 10, 'fontname', 'Arial');
