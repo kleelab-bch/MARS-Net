@@ -60,18 +60,27 @@ Installation Time can vary based on user's download speed (Estimated Time: 1 hou
     * https://drive.google.com/drive/folders/1FLP0D-Y9-DHQmhC-LBZChdUSe6W5zyPw?usp=sharing
 
 ### Label Tool
-Tool to facilitate labelling raw images semi-automatically
+Facilitates labelling raw images semi-automatically and it is located in label_tool folder.
 
-1. To determine hysteresis thresholding for canny detector and kernel size for blurring, run
-    * label_tool/explore_edge_extraction_user_params.py
-1. Compare results in generated_explore_edge folder
-1. To extract edge after choosing hyper parameters, run
-    * Python extract_edge.py 
-1. Manually Fix the generated edges
-    * The generated edges in generated_edge folder, connect fragmented edges and delete the wrong edges
+1. Specify the location of image files to label in user_params.py
+    * set dataset name to a_dataset variable and image folder path to img_root_path
+3. To determine the optimal hysteresis thresholding for canny detector and kernel size for blurring,
+    * python explore_edge_extraction_user_params.py
+    * Compare results in generated_explore_edge folder
+4. Then, set the best hyper parameters in user_params.py 
+    * canny_std_multiplier and denoise_kernel_size, 
+5. To extract edge,
+    * python extract_edge.py 
+    * The generated edge images are saved in generated_edge folder
+6. Manually fix the generated edge images
+    * Connect any fragmented edges and remove wrong edges in the image
     * We used [ImageJ](https://imagej.nih.gov/ij/download.html) or [GIMP](https://www.gimp.org/) for manual fix after overlaying edge over the original image
-1. Post processing to fill the edges
-    * python segment_edge.py will save results in generated_segmentation folder
+    * Replace any generated edge images with fixed edge images
+7. Post processing to fill the edge images
+    * python segment_edge.py 
+    * segment_edge.py script will ask for how many backgrounds to fill in your image and one pair of (x,y) coordinate in each background area.
+    * The post processed results are saved in generated_segmentation folder
+    * please move these labeled images into the assets folder to train the model.
 
 
 ### Deep Learning Model Training and Segmentaion
