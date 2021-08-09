@@ -334,9 +334,9 @@ if __name__ == "__main__":
         os.makedirs('results/history_round{}_{}'.format(constants.round_num, constants.strategy_type))
     if not os.path.exists('results/model_round{}_{}'.format(constants.round_num, constants.strategy_type)):
         os.makedirs('results/model_round{}_{}'.format(constants.round_num, constants.strategy_type))
-    for repeat_index in range(3,4): # constants.REPEAT_MAX
+    for repeat_index in range(constants.REPEAT_MAX): # constants.REPEAT_MAX
         for frame_index in range(len(constants.frame_list)):
-            for model_index in range(4,len(constants.model_names)):
+            for model_index in range(len(constants.model_names)):
                 frame = constants.frame_list[frame_index]
                 start_time = time.time()
                 train_model(constants, model_index, frame, repeat_index)

@@ -11,6 +11,53 @@ import re
 from joblib import Parallel, delayed
 
 
+def sort_frame_crop_filenames(filenames):
+
+    def find_frame_crop_number(filename):
+        filename = filename.split('/')[-1]
+
+        regex = re.compile(r'.*_c')
+        frame_id = regex.findall(filename)[0]
+
+        regex = re.compile(r'_c\d+_')
+        crop_id = regex.findall(filename)[0]  # example: '_c40_'
+        crop_id = int(crop_id.replace('_c', '').replace('_', ''))
+
+        return frame_id, crop_id
+
+    # For instance, parse ../crop/generated/crop_even_input256_FNA_valid_fold0/mask_repeat0/pk2777-third-0620_c9_even_input256.png
+    filenames.sort(key=find_frame_crop_number)
+    assert_crop_increment_filenames(filenames)
+
+    return filenames
+
+
+def assert_crop_increment_filenames(filenames):
+    prev_crop_id = 0
+    prev_max_crop_id = 0
+    for filename in filenames:
+        filename = filename.split('/')[-1]
+
+        regex = re.compile(r'_c\d+_')
+        crop_id = regex.findall(filename)[0]  # example: '_c40_'
+        crop_id = int(crop_id.replace('_c', '').replace('_', ''))
+        
+        if crop_id >= prev_crop_id:  # assume crop id increment one by one
+            prev_crop_id = crop_id
+        elif prev_max_crop_id == 0:
+            prev_max_crop_id = crop_id  # first time setting prev_max_crop_id
+            prev_crop_id = 0
+        elif prev_max_crop_id == crop_id:  # check the next time crop id reaches the prev_max_crop_id
+            prev_crop_id = 0
+        else:
+            raise ValueError('crop id is not incrementing correctly')
+
+
+def assert_same_two_filenames(first_filenames, second_filenames):
+    for first_filename, second_filename in zip(first_filenames, second_filenames):
+        assert first_filename.split('/')[-1] == second_filename.split('/')[-1]
+
+
 def threshold_mask_area_list(image_height, image_width, mask_area_list, threshold_percentage):
     min_mask_area_threshold = image_height * image_width * threshold_percentage * 0.01
     return [mask_area > min_mask_area_threshold for mask_area in mask_area_list]

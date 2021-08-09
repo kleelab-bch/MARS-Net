@@ -20,12 +20,12 @@ import random
 import numpy as np
 import pickle
 from data_generator_utils import *
-from data_generator_utils import convert_masks_to_areas, threshold_mask_area_list
 
 
 def get_data_generator_MTL(dataset_names, repeat_index, crop_mode, img_format, train_or_predict_mode):
     img_filenames, mask_filenames, mask_area_dict = get_cropped_filenames_and_class_dict(dataset_names, repeat_index, crop_mode, img_format)
-    img_filenames, mask_filenames = undersample_false_image_mask(img_filenames, mask_filenames, mask_area_dict, train_or_predict_mode)
+    if train_or_predict_mode == 'train':
+        img_filenames, mask_filenames = undersample_false_image_mask(img_filenames, mask_filenames, mask_area_dict)
 
     # load images
     original_images = np.asarray(read_color_images(img_filenames))
@@ -47,7 +47,7 @@ def get_data_generator_MTL(dataset_names, repeat_index, crop_mode, img_format, t
     print('original_images:', original_images.shape, original_images.dtype)
     print('Images:', images.shape, images.dtype)
     print('masks:', masks.shape, masks.dtype)
-    threshold_mask_area_percentage = 3
+    threshold_mask_area_percentage = 10
     print('threshold_mask_area_percentage', threshold_mask_area_percentage)
     height, width = masks.shape[2], masks.shape[3]
     if train_or_predict_mode == 'train':
@@ -58,10 +58,10 @@ def get_data_generator_MTL(dataset_names, repeat_index, crop_mode, img_format, t
 
         train_y_areas = convert_masks_to_areas(masks_train).astype(np.int32)
         valid_y_areas = convert_masks_to_areas(masks_val).astype(np.int32)
-        print('train_y_areas', train_y_areas.shape, train_y_areas.dtype, train_y_areas[:100])
+        print('train_y_areas', train_y_areas.shape, train_y_areas.dtype, train_y_areas[:50])
         train_y_classes = np.asarray(threshold_mask_area_list(height, width, train_y_areas, threshold_mask_area_percentage), dtype=np.float32)
         valid_y_classes = np.asarray(threshold_mask_area_list(height, width, valid_y_areas, threshold_mask_area_percentage), dtype=np.float32)
-        print('train_y_classes', train_y_classes.shape, train_y_classes.dtype, train_y_classes[:100])
+        print('train_y_classes', train_y_classes.shape, train_y_classes.dtype, train_y_classes[:50])
         print('True:', np.count_nonzero(train_y_classes > 0) + np.count_nonzero(valid_y_classes > 0) )
         print('False:', np.count_nonzero(train_y_classes == 0) + np.count_nonzero(valid_y_classes == 0) )
         return images_train, [masks_train, train_y_areas, train_y_classes], images_val, [masks_val, valid_y_areas, valid_y_classes]
@@ -83,13 +83,12 @@ def get_data_generator_MTL(dataset_names, repeat_index, crop_mode, img_format, t
         raise Exception('train_or_predict_mode is not correct', train_or_predict_mode)
 
 
-def undersample_false_image_mask(img_filenames, mask_filenames, mask_area_dict, train_or_predict_mode):
+def undersample_false_image_mask(img_filenames, mask_filenames, mask_area_dict):
     # convert mask_area_dict to mask_area_list
     true_img_filenames = []
     true_mask_filenames = []
     false_img_filenames = []
     false_mask_filenames = []
-    img_filenames, mask_filenames = unison_shuffle_ndarrays(img_filenames, mask_filenames)
 
     for img_filename, mask_filename in zip(img_filenames, mask_filenames):
         if mask_area_dict[img_filename]:
@@ -106,7 +105,7 @@ def undersample_false_image_mask(img_filenames, mask_filenames, mask_area_dict, 
     # undersample
     train_undersample_ratio = 10
     max_sample_size = len(false_img_filenames)
-    if train_or_predict_mode == 'train' and max_sample_size > len(true_img_filenames)*train_undersample_ratio:
+    if max_sample_size > len(true_img_filenames)*train_undersample_ratio:
         max_sample_size = len(true_img_filenames)*train_undersample_ratio
     # max_sample_size = len(true_img_filenames)
 
@@ -144,11 +143,19 @@ def get_cropped_filenames_and_class_dict(dataset_names, repeat_index, crop_mode,
             all_mask_area_dict = mask_area_dict.item()
         else:
             all_mask_area_dict = {**all_mask_area_dict, **mask_area_dict.item()}
+
+    print(all_img_filenames[:10])
+    all_img_filenames = sort_frame_crop_filenames(all_img_filenames)
+    all_mask_filenames = sort_frame_crop_filenames(all_mask_filenames)
+    print(all_img_filenames[:10])
+
     all_img_filenames = np.asarray(all_img_filenames)
     all_mask_filenames = np.asarray(all_mask_filenames)
-    print('get_cropped_filenames_and_class_dict', all_img_filenames.shape, all_mask_filenames.shape, len(all_mask_area_dict))
 
-    # all_img_filenames = all_img_filenames[:5000]
-    # all_mask_filenames = all_mask_filenames[:5000]
+    assert_same_two_filenames(all_img_filenames, all_mask_filenames)
+
+    # all_img_filenames = all_img_filenames[:1000]
+    # all_mask_filenames = all_mask_filenames[:1000]
+    print('get_cropped_filenames_and_class_dict', all_img_filenames.shape, all_mask_filenames.shape, len(all_mask_area_dict))
 
     return all_img_filenames, all_mask_filenames, all_mask_area_dict

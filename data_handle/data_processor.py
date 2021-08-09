@@ -49,7 +49,7 @@ def preprocess_input(imgs, std=None, mean=None):
         std = np.std(imgs_p)
     if mean is None:
         mean = np.mean(imgs_p)
-
+    print('preprocess_input', std, mean)
     imgs_p -= mean
     imgs_p /= std
 
@@ -62,18 +62,18 @@ def normalize_input(imgs):
     return imgs_p
 
 
-def normalize_clip_input(imgs):
+def clip_input(imgs):
     imgs_p = to3channel(imgs)
     std, mean = np.std(imgs_p), np.mean(imgs_p)
 
+    min_val = mean - 2 * std
     max_val = mean + 3 * std
-    min_val = mean - 3 * std
     if min_val < 0:
         min_val = 0
     if max_val > 255:
         max_val = 255
     np.clip(imgs_p, min_val, max_val, out=imgs_p)
-    imgs_p = (imgs_p - min_val) / (max_val - min_val)
+    # imgs_p = (imgs_p - min_val) / (max_val - min_val)
 
     return imgs_p
 
@@ -131,7 +131,7 @@ def aggregate_std_mean_except(constants, dataset_index, frame, crop_path):
 def aggregate_std_mean(dataset_names, excluded_dataset_name, frame, repeat_index, crop_path):
     # for self training five fold validation,
     # get average of std and mean from four movies to preprocess the test set images.
-    print('aggregate_std_mean:' + str(frame))
+    print('aggregate_std_mean')
     frame_mean_list = []
     frame_std_list = []
 
@@ -144,10 +144,48 @@ def aggregate_std_mean(dataset_names, excluded_dataset_name, frame, repeat_index
 
             frame_mean_list.append(mean_value)
             frame_std_list.append(std_value)
-            print(dataset_names[dataset_index], mean_value, std_value)
+            print(dataset_names[dataset_index], std_value, mean_value)
     frame_mean_value = statistics.mean(frame_mean_list)
     frame_std_value = math.sqrt(statistics.mean(square(frame_std_list)))
+    print(frame_std_value, frame_mean_value)
     return frame_std_value, frame_mean_value
+
+
+def get_std_mean_from_train_images(dataset_folder, dataset_names, img_folder, img_format):
+    '''
+    7/28/2021
+    specifically written for spheroid_test_VGG19_marsnet prediction
+    :param dataset_folder:
+    :param dataset_names:
+    :param img_format:
+    :return:
+    '''
+    print('get_std_mean_from_train_images')
+    all_img_list = []
+    for i, dataset_name in enumerate(dataset_names):
+        train_img_path = dataset_folder + '/' + dataset_name + img_folder
+        img_list = glob.glob(train_img_path + '*' + img_format)
+
+        if len(img_list) == 0:  # skip this dataset
+            print('img list is empty')
+            exit()
+
+        # img = cv2.imread(img_list[0], cv2.IMREAD_GRAYSCALE)
+        # img_r, img_c = img.shape
+        # total_number = len(img_list)
+        # imgs = np.ndarray((total_number, img_r, img_c), dtype=np.uint8)
+        for img_index in range(len(img_list)):
+            img_path = img_list[img_index]
+            img_name = img_path[len(train_img_path):]
+            # imgs[img_index] = cv2.imread(train_img_path + img_name, cv2.IMREAD_GRAYSCALE)
+            all_img_list.append(cv2.imread(train_img_path + img_name, cv2.IMREAD_GRAYSCALE))
+    print(len(all_img_list))
+    imgs = np.stack(all_img_list, axis=0)
+
+    avg = np.mean(imgs)
+    std = np.std(imgs)
+    print(imgs.shape, avg, std)
+    return std, avg
 
 
 def get_std_mean_from_images(all_img_path, img_format):

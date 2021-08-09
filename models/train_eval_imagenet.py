@@ -13,7 +13,6 @@ import glob
 import os
 import pandas as pd
 from datetime import datetime
-from sklearn.metrics import top_k_accuracy_score
 
 import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, TensorBoard, ReduceLROnPlateau
@@ -39,7 +38,7 @@ repeat_index = 0
 model_name = 'A'
 frame = 0
 input_size = 224
-batch_size = 64
+batch_size = 256
 
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import image_ops
@@ -103,26 +102,28 @@ def smart_resize(x, size, interpolation='bilinear'):
               'Expected an image array with shape `(height, width, channels)`, but '
               'got input with incorrect rank, of shape %s' % (img.shape,))
 
-    shape = array_ops.shape(img)
+    shape = array_ops.shape(img)  # e.g. 375, 500, 3
     height, width = shape[0], shape[1]
-    target_height, target_width = size
+    target_height, target_width = size  # e.g. [224, 224]
 
     crop_height = math_ops.cast(
       math_ops.cast(width * target_height, 'float32') / target_width, 'int32')
     crop_width = math_ops.cast(
       math_ops.cast(height * target_width, 'float32') / target_height, 'int32')
 
+    # e.g. crop height and crop width is 500 and 375 respectively
     # Set back to input height / width if crop_height / crop_width is not smaller.
     crop_height = math_ops.minimum(height, crop_height)
     crop_width = math_ops.minimum(width, crop_width)
+    # e.g. crop height and crop width is 375 and 375 respectively
 
     crop_box_hstart = math_ops.cast(
       math_ops.cast(height - crop_height, 'float32') / 2, 'int32')
     crop_box_wstart = math_ops.cast(
       math_ops.cast(width - crop_width, 'float32') / 2, 'int32')
 
-    crop_box_start = array_ops.stack([crop_box_hstart, crop_box_wstart, 0])
-    crop_box_size = array_ops.stack([crop_height, crop_width, -1])
+    crop_box_start = array_ops.stack([crop_box_hstart, crop_box_wstart, 0])  # e.g. [0 62 0]
+    crop_box_size = array_ops.stack([crop_height, crop_width, -1])  # e.g. [375 375 -1]
 
     img = array_ops.slice(img, crop_box_start, crop_box_size)
     img = image_ops.resize_images_v2(
@@ -147,16 +148,36 @@ def parse_train_input(filename, label):
     return image, label
 
 
+def train_preprocess(image, label):
+    image = tf.image.random_flip_left_right(image)
+
+    image = tf.image.random_brightness(image, max_delta=32.0 / 255.0)
+    image = tf.image.random_saturation(image, lower=0.5, upper=1.5)
+
+    #Make sure the image is still in [0, 1]
+    image = tf.clip_by_value(image, 0.0, 1.0)
+
+    return image, label
+
+
 def parse_prediction_input(filename):
     image_string = tf.io.read_file(filename)
     image_decoded = tf.io.decode_jpeg(image_string, channels=3)
     image = tf.cast(image_decoded, tf.float32)
 
-    # resize to size 256 x 256
     image = smart_resize(image, [input_size, input_size], interpolation='bilinear')
+    # tf.print(tf.math.reduce_max(image))
+    # image /= 127.5
+    # image -= 1.
+    # tf.print(tf.math.reduce_max(image), '---------------')
+
     # image = tf.image.per_image_standardization(image)
 
     return image
+
+
+def flip_input_image(image):
+    return tf.image.flip_left_right(image)
 
 
 def get_filenames_from_directory(directory_path):
@@ -303,6 +324,7 @@ def evaluate():
     # ------------------- Get validation dataset ----------------------
     # get validation images
     img_filenames = glob.glob(f'/home/qci/imagenet/val/*.JPEG')
+    # img_filenames = img_filenames[:1000]
 
     # get validation labels from csv
     validation_label_path = '/home/qci/imagenet/LOC_val_solution.csv'
@@ -325,9 +347,16 @@ def evaluate():
     print('subdirectory_list', len(subdirectory_list))
 
     full_dataset = tf.data.Dataset.from_tensor_slices(img_filenames)
-    full_dataset = full_dataset.map(parse_prediction_input, num_parallel_calls=4)
-    full_dataset = full_dataset.batch(1)
-    full_dataset = full_dataset.prefetch(1000)
+
+    # -------------- Parse images in different ways --------------------
+    orig_dataset = full_dataset.map(parse_prediction_input, num_parallel_calls=4)
+    orig_dataset = orig_dataset.batch(1)
+    orig_dataset = orig_dataset.prefetch(1000)
+
+    fliped_dataset = full_dataset.map(parse_prediction_input, num_parallel_calls=4)
+    fliped_dataset = fliped_dataset.map(flip_input_image, num_parallel_calls=4)
+    fliped_dataset = fliped_dataset.batch(1)
+    fliped_dataset = fliped_dataset.prefetch(1000)
 
     # ------------------- Load trained model ---------------------
     weights_path = constants.get_trained_weights_path(str(frame), model_name, str(repeat_index))
@@ -335,8 +364,12 @@ def evaluate():
     model = get_model(input_size, weights_path, constants.strategy_type)
 
     # ------------------- Predict ----------------------
-    y_pred = model.predict(full_dataset, batch_size=1, verbose=1)
+    # combine multiple prediction results from multiple scales
+    # referenced ensemble model prediction https://machinelearningmastery.com/weighted-average-ensemble-for-deep-learning-neural-networks/
+    y_pred_orig = model.predict(orig_dataset, batch_size=1, verbose=1)
+    y_pred_fliped = model.predict(fliped_dataset, batch_size=1, verbose=1)
 
+    y_pred = (y_pred_orig + y_pred_fliped) / 2
     # ------------------- evaluate using Top1 and Top5 accuracy -------------------
     y_true = np.zeros(shape=(len(img_filenames)))
     print(y_true.shape, y_pred.shape)
@@ -346,18 +379,18 @@ def evaluate():
         # print(img_filename, ': ', int(y_true[i]), np.argmax(y_pred[i]))
         # print(img_filename, ': ', imagenet_classid_to_label_string[int(y_true[i])], ' |  ', imagenet_classid_to_label_string[np.argmax(y_pred[i])])
 
-    m = tf.keras.metrics.SparseTopKCategoricalAccuracy(k=1)
-    m.update_state(y_true, y_pred)
+    m = tf.keras.metrics.SparseTopKCategoricalAccuracy(k=1)  # y_true is sparse, y_pred is dense
+    m.update_state(y_true, y_pred)  # e.g. y_true = [2, 1], y_pred = [[0.1, 0.9, 0.8], [0.05, 0.95, 0]]
     print(m.result().numpy())
 
     m = tf.keras.metrics.SparseTopKCategoricalAccuracy(k=5)
     m.update_state(y_true, y_pred)
     print(m.result().numpy())
 
+    # from sklearn.metrics import top_k_accuracy_score
     # print(top_k_accuracy_score(y_true, y_pred, k=1), top_k_accuracy_score(y_true, y_pred, k=5))
 
 
 if __name__ == "__main__":
-    train()
-    # evaluate()
-
+    # train()
+    evaluate()

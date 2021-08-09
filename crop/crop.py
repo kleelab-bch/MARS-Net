@@ -27,7 +27,7 @@ from UserParams import UserParams
 
 def crop_dataset(round_num, dataset_name, repeat_index, input_size, output_size, img_folder, mask_folder, dataset_folder, img_format, crop_mode, crop_patches, augmentation_factor):
 
-    if 'classifier' in constants.strategy_type:
+    if 'FNA' in constants.strategy_type:
         crop_generator = CropGeneratorClassifier(dataset_name, input_size, output_size, repeat_index, img_format, dataset_folder, img_folder, mask_folder)
     else:
         crop_generator = CropGenerator(dataset_name, input_size, output_size, repeat_index, round_num, img_format, crop_mode, crop_patches, dataset_folder, img_folder, mask_folder)
@@ -49,10 +49,11 @@ def crop_dataset(round_num, dataset_name, repeat_index, input_size, output_size,
     if not os.path.exists(root_path_mask):
         os.makedirs(root_path_mask)
 
-    if 'classifier' in constants.strategy_type:
+    if 'FNA' in constants.strategy_type:
         # convert mask to areas
         assert img_train.shape[0:4] == mask_train.shape[0:4]
-
+        print('---')
+        print(img_frame_names)
         mask_area_dict = {}
         for frame_index in tqdm(range(mask_train.shape[0])):
             for crop_index in range(mask_train.shape[1]):
@@ -67,7 +68,7 @@ def crop_dataset(round_num, dataset_name, repeat_index, input_size, output_size,
         np.save(root_path_mask + 'mask_area_dict.npy', mask_area_dict)
 
     else:
-        # two separate for loops becuase img_train can be larger than mask_train when video segmentation
+        # two separate for loops becuase img_train can be larger than mask_train for segmentation
         for frame_index in tqdm(range(img_train.shape[0])):
             for crop_index in range(img_train.shape[1]):
                 cv2.imwrite(root_path_img + f'f{img_frame_names[frame_index]}_c{crop_index}_{crop_mode}.png', img_train[frame_index, crop_index])

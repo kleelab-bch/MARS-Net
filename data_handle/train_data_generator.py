@@ -30,8 +30,8 @@ def get_data_generator(round_num, dataset_names, model_name, frame, repeat_index
     x_train_filenames, x_val_filenames, y_train_filenames, y_val_filenames = get_training_dataset_names(model_name, frame, repeat_index, save_path)
 
     # augment images in memory
-    train_x, train_y = getAugmentedImages(x_train_filenames, y_train_filenames, aug_batch_size, process_type, 'train')
-    valid_x, valid_y = getAugmentedImages(x_val_filenames, y_val_filenames, aug_batch_size, process_type, 'valid')
+    train_x, train_y = getAugmentedImages(x_train_filenames, y_train_filenames, dataset_names, aug_batch_size, process_type, 'train')
+    valid_x, valid_y = getAugmentedImages(x_val_filenames, y_val_filenames, dataset_names, aug_batch_size, process_type, 'valid')
     # train_val_x, train_val_y = getAugmentedImages(x_train_filenames + x_val_filenames, y_train_filenames + y_val_filenames, aug_batch_size, process_type, 'train_val')
     # train_x, valid_x, train_y, valid_y = train_test_split(train_val_x, train_val_y, shuffle=True, test_size=0.2, random_state=repeat_index)
 
@@ -149,8 +149,8 @@ def get_training_dataset_names(model_name, frame, repeat_index, save_path):
     return x_train_filenames, x_val_filenames, y_train_filenames, y_val_filenames
 
 
-def getAugmentedImages(x_filenames, y_filenames, aug_batch_size, process_type, data_type):
-    augmentation_factor = calc_augmentation_factor(x_filenames, aug_batch_size, data_type)
+def getAugmentedImages(x_filenames, y_filenames, dataset_names, aug_batch_size, process_type, data_type):
+    augmentation_factor = calc_augmentation_factor(x_filenames, dataset_names, aug_batch_size, data_type)
     batch_x, batch_y = GetImageMask(x_filenames, y_filenames)
 
     aug_images = np.zeros((augmentation_factor * aug_batch_size, batch_x.shape[1], batch_x.shape[2], batch_x.shape[3]), dtype=np.uint8)
@@ -187,6 +187,8 @@ def getAugmentedImages(x_filenames, y_filenames, aug_batch_size, process_type, d
         aug_images = normalize_input(aug_images)
     elif process_type == 'standardize':
         aug_images = preprocess_input(aug_images)
+    elif process_type == 'clip':
+        aug_images = clip_input(aug_images)
         # aug_images = preprocess_per_input_image(aug_images)
     else:
         raise Exception('incorrect process_type {}'.format(process_type))
@@ -210,20 +212,22 @@ def GetImageMask(x_filenames, y_filenames):
     return batch_x, batch_y
 
 
-def calc_augmentation_factor(x_filenames, aug_batch_size, data_type):
+def calc_augmentation_factor(x_filenames, dataset_names, aug_batch_size, data_type):
     '''
     4/7/2021
     Limit augmentation to utilize only about 20GB RAM memory, which includes loaded model size
     Gradually reduce it as the number of frames increase
     :return: augmentation factor
     '''
-    total_max_patches = 27200
+    file_count_per_dataset = len(x_filenames)/len(dataset_names)
+    print(file_count_per_dataset)
+    total_max_patches = 34000
     if data_type == 'train_val':
         max_patches = total_max_patches
     elif data_type == 'train':
-        max_patches = int(total_max_patches/5*4)
+        max_patches = int(total_max_patches/len(dataset_names)*(len(dataset_names)-1))
     elif data_type == 'valid':
-        max_patches = int(total_max_patches/5)
+        max_patches = int(total_max_patches/len(dataset_names))
     else:
         raise Exception('calc_augmentation_factor: data_type {}'.format(data_type))
 

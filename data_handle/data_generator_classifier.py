@@ -63,8 +63,8 @@ def undersample_false_image_mask(img_filenames, mask_area_dict, train_or_predict
     print('True:', len(true_img_filenames), ' False:', len(false_img_filenames))
     # undersample
     if train_or_predict_mode == 'train':
-        if len(false_img_filenames) > len(true_img_filenames)*20:
-            max_sample_size = len(true_img_filenames)*20
+        if len(false_img_filenames) > len(true_img_filenames)*10:
+            max_sample_size = len(true_img_filenames)*10
         else:
             max_sample_size = len(false_img_filenames)
     else:

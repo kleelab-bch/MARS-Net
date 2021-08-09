@@ -21,6 +21,7 @@ from deep_neural_net_layer import *
 
 @log_function_call
 def VGG19_classifier_custom_loss(img_rows, img_cols, weights_path):
+    # This function is to test if custom loss layer works... I empirically confirmed that this works
     inputs = Input(shape=[3, img_rows, img_cols])
     # Block 1
     x = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv1')(inputs)
@@ -112,7 +113,7 @@ def VGG19_classifier_regressor(img_rows, img_cols, weights_path):
 
     x = GlobalAveragePooling2D()(block5_conv4)
     classification_output = Dense(1, activation='sigmoid', name='classifier')(x)
-    regression_output = Dense(1, activation='relu', name='regressor')(x)
+    regression_output = Dense(1, name='regressor')(x)
 
     model = Model(inputs=inputs, outputs=[regression_output, classification_output])
 
@@ -167,9 +168,9 @@ def VGG19_MTL(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_
 
     x = GlobalAveragePooling2D()(block5_conv4)
     classification_output = Dense(1, activation='sigmoid', name='classifier')(x)
-    regression_output = Dense(1, activation='relu', name='regressor')(x)
+    regression_output = Dense(1, name='regressor')(x)
 
-    # decoder
+    # ----------------- segmentation decoder -----------------
     up6 = concatenate([UpSampling2D(size=(2, 2))(block5_conv4), block4_conv4], axis=1)
     conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(up6)
     conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(conv6)
@@ -187,6 +188,7 @@ def VGG19_MTL(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_
     conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(conv9)
 
     conv10 = Conv2D(1, (1, 1), activation='sigmoid')(conv9)
+
     if bottom_crop == 0:
         # ((top_crop, bottom_crop), (left_crop, right_crop)) for training
         conv10 = Cropping2D(cropping=((crop_margin, crop_margin), (crop_margin, crop_margin)), name='segmentation')(conv10)
@@ -194,7 +196,25 @@ def VGG19_MTL(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_
         # remove reflected portion from the image for prediction
         conv10 = Cropping2D(cropping=((0, bottom_crop), (0, right_crop)), name='segmentation')(conv10)
 
-    model = Model(inputs=inputs, outputs=[conv10, regression_output, classification_output])
+    # ----------------- autoencoder decoder -----------------
+    aut_conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(up6)
+    aut_conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(aut_conv6)
+
+    aut_up7 = concatenate([UpSampling2D(size=(2, 2))(aut_conv6), block3_conv4], axis=1)
+    aut_conv7 = Conv2D(256, (3, 3), activation='relu', padding='same')(aut_up7)
+    aut_conv7 = Conv2D(256, (3, 3), activation='relu', padding='same')(aut_conv7)
+
+    aut_up8 = concatenate([UpSampling2D(size=(2, 2))(aut_conv7), block2_conv2], axis=1)
+    aut_conv8 = Conv2D(128, (3, 3), activation='relu', padding='same')(aut_up8)
+    aut_conv8 = Conv2D(128, (3, 3), activation='relu', padding='same')(aut_conv8)
+
+    aut_up9 = concatenate([UpSampling2D(size=(2, 2))(aut_conv8), block1_conv2], axis=1)
+    aut_conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(aut_up9)
+    aut_conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(aut_conv9)
+
+    aut_conv10 = Conv2D(1, (1, 1), activation='linear', name='autoencoder')(aut_conv9)
+
+    model = Model(inputs=inputs, outputs=[conv10, aut_conv10, regression_output, classification_output])
 
     # Load weights.
     if weights_path == '':
@@ -213,7 +233,7 @@ def VGG19_MTL(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_
 
 
 @log_function_call
-def VGG19_MTL_auto(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
+def VGG19_MTL_auto(img_rows, img_cols, crop_margin, right_crop, bottom_crop, removed_tasks, weights_path):
     inputs = Input(shape=[3, img_rows, img_cols])
     # Block 1
     x = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv1')(inputs)
@@ -247,7 +267,7 @@ def VGG19_MTL_auto(img_rows, img_cols, crop_margin, right_crop, bottom_crop, wei
 
     x = GlobalAveragePooling2D()(block5_conv4)
     classification_output = Dense(1, activation='sigmoid', name='classifier')(x)
-    regression_output = Dense(1, activation='relu', name='regressor')(x)
+    regression_output = Dense(1, name='regressor')(x)
 
     # decoder
     up6 = concatenate([UpSampling2D(size=(2, 2))(block5_conv4), block4_conv4], axis=1)
@@ -274,12 +294,31 @@ def VGG19_MTL_auto(img_rows, img_cols, crop_margin, right_crop, bottom_crop, wei
         # remove reflected portion from the image for prediction
         conv10 = Cropping2D(cropping=((0, bottom_crop), (0, right_crop)), name='segmentation')(conv10)
 
-    y1_true = Input(shape=[1, img_rows - 60, img_cols - 60], name='y1_true')
-    y2_true = Input(shape=[1, ], name='y2_true')
-    y3_true = Input(shape=[1, ], name='y3_true')
+    # ----------------- autoencoder decoder -----------------
+    aut_conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(up6)
+    aut_conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(aut_conv6)
 
-    out = CustomMultiLossLayer(nb_outputs=3)([y1_true, y2_true, y3_true, conv10, regression_output, classification_output])
-    model = Model([inputs, y1_true, y2_true, y3_true], out)
+    aut_up7 = concatenate([UpSampling2D(size=(2, 2))(aut_conv6), block3_conv4], axis=1)
+    aut_conv7 = Conv2D(256, (3, 3), activation='relu', padding='same')(aut_up7)
+    aut_conv7 = Conv2D(256, (3, 3), activation='relu', padding='same')(aut_conv7)
+
+    aut_up8 = concatenate([UpSampling2D(size=(2, 2))(aut_conv7), block2_conv2], axis=1)
+    aut_conv8 = Conv2D(128, (3, 3), activation='relu', padding='same')(aut_up8)
+    aut_conv8 = Conv2D(128, (3, 3), activation='relu', padding='same')(aut_conv8)
+
+    aut_up9 = concatenate([UpSampling2D(size=(2, 2))(aut_conv8), block1_conv2], axis=1)
+    aut_conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(aut_up9)
+    aut_conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(aut_conv9)
+
+    aut_conv10 = Conv2D(1, (1, 1), activation='linear', name='autoencoder')(aut_conv9)
+
+    y1_true = Input(shape=[1, img_rows - 60, img_cols - 60], name='y1_true')
+    y2_true = Input(shape=[3, img_rows, img_cols], name='y2_true')
+    y3_true = Input(shape=[1, ], name='y3_true')
+    y4_true = Input(shape=[1, ], name='y4_true')
+
+    out = CustomMultiLossLayer(removed_tasks, nb_outputs=4)([y1_true, y2_true, y3_true, y4_true, conv10, aut_conv10, regression_output, classification_output])
+    model = Model([inputs, y1_true, y2_true, y3_true, y4_true], out)
 
     # Load weights.
     if weights_path == '':

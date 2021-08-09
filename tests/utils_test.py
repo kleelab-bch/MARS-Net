@@ -5,6 +5,7 @@ from tqdm import tqdm
 
 import sys
 sys.path.append('../models')
+sys.path.append('../data_handle')
 from data_processor import get_std_mean_from_images
 
 def show_cropped_image(img_batch, mask_batch, img_path, img_format, strategy_type, save_path):

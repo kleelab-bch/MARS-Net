@@ -12,6 +12,7 @@ from deep_neural_net import *
 from deep_neural_net_3D import *
 from deep_neural_net_attn import *
 from deep_neural_net_layer import *
+from model_utils import get_MTL_weights, get_MTL_auto_remove_task
 import loss
 
 import numpy as np
@@ -65,6 +66,9 @@ def build_model_predict(constants, frame, repeat_index, model_name, image_rows, 
     elif "VGG16" in str(constants.strategy_type):
         model = VGG16(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
 
+    elif "spheroid_test_VGG19" in str(constants.strategy_type):
+        # model = VGG19(image_rows, image_cols, int((image_cols-orig_cols)/2), 0, 0, weights_path=weights_path, encoder_weights=None)
+        model = VGG19(image_rows, image_cols, 64, image_cols-orig_cols-64, image_rows-orig_rows-64, weights_path=weights_path, encoder_weights=None)
     elif "VGG19D_temporal_context_residual" in str(constants.strategy_type):
         model = VGG19D_temporal_context_residual(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
     elif "VGG19D_temporal_distributed_v2" in str(constants.strategy_type):
@@ -123,22 +127,28 @@ def build_model_train(constants, args, frame, model_name):
     pretrained_weights_path = constants.get_pretrained_weights_path(frame, model_name)
 
     if "VGG19_MTL_auto" in str(constants.strategy_type):
-        model = VGG19_MTL_auto(args.input_size, args.input_size, args.cropped_boundary, 0, 0, weights_path=pretrained_weights_path)
+        removed_tasks = get_MTL_auto_remove_task(constants.strategy_type)
+        model = VGG19_MTL_auto(args.input_size, args.input_size, args.cropped_boundary, 0, 0, removed_tasks, weights_path=pretrained_weights_path)
         model.compile(optimizer=Adam(lr=1e-5), loss=None)
 
     elif "VGG19_MTL" in str(constants.strategy_type):
         model = VGG19_MTL(args.input_size, args.input_size, args.cropped_boundary, 0, 0, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy', tf.keras.losses.MeanSquaredLogarithmicError(), tfa.losses.sigmoid_focal_crossentropy],
-                      loss_weights={"segmentation":0.75,"regressor":0.01,"classifier":1})
+        cls, reg, aut, seg = get_MTL_weights(constants.strategy_type)
+        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy', tf.keras.losses.MeanSquaredError(), tf.keras.losses.MeanAbsoluteError(), tfa.losses.sigmoid_focal_crossentropy],
+                      loss_weights={"segmentation": seg, "autoencoder": aut, "regressor": reg, "classifier": cls})
 
     elif "VGG19_classifier_regressor" in str(constants.strategy_type):
         model = VGG19_classifier_regressor(args.input_size, args.input_size, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=[tf.keras.losses.MeanSquaredLogarithmicError(), tfa.losses.sigmoid_focal_crossentropy],
+        model.compile(optimizer=Adam(lr=1e-5), loss=[tf.keras.losses.MeanAbsoluteError(), tfa.losses.sigmoid_focal_crossentropy],
                       loss_weights={"regressor":0.01,"classifier":1})
 
     elif "VGG19_classifier_custom_loss" in str(constants.strategy_type):
         model = VGG19_classifier_custom_loss(args.input_size, args.input_size, weights_path=pretrained_weights_path)
         model.compile(optimizer=Adam(lr=1e-5), loss=None)
+
+    elif "VGG19_classifier_binary" in str(constants.strategy_type):
+        model = VGG19_classifier(args.input_size, args.input_size, weights_path=pretrained_weights_path)
+        model.compile(optimizer=Adam(lr=1e-5), loss=[tf.keras.losses.BinaryCrossentropy()], metrics=['accuracy'])
 
     elif "VGG19_classifier" in str(constants.strategy_type):
         model = VGG19_classifier(args.input_size, args.input_size, weights_path=pretrained_weights_path)

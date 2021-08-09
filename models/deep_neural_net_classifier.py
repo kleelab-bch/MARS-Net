@@ -268,36 +268,36 @@ def UNet_encoder_classifier(img_rows, img_cols, weights_path):
     inputs = Input(shape=[img_rows, img_cols, 3])
 
     # Block 1
-    x = Conv2D(64, (3, 3), activation='relu', padding='same', name='conv1_1', kernel_regularizer=l2(0.0005))(inputs)
-    x = Conv2D(64, (3, 3), activation='relu', padding='same', name='conv1_2', kernel_regularizer=l2(0.0005))(x)
+    x = Conv2D(64, (3, 3), activation='relu', padding='same', name='conv1_1')(inputs)
+    x = Conv2D(64, (3, 3), activation='relu', padding='same', name='conv1_2')(x)
     x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(x)
 
     # Block 2
-    x = Conv2D(128, (3, 3), activation='relu', padding='same', name='conv2_1', kernel_regularizer=l2(0.0005))(x)
-    x = Conv2D(128, (3, 3), activation='relu', padding='same', name='conv2_2', kernel_regularizer=l2(0.0005))(x)
+    x = Conv2D(128, (3, 3), activation='relu', padding='same', name='conv2_1')(x)
+    x = Conv2D(128, (3, 3), activation='relu', padding='same', name='conv2_2')(x)
     x = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')(x)
 
     # Block 3
-    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='conv3_1', kernel_regularizer=l2(0.0005))(x)
-    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='conv3_2', kernel_regularizer=l2(0.0005))(x)
+    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='conv3_1')(x)
+    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='conv3_2')(x)
     x = MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool')(x)
 
     # Block 4
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv4_1', kernel_regularizer=l2(0.0005))(x)
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv4_2', kernel_regularizer=l2(0.0005))(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv4_1')(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv4_2')(x)
     x = MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool')(x)
 
     # Block 5
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv5_1', kernel_regularizer=l2(0.0005))(x)
-    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv5_2', kernel_regularizer=l2(0.0005))(x)
+    x = Conv2D(1024, (3, 3), activation='relu', padding='same', name='conv5_1')(x)
+    x = Conv2D(1024, (3, 3), activation='relu', padding='same', name='conv5_2')(x)
     x = MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool')(x)
 
     x = Flatten(name='flatten')(x)
-    x = Dense(4096, activation='relu', kernel_regularizer=l2(0.0005))(x)
+    x = Dense(4096, activation='relu', name='fc1')(x)
     x = Dropout(0.5)(x)
-    x = Dense(4096, activation='relu', kernel_regularizer=l2(0.0005))(x)
+    x = Dense(4096, activation='relu', name='fc2')(x)
     x = Dropout(0.5)(x)
-    output = Dense(1000, activation='softmax', kernel_regularizer=l2(0.0005))(x)
+    output = Dense(1000, activation='softmax', name='prediction')(x)
 
     model = Model(inputs=inputs, outputs=output)
 
@@ -391,17 +391,28 @@ def VGG19_imagenet_classifier(img_rows, img_cols, weights_path):
     x = MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool')(x)
 
     x = Flatten(name='flatten')(x)
-    x = Dense(4096, activation='relu', kernel_regularizer=l2(0.0005))(x)
+    x = Dense(4096, activation='relu', kernel_regularizer=l2(0.0005), name='fc1')(x)
     x = Dropout(0.5)(x)
-    x = Dense(4096, activation='relu', kernel_regularizer=l2(0.0005))(x)
+    x = Dense(4096, activation='relu', kernel_regularizer=l2(0.0005), name='fc2')(x)
     x = Dropout(0.5)(x)
-    output = Dense(1000, activation='softmax', kernel_regularizer=l2(0.0005))(x)
+    output = Dense(1000, activation='softmax', kernel_regularizer=l2(0.0005), name='predictions')(x)
 
-    model = Model(inputs=inputs, outputs=output)
+    model = Model(inputs=inputs, outputs=output, name='vgg19')
 
     # Load weights.
     if weights_path != '':
         model.load_weights(weights_path, by_name=True)
+
+    # WEIGHTS_PATH = ('https://storage.googleapis.com/tensorflow/keras-applications/'
+    #                 'vgg19/vgg19_weights_tf_dim_ordering_tf_kernels.h5')
+    #
+    # weights_path = get_file(
+    #     'vgg19_weights_tf_dim_ordering_tf_kernels.h5',
+    #     WEIGHTS_PATH,
+    #     cache_subdir='models',
+    #     file_hash='cbe5617147190e668d6c5d5026f83318')
+    #
+    # model.load_weights(weights_path)
 
     return model
 

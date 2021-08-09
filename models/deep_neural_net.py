@@ -586,9 +586,11 @@ def VGG19(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path
     if bottom_crop == 0:
         conv10 = Cropping2D(cropping=((crop_margin, crop_margin), (crop_margin, crop_margin)))(
             conv10)  # ((top_crop, bottom_crop), (left_crop, right_crop)) for training
+    elif bottom_crop > 0 and bottom_crop > 0 and right_crop > 0:
+        conv10 = Cropping2D(cropping=((crop_margin, bottom_crop), (crop_margin, right_crop)))(conv10)
     else:
-        conv10 = Cropping2D(cropping=((0, bottom_crop), (0, right_crop)))(
-            conv10)  # remove reflected portion from the image for prediction
+        # remove reflected portion from the image for prediction
+        conv10 = Cropping2D(cropping=((0, bottom_crop), (0, right_crop)))(conv10)
 
     model = Model(inputs=inputs, outputs=conv10)
 

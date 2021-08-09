@@ -2,8 +2,7 @@
 Author Junbong Jang
 Date 3/14/2021
 
-fit_generator to lazy load images for training
-referenced: https://medium.com/@mrgarg.rajat/training-on-large-datasets-that-dont-fit-in-memory-in-keras-60a974785d71
+To train models on datasets that are cropped and processed
 '''
 
 import sys
@@ -23,7 +22,7 @@ from tensorflow.keras.utils import plot_model
 
 from debug_utils import *
 from UserParams import UserParams
-from custom_callback import TimeHistory, EpochPrinterCallback
+from custom_callback import TimeHistory, TrainableLossWeightsCallback
 from model_builder import build_model_train
 from data_generator_MTL import get_data_generator_MTL
 from data_generator_classifier import get_data_generator_classifier
@@ -43,11 +42,13 @@ def train_model(constants, model_index, frame, repeat_index, history_path):
     if 'paxillin_TIRF' in train_val_dataset_names[0] and \
         ('specialist' in constants.strategy_type or 'single_micro' in constants.strategy_type):
         process_type = 'normalize'
+    elif 'process_clip' in constants.strategy_type:
+        process_type = 'clip'
     else:
         process_type = 'standardize'
 
     # ---------------------- Load Data Generator --------------------------
-    if '_classifier' in constants.strategy_type or '_MTL' in constants.strategy_type:
+    if 'FNA' in constants.strategy_type:
         train_x, train_y, valid_x, valid_y = get_data_generator_MTL(train_val_dataset_names, repeat_index, args.crop_mode, constants.img_format, 'train')
         if '_classifier' in constants.strategy_type and 'regressor' not in constants.strategy_type:
             # get mask class list only
@@ -58,6 +59,10 @@ def train_model(constants, model_index, frame, repeat_index, history_path):
             # get mask area list and class list
             train_y = (train_y[1], train_y[2])
             valid_y = (valid_y[1], valid_y[2])
+
+        else:
+            train_y = [train_y[0], train_x, train_y[1], train_y[2]]
+            valid_y = [valid_y[0], valid_x, valid_y[1], valid_y[2]]
 
     elif '_3D' in constants.strategy_type:
         train_x, train_y, valid_x, valid_y = get_data_generator_3D_all(train_val_dataset_names,
@@ -110,7 +115,7 @@ def train_model(constants, model_index, frame, repeat_index, history_path):
         monitor='val_loss', save_best_only=True)
 
     time_callback = TimeHistory()
-    epoch_printer_Callback = EpochPrinterCallback(model)
+    trainable_loss_weights_callback = TrainableLossWeightsCallback(model)
     logdir = 'results/history_round{}_{}/tensorboard_frame{}_{}_repeat{}_{}'.format(constants.round_num,
                                                                                 constants.strategy_type, str(frame),
                                                                                 model_name,
@@ -118,22 +123,16 @@ def train_model(constants, model_index, frame, repeat_index, history_path):
                                                         datetime.now().strftime("%Y%m%d-%H%M%S"))
 
     # reference https://github.com/tensorflow/tensorflow/blob/v2.4.1/tensorflow/python/keras/engine/training.py#L1823-L1861
-    if "VGG19_classifier_custom_loss" in str(constants.strategy_type):
-        hist = model.fit([train_x, train_y],
+    if "VGG19_classifier_custom_loss" in str(constants.strategy_type) or "VGG19_MTL_auto" in str(constants.strategy_type):
+        hist = model.fit([train_x, *train_y],
                          epochs=args.epochs,
                          verbose=1,
                          workers=1,
                          batch_size=args.train_batch_size,
-                         validation_data=([valid_x, valid_y]),
-                         callbacks=[model_checkpoint, earlyStopping, time_callback, epoch_printer_Callback, TensorBoard(log_dir=logdir)])
-    elif "VGG19_MTL_auto" in str(constants.strategy_type):
-        hist = model.fit([train_x, train_y[0], train_y[1], train_y[2]],
-                         epochs=args.epochs,
-                         verbose=1,
-                         workers=1,
-                         batch_size=args.train_batch_size,
-                         validation_data=([valid_x, valid_y[0], valid_y[1], valid_y[2]]),
-                         callbacks=[model_checkpoint, earlyStopping, time_callback, epoch_printer_Callback, TensorBoard(log_dir=logdir)])
+                         validation_data=([valid_x, *valid_y]),
+                         callbacks=[model_checkpoint, earlyStopping, time_callback, trainable_loss_weights_callback, TensorBoard(log_dir=logdir)])
+        hist.history['trainable_loss_weights'] = trainable_loss_weights_callback.history_of_trainable_loss_weights
+
     else:
         hist = model.fit(train_x, train_y,
                          epochs=args.epochs,
@@ -156,7 +155,6 @@ def train_model(constants, model_index, frame, repeat_index, history_path):
 
 
 if __name__ == "__main__":
-
     K.set_image_data_format('channels_first')
     print(K.image_data_format())
     constants = UserParams('train')
@@ -169,7 +167,7 @@ if __name__ == "__main__":
         os.makedirs('results/model_round{}_{}/'.format(constants.round_num, constants.strategy_type))
     for repeat_index in range(constants.REPEAT_MAX):
         for frame_index in range(len(constants.frame_list)):
-            for model_index in range(0,1): # len(constants.model_names)
+            for model_index in range(len(constants.model_names)):
                 frame = constants.frame_list[frame_index]
                 start_time = time.time()
                 train_model(constants, model_index, frame, repeat_index, history_path)

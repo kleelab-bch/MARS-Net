@@ -14,6 +14,33 @@ def find_param_after_string(string):
     print(regex.findall(string))
 
 
+def get_MTL_weights(strategy_type):
+    cls = re.findall(r"cls([0-9.]*[0-9]+)_", strategy_type)
+    reg = re.findall(r"reg([0-9.]*[0-9]+)_", strategy_type)
+    aut = re.findall(r"aut([0-9.]*[0-9]+)_", strategy_type)
+    seg = re.findall(r"_seg([0-9.]*[0-9]+)", strategy_type)
+    
+    def process_regex_find(regex_result):
+        if len(regex_result):
+            return float(regex_result[0])
+        else:
+            return 0
+    cls, reg, aut, seg = process_regex_find(cls), process_regex_find(reg), process_regex_find(aut), process_regex_find(seg)
+
+    print('cls, reg, aut, seg weights:', cls, reg, aut, seg)
+
+    return cls, reg, aut, seg
+
+
+def get_MTL_auto_remove_task(strategy_type):
+    m = re.search("VGG19_MTL_auto_(\w+)", strategy_type)
+    removed_tasks = m.groups()[0].split('_')
+
+    print('removed tasks', removed_tasks)
+
+    return removed_tasks
+
+
 def get_available_gpu():
     _output_to_list = lambda x: x.decode('ascii').split('\n')[:-1]
 

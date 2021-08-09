@@ -10,7 +10,7 @@ constants_struct = GlobalConfig().update_config('');
 
 %% For comparing two model at one specific frame
 %chosen_first_model_index = 1;
-%chosen_second_model_index = 4;
+%chosen_second_model_index = 3;
 prediction_counter = 1;
 for prediction_counter = 1:length(constants_struct.prediction_path_list)-1
     chosen_first_model_index = prediction_counter

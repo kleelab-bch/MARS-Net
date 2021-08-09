@@ -6,9 +6,9 @@
 '''
 
 import os
-from models.models_utils import get_available_gpu, find_param_after_string
+from models.model_utils import get_available_gpu, find_param_after_string
 # tensorflow import must come after os.environ gpu setting
-os.environ["CUDA_VISIBLE_DEVICES"] = get_available_gpu()
+os.environ["CUDA_VISIBLE_DEVICES"] = '1'  # get_available_gpu()
 import argparse
 import numpy as np
 import random
@@ -33,9 +33,8 @@ class UserParams:
         # ['unet', 'VGG16_no_pretrain', 'VGG19_no_pretrain', 'VGG16', 'VGG19', 'VGG16_batchnorm', 'VGG19_batchnorm', 'VGG16_dropout', 'VGG19_dropout']
         # ['mDia_raw_unet', 'mDia_raw_VGG19_dropout']
         # ['paxillin_TIRF_normalize_cropped_unet_patience_10', 'paxillin_TIRF_normalize_cropped_VGG19_dropout_patience_10']
-        self.strategy_type = 'FNA_VGG19_MTL_auto_input256' # 'spheroid_VGG19_freeze' # 'FNA_VGG19_classifier_regressor_input256' # 'FNA_VGG19_classifier_input256' # 'FNA_vit_classifier_input256' # 'spheroid_unet' # 'spheroid_VGG16_no_pretrain' # 'unet_imagenet_pretrained' # 'FNA_VGG19_classifier_regressor_input256' # 'spheroid_VGG19' # 'VGG19_imagenet_classifier' #'unet_encoder_classifier' #'single_micro_small_unet' # 'unet_imagenet_pretrained' # 'cryptic_VGG19D_temporal_context_residual' # 'single_micro_VGG19D_temporal_context_residual' # 'cryptic_VGG19D_temporal_distributed_v2' # 'organoid_VGG19_dropout_crop_even' # 'cryptic_VGG19_dropout_mm_patience_10'
+        self.strategy_type = 'FNA_VGG19_MTL_cls1_reg0_aut0_seg0.75_input256' # 'FNA_VGG19_MTL_auto_reg_aut_input256_patience_10' # 'FNA_VGG19_MTL_cls1_reg0_aut0_seg0.75_input256' # 'FNA_VGG19_MTL_auto_reg_aut_input256_patience_10' #'unet_imagenet_pretrained_marsnet' # 'FNA_CV_VGG19_MTL_auto_input256' # 'FNA_CV_VGG19_MTL_auto_input256' # 'unet_imagenet_pretrained_marsnet' # 'unet_encoder_classifier' # 'FNA_CV_VGG19_MTL_auto_reg_aut_input256' # 'spheroid_test_VGG19_marsnet' # 'FNA_VGG19_classifier_input256' #'FNA_CV_VGG19_classifier_binary_input256' # 'spheroid_VGG19_freeze' #'single_micro_small_unet' # 'cryptic_VGG19D_temporal_context_residual' # 'single_micro_VGG19D_temporal_context_residual' # 'cryptic_VGG19D_temporal_distributed_v2' # 'organoid_VGG19_dropout_crop_even' # 'cryptic_VGG19_dropout_mm_patience_10'
         self.self_training_type = None
-        self.final_round_num = 2
         self.dataset_folders = '../assets/'
         self.img_format = '.png'
         self.crop_split_constant = 3
@@ -92,6 +91,30 @@ class UserParams:
                     self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
                     self.REPEAT_MAX = 1
 
+                elif 'spheroid_test' in str(self.strategy_type):
+                    self.dataset_folders = ['../assets/Spheroid/','../assets/Spheroid/','../assets/Spheroid/',
+                                            '../assets/Spheroid/','../assets/Spheroid/','../assets/Spheroid/',
+                                            '../assets/Spheroid/','../assets/Spheroid/','../assets/Spheroid/',
+                                            '../assets/Spheroid/','../assets/Spheroid/','../assets/Spheroid/',
+                                            '../assets/Spheroid/','../assets/Spheroid/','../assets/Spheroid/',
+                                            '../assets/Spheroid/','../assets/Spheroid/','../assets/Spheroid/',
+                                            '../assets/Spheroid/','../assets/Spheroid/','../assets/Spheroid/',
+                                            '../assets/Spheroid/','../assets/Spheroid/','../assets/Spheroid/']
+                    self.img_folders = ['/img/','/img/','/img/','/img/','/img/','/img/','/img/','/img/','/img/','/img/',
+                                        '/img/','/img/','/img/','/img/','/img/','/img/','/img/','/img/','/img/','/img/',
+                                        '/img/','/img/','/img/','/img/']
+                    self.mask_folders = ['/mask/','/mask/','/mask/','/mask/','/mask/','/mask/','/mask/','/mask/','/mask/','/mask/',
+                                         '/mask/','/mask/','/mask/','/mask/','/mask/','/mask/','/mask/','/mask/','/mask/','/mask/',
+                                         '/mask/','/mask/','/mask/','/mask/']
+
+                    self.frame_list = [1]
+                    self.dataset_names = ['test','1', '2', '3', '4', '5', '6', '7', '8', '9', '10',
+                                          '11', '12', '13', '14', '15', '16', '17', '18', '19',
+                                          '20', '21', '22', '23']
+                    self.model_names = ['train','A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+                                        'Q', 'R', 'S', 'T', 'U', 'V', 'W']
+                    self.REPEAT_MAX = 1
+
                 elif 'spheroid' in str(self.strategy_type):
                     self.dataset_folders = ['../assets/Spheroid/','../assets/Spheroid/','../assets/Spheroid/',
                                             '../assets/Spheroid/','../assets/Spheroid/','../assets/Spheroid/',
@@ -116,10 +139,20 @@ class UserParams:
                                         'Q', 'R', 'S', 'T', 'U', 'V', 'W']
                     self.REPEAT_MAX = 1
 
-                elif 'FNA_' in str(self.strategy_type):
+                elif 'FNA_CV' in str(self.strategy_type):
+                    self.dataset_folders = ['../assets/FNA/','../assets/FNA/','../assets/FNA/','../assets/FNA/','../assets/FNA/','../assets/FNA/']
+                    self.img_folders = ['/img/','/img/','/img/','/img/','/img/','/img/']
+                    self.mask_folders = ['/mask_processed/','/mask_processed/','/mask_processed/','/mask_processed/','/mask_processed/','/mask_processed/']
+
+                    self.frame_list = [2]
+                    self.dataset_names = ['FNA_valid_fold0', 'FNA_valid_fold1', 'FNA_valid_fold2', 'FNA_valid_fold3', 'FNA_valid_fold4', 'FNA_valid_fold5']
+                    self.model_names = ['A','B','C','D','E','F']
+                    self.REPEAT_MAX = 1
+
+                elif 'FNA' in str(self.strategy_type):
                     self.dataset_folders = ['../assets/FNA/','../assets/FNA/']
                     self.img_folders = ['/img/','/img/']
-                    self.mask_folders = ['/mask/','/mask/']
+                    self.mask_folders = ['/mask_processed/','/mask_processed/']
 
                     self.frame_list = [2]
                     self.dataset_names = ['FNA_test', 'FNA_train_val']
@@ -283,10 +316,10 @@ class UserParams:
                     self.img_folders = ['/img/','/img/','/img/','/img/','/img/']
                     self.mask_folders = ['/mask_fixed/','/mask_fixed/','/mask_fixed/','/mask_fixed/','/mask_fixed/']
 
-                    self.frame_list = [10]
+                    self.frame_list = [1,2,6,10,22,34]
                     self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03', '040119_PtK1_S01_01_phase_2_DMSO_nd_02', '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2','040119_PtK1_S01_01_phase']
                     self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
-                    self.REPEAT_MAX = 5
+                    self.REPEAT_MAX = 1
 
             elif self.round_num == 2:  # self-training
                 self.img_folder = '/img_all/'
@@ -408,6 +441,29 @@ class UserParams:
                     self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
                     self.REPEAT_MAX = 1
 
+                elif 'spheroid_test' in str(self.strategy_type):
+
+                    # self.dataset_folders = ['../assets/Spheroid/test/','../assets/Spheroid/test/','../assets/Spheroid/test/',
+                    #                         '../assets/Spheroid/test/','../assets/Spheroid/test/','../assets/Spheroid/test/',
+                    #                         '../assets/Spheroid/test/','../assets/Spheroid/test/','../assets/Spheroid/test/',
+                    #                         '../assets/Spheroid/test/','../assets/Spheroid/test/','../assets/Spheroid/test/']
+                    self.dataset_folders = ['../assets/Spheroid/test_2048/','../assets/Spheroid/test_2048/','../assets/Spheroid/test_2048/',
+                                            '../assets/Spheroid/test_2048/','../assets/Spheroid/test_2048/','../assets/Spheroid/test_2048/',
+                                            '../assets/Spheroid/test_2048/','../assets/Spheroid/test_2048/','../assets/Spheroid/test_2048/',
+                                            '../assets/Spheroid/test_2048/','../assets/Spheroid/test_2048/','../assets/Spheroid/test_2048/']
+                    self.img_folders = ['/','/','/','/','/','/',
+                                        '/','/','/','/','/','/']
+                    self.mask_folders = ['/mask/','/mask/','/mask/','/mask/','/mask/','/mask/',
+                                         '/mask/','/mask/','/mask/','/mask/','/mask/','/mask/']
+
+                    self.frame_list = [1]
+                    self.dataset_names = ['Cdc42_5uM', 'Cdc42_10uM', 'DMSO', 'DMSO_2', 'FAK', 'FAK_2',
+                                          'Rac_5uM', 'Rac_10uM', 'Rac_20uM', 'Rho_5uM', 'Rho_10uM', 'Rho_20uM']
+
+                    self.model_names = ['train', 'train', 'train', 'train', 'train', 'train',
+                                        'train', 'train', 'train', 'train', 'train', 'train']
+                    self.REPEAT_MAX = 1
+
                 elif 'spheroid' in str(self.strategy_type):
                     self.dataset_folders = ['../assets/Spheroid/','../assets/Spheroid/','../assets/Spheroid/',
                                             '../assets/Spheroid/','../assets/Spheroid/','../assets/Spheroid/',
@@ -432,11 +488,20 @@ class UserParams:
                                         'Q', 'R', 'S', 'T', 'U', 'V', 'W']
                     self.REPEAT_MAX = 1
 
+                elif 'FNA_CV' in str(self.strategy_type):
+                    self.dataset_folders = ['../assets/FNA/','../assets/FNA/','../assets/FNA/','../assets/FNA/','../assets/FNA/','../assets/FNA/']
+                    self.img_folders = ['/img/','/img/','/img/','/img/','/img/','/img/']
+                    self.mask_folders = ['/mask_processed/','/mask_processed/','/mask_processed/','/mask_processed/','/mask_processed/','/mask_processed/']
 
-                elif 'FNA_' in str(self.strategy_type):
-                    self.dataset_folders = ['../assets/FNA/','../assets/FNA/']
-                    self.img_folders = ['/img/','/img/']
-                    self.mask_folders = ['/mask/','/mask/']
+                    self.frame_list = [2]
+                    self.dataset_names = ['FNA_valid_fold0', 'FNA_valid_fold1', 'FNA_valid_fold2', 'FNA_valid_fold3', 'FNA_valid_fold4', 'FNA_valid_fold5']
+                    self.model_names = ['A','B','C','D','E','F']
+                    self.REPEAT_MAX = 1
+
+                elif 'FNA' in str(self.strategy_type):
+                    self.dataset_folders = ['../assets/FNA/', '../assets/FNA/']
+                    self.img_folders = ['/img/', '/img/']
+                    self.mask_folders = ['/mask_processed/', '/mask_processed/']
 
                     self.frame_list = [2]
                     self.dataset_names = ['FNA_test', 'FNA_train_val']
@@ -577,13 +642,13 @@ class UserParams:
                     self.img_folders = ['/img/', '/img/', '/img/', '/img/', '/img/']
                     self.mask_folders = ['/mask_fixed/', '/mask_fixed/', '/mask_fixed/', '/mask_fixed/', '/mask_fixed/']
 
-                    self.frame_list = [10]
+                    self.frame_list = [1,2,6,10,22,34]
                     self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03',
                                           '040119_PtK1_S01_01_phase_2_DMSO_nd_02',
                                           '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2',
                                           '040119_PtK1_S01_01_phase']
                     self.model_names = ['ABCD', 'ABCE', 'ABDE', 'ACDE', 'BCDE']
-                    self.REPEAT_MAX = 5
+                    self.REPEAT_MAX = 1
 
                     # self.img_folders = ['/raw/','/raw/','/raw/','/raw/','/raw/',
                     #                     '/img_cropped/','/img_cropped/','/img_cropped/','/img_cropped/','/img_cropped/','/img_cropped/']
@@ -661,7 +726,7 @@ class UserParams:
 
         if 'patience_10' in str(self.strategy_type):
             patience = 10
-            epochs = 300
+            epochs = 100
         else:
             patience = 3
             epochs = 100
@@ -848,8 +913,6 @@ class UserParams:
             weights_path = '../models/results/model_round1_VGG19_imagenet_classifier/model_frame0_A_repeat0.hdf5'
         elif 'unet_imagenet_pretrained' in str(self.strategy_type):
             weights_path = '../models/results/model_round1_unet_encoder_classifier/model_frame0_A_repeat0.hdf5'
-        # elif 'VGG19_MTL_auto' in str(self.strategy_type):
-        #     weights_path = '../models/results/model_round1_FNA_VGG19_MTL_input256/model_frame2_training_repeat0.hdf5'
         elif "mask_denoising" == str(self.strategy_type):
             weights_path = 'results/model_round{}_{}/model'.format(self.round_num, self.strategy_type)+str(frame)+'_' + model_name +'.hdf5'
 
@@ -916,7 +979,7 @@ class UserParams:
 
     def update_eval_config(self, predict_path_index):
         predict_path = self.predict_path_list[predict_path_index]
-        print('update_eval_config', predict_path_index, predict_path)
+        # print('update_eval_config', predict_path_index, predict_path)
 
         self.img_folder = '/img/'
 

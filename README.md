@@ -67,6 +67,8 @@ Tool to facilitate labelling raw images semi-automatically
 1. To determine hysteresis thresholding for canny detector and kernel size for blurring, run
     * label_tool/explore_edge_extraction_user_params.py
 1. Compare results in generated_explore_edge folder
+1. Write the optimal hyper parameters found from previous step in 
+    * label_tool/user_params.py
 1. To extract edge after choosing hyper parameters, run
     * Python extract_edge.py 
 1. Manually Fix the generated edges

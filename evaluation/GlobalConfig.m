@@ -119,7 +119,7 @@ classdef GlobalConfig
 %        prediction_path_list = {'../../models/results/predict_wholeframe_round1_unet/';
 %                                 '../../models/results/predict_wholeframe_round1_VGG16_no_pretrain/';
 %                                 '../../models/results/predict_wholeframe_round1_VGG19_no_pretrain/';
-%                                 '../../models/results/predict_wholeframe_round1_unet_imagenet_pretrained/';
+%                                 '../../models/results/predict_wholeframe_round1_unet_imagenet_pretrained_marsnet/';
 %                                 '../../models/results/predict_wholeframe_round1_VGG16/';
 %                                 '../../models/results/predict_wholeframe_round1_VGG19/';
 %                                 '../../models/results/predict_wholeframe_round1_VGG16_batchnorm/';
@@ -127,18 +127,19 @@ classdef GlobalConfig
 %                                  '../../models/results/predict_wholeframe_round1_VGG16_dropout/';
 %                                  '../../models/results/predict_wholeframe_round1_VGG19_dropout/';
 %                                  '../../models/results/predict_wholeframe_round1_VGG19_batchnorm_dropout/'};
-%         prediction_path_list = {'../../models/results/predict_wholeframe_round1_unet/';
-%                                 '../../models/results/predict_wholeframe_round1_VGG16/';
-%                                 '../../models/results/predict_wholeframe_round1_VGG19/';
-%                                 '../../models/results/predict_wholeframe_round1_VGG16_dropout/';
-%                                 '../../models/results/predict_wholeframe_round1_VGG19_dropout/';
-%                                 '../../models/results/predict_wholeframe_round1_Res50V2/';
-%                                 '../../models/results/predict_wholeframe_round1_EFF_B7_no_preprocessing/'};
+         prediction_path_list = {'../../models/results/predict_wholeframe_round1_unet/';
+                                 '../../models/results/predict_wholeframe_round1_unet_imagenet_pretrained_marsnet/';
+                                 '../../models/results/predict_wholeframe_round1_VGG16/';
+                                 '../../models/results/predict_wholeframe_round1_VGG19/';
+                                 '../../models/results/predict_wholeframe_round1_VGG16_dropout/';
+                                 '../../models/results/predict_wholeframe_round1_VGG19_dropout/';
+                                 '../../models/results/predict_wholeframe_round1_Res50V2/';
+                                 '../../models/results/predict_wholeframe_round1_EFF_B7_no_preprocessing/'};
 
-        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_unet/';
-                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_VGG19_no_pretrain/';
-                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_VGG19_freeze/';
-                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_VGG19/'};
+%        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_unet/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_VGG19_no_pretrain/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_VGG19/'};
+%        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_test_VGG19_upscaled_marsnet/'};
 
 %        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_organoid_VGG19_dropout_crop_even/'};
 %% --------------------------------------------------------------
@@ -166,7 +167,8 @@ classdef GlobalConfig
 %        display_names = {'WF norm'; 'TIRF norm'};
 %        display_names = {'Teacher TIRF'; 'Student TIRF'};
 
-        display_names = {'spheroid_unet'; 'spheroid_VGG19_no_pretrain'; 'spheroid_VGG19_freeze'; 'spheroid_VGG19'};
+%        display_names = {'spheroid_unet'; 'spheroid_VGG19_no_pretrain'; 'spheroid_VGG19'};
+%        display_names = {'spheroid_VGG19_marsnet'};
 
 %        display_names = {'64';'80';'96';'128'; '192'; '256'};
 %        display_names = {'U-Net'; 'U-Net pretrained';};
@@ -181,13 +183,14 @@ classdef GlobalConfig
 %                         'VGG16D-U-Net';
 %                         'VGG19D-U-Net';
 %                         'VGG19D&B-U-Net'};
-%        display_names = {'U-Net no pretrain';
-%                         'VGG16-U-Net';
-%                         'VGG19-U-Net';
-%                         'VGG16-U-Net dropout';
-%                         'VGG19-U-Net dropout';
-%                         'Res50V2-U-Net';
-%                         'EFF-B7-U-Net'};
+        display_names = {'U-Net NP';
+                         'U-Net P';
+                         'VGG16-U-Net';
+                         'VGG19-U-Net';
+                         'VGG16-U-Net dropout';
+                         'VGG19-U-Net dropout';
+                         'Res50V2-U-Net';
+                         'EFF-B7-U-Net'};
 
 %        display_names = {'organoid VGG19D-U-Net';};
 
@@ -195,7 +198,7 @@ classdef GlobalConfig
 % In the frame_list matrix,
 % each column corresponds to different number of traning frames and
 % each row separated by ; corresponds to the different models
-        frame_list = [1;1;1;1];
+%        frame_list = [1;1;1];
 %        frame_list = [2;2];
 %        frame_list = [10;10;10;10];
 
@@ -213,6 +216,8 @@ classdef GlobalConfig
 
 %        frame_list = [10;10;10;10;10;
 %                      10;10;10;10;10;10];
+        frame_list = [10;10;10;10;
+                      10;10;10;10];
 %        frame_list = [1,2,6,10,22,34;
 %                     1,2,6,10,22,34;
 %                     1,2,6,10,22,34;
@@ -221,7 +226,7 @@ classdef GlobalConfig
 %                     1,2,6,10,22,34;
 %                     1,2,6,10,22,34];
 
-%        frame_list = [2];
+%        frame_list = [1];
 
 %% --------------------------------------------------------------
     end  % properties end
@@ -347,6 +352,23 @@ classdef GlobalConfig
                     GlobalConfigObj.dataset_split_list = [length(GlobalConfigObj.dataset_list)];
                     GlobalConfigObj.dataset_interval_list = [1];
 
+                elseif contains(prediction_path, 'spheroid_test')
+                    GlobalConfigObj.repeat_max = 1;
+                    GlobalConfigObj.img_root_path = '/media/bch_drive/Public/JunbongJang/Segmentation/assets/Spheroid/test/';
+                    GlobalConfigObj.mask_type = '/mask/';
+                    GlobalConfigObj.img_type = '/';
+                    GlobalConfigObj.dataset_list = {'Cdc42_5uM'; 'Cdc42_10uM'; 'DMSO'; 'DMSO_2'; 'FAK'; 'FAK_2';
+                                                    'Rac_5uM'; 'Rac_10uM'; 'Rac_20uM'; 'Rho_5uM'; 'Rho_10uM'; 'Rho_20uM'};
+                    GlobalConfigObj.fold_name_list = {'train'; 'train'; 'train'; 'train'; 'train'; 'train';
+                                                      'train'; 'train'; 'train'; 'train'; 'train'; 'train'; };
+                    GlobalConfigObj.max_dist_pixel = 3;
+
+                    % blue, dark gray, orange
+                    GlobalConfigObj.graph_colors = [[0, 0.4470, 0.7410]];
+                    GlobalConfigObj.dataset_split_list = [length(GlobalConfigObj.dataset_list)];
+                    GlobalConfigObj.dataset_interval_list = [1];
+
+
                 elseif contains(prediction_path, 'spheroid')
                     GlobalConfigObj.repeat_max = 1;
                     GlobalConfigObj.img_root_path = '/media/bch_drive/Public/JunbongJang/Segmentation/assets/Spheroid/';
@@ -356,9 +378,8 @@ classdef GlobalConfig
                     GlobalConfigObj.fold_name_list = {'A'; 'B'; 'C'; 'D'; 'E'; 'F'; 'G'; 'H'; 'I'; 'J'; 'K'; 'L'; 'M'; 'N'; 'O'; 'P'; 'Q'; 'R'; 'S'; 'T'; 'U'; 'V'; 'W'};
                     GlobalConfigObj.max_dist_pixel = 3;
 
-                    % blue, dark gray, gray, orange
+                    % blue, dark gray, orange
                     GlobalConfigObj.graph_colors = [[0, 0.4470, 0.7410];
-                                                    [53,53,53]/255;
                                                     [153,153,153]/255;
                                                     [0.8500, 0.3250, 0.0980];];
                     GlobalConfigObj.dataset_split_list = [length(GlobalConfigObj.dataset_list)];
