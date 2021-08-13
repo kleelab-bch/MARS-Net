@@ -23,7 +23,8 @@ function draw_barplot(mean_across_frame, errorci, saved_folder, metric_type, gra
     ylabel(metric_type);
 %    title('Comparison of models');
 
-    ylim(GlobalConfig.find_graph_ylim(mean_across_frame, errorci, 1));
+%    ylim(GlobalConfig.find_graph_ylim(mean_across_frame, errorci, 1));
+    ylim(graph_ylim)
 
     axis square;
     box on;

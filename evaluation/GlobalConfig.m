@@ -37,12 +37,12 @@ classdef GlobalConfig
         dataset_interval_list = [];
 
         dice_ylim = [0,0.8];
-        f1_ylim = [0, 0.5];
+        f1_ylim = [0.84, 0.96];
         recall_ylim = [0.86, 0.92];
         precision_ylim = [0.93, 0.985];
 
         dice_bar_ylim = [0.99,1];
-        f1_bar_ylim = [0.83, 0.94];
+        f1_bar_ylim = [0.9, 0.95];
         recall_bar_ylim = [0.86, 0.925];
         precision_bar_ylim = [0.935, 0.98];
 
@@ -127,19 +127,19 @@ classdef GlobalConfig
 %                                  '../../models/results/predict_wholeframe_round1_VGG16_dropout/';
 %                                  '../../models/results/predict_wholeframe_round1_VGG19_dropout/';
 %                                  '../../models/results/predict_wholeframe_round1_VGG19_batchnorm_dropout/'};
-         prediction_path_list = {'../../models/results/predict_wholeframe_round1_unet/';
-                                 '../../models/results/predict_wholeframe_round1_unet_imagenet_pretrained_marsnet/';
-                                 '../../models/results/predict_wholeframe_round1_VGG16/';
-                                 '../../models/results/predict_wholeframe_round1_VGG19/';
-                                 '../../models/results/predict_wholeframe_round1_VGG16_dropout/';
-                                 '../../models/results/predict_wholeframe_round1_VGG19_dropout/';
-                                 '../../models/results/predict_wholeframe_round1_Res50V2/';
-                                 '../../models/results/predict_wholeframe_round1_EFF_B7_no_preprocessing/'};
+%         prediction_path_list = {'../../models/results/predict_wholeframe_round1_unet/';
+%                                 '../../models/results/predict_wholeframe_round1_unet_imagenet_pretrained_marsnet/';
+%                                 '../../models/results/predict_wholeframe_round1_VGG16/';
+%                                 '../../models/results/predict_wholeframe_round1_VGG19/';
+%                                 '../../models/results/predict_wholeframe_round1_VGG16_dropout/';
+%                                 '../../models/results/predict_wholeframe_round1_VGG19_dropout/';
+%                                 '../../models/results/predict_wholeframe_round1_Res50V2/';
+%                                 '../../models/results/predict_wholeframe_round1_EFF_B7_no_preprocessing/'};
 
 %        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_unet/';
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_VGG19_no_pretrain/';
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_VGG19/'};
-%        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_test_VGG19_upscaled_marsnet/'};
+        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_test_VGG19_upscaled/'};
 
 %        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_organoid_VGG19_dropout_crop_even/'};
 %% --------------------------------------------------------------
@@ -183,16 +183,16 @@ classdef GlobalConfig
 %                         'VGG16D-U-Net';
 %                         'VGG19D-U-Net';
 %                         'VGG19D&B-U-Net'};
-        display_names = {'U-Net NP';
-                         'U-Net P';
-                         'VGG16-U-Net';
-                         'VGG19-U-Net';
-                         'VGG16-U-Net dropout';
-                         'VGG19-U-Net dropout';
-                         'Res50V2-U-Net';
-                         'EFF-B7-U-Net'};
+%        display_names = {'U-Net NP';
+%                         'U-Net P';
+%                         'VGG16-U-Net';
+%                         'VGG19-U-Net';
+%                         'VGG16-U-Net dropout';
+%                         'VGG19-U-Net dropout';
+%                         'Res50V2-U-Net';
+%                         'EFF-B7-U-Net'};
 
-%        display_names = {'organoid VGG19D-U-Net';};
+        display_names = {'spheroid_test_VGG19_upscaled';};
 
 %% --------------------------------------------------------------
 % In the frame_list matrix,
@@ -216,9 +216,10 @@ classdef GlobalConfig
 
 %        frame_list = [10;10;10;10;10;
 %                      10;10;10;10;10;10];
-        frame_list = [10;10;10;10;
-                      10;10;10;10];
+%        frame_list = [10;10;10;10;
+%                      10;10;10;10];
 %        frame_list = [1,2,6,10,22,34;
+%                     1,2,6,10,22,34;
 %                     1,2,6,10,22,34;
 %                     1,2,6,10,22,34;
 %                     1,2,6,10,22,34;
@@ -226,7 +227,7 @@ classdef GlobalConfig
 %                     1,2,6,10,22,34;
 %                     1,2,6,10,22,34];
 
-%        frame_list = [1];
+        frame_list = [1];
 
 %% --------------------------------------------------------------
     end  % properties end
@@ -426,7 +427,7 @@ classdef GlobalConfig
                     GlobalConfigObj.dataset_interval_list = [1];
                 
                 elseif contains(prediction_path, '_VGG') || contains(prediction_path, '_unet') || contains(prediction_path, '_Res') || contains(prediction_path, '_Dense') || contains(prediction_path, '_EFF_B7')
-                    GlobalConfigObj.repeat_max = 1;
+                    GlobalConfigObj.repeat_max = 5;
                     GlobalConfigObj.img_root_path = '/media/bch_drive/Public/JunbongJang/Segmentation/assets/';
                     GlobalConfigObj.mask_type = '/mask_fixed/';
                     GlobalConfigObj.img_type = '/img/';
@@ -437,14 +438,15 @@ classdef GlobalConfig
 %                    GlobalConfigObj.fold_name_list = {'A'; 'B'; 'C'; 'D'; 'E'};
                     GlobalConfigObj.max_dist_pixel = 3;
 
-                    % blue, red, green, yellow, orange, skyblue, violet
-%                    GlobalConfigObj.graph_colors = [[0, 0.4470, 0.7410];
-%                                    [0.6350, 0.0780, 0.1840];
-%                                    [0.4660, 0.6740, 0.1880];
-%                                    [0.9290, 0.6940, 0.1250];
-%                                    [0.8500, 0.3250, 0.0980];
-%                                    [0.3010, 0.7450, 0.9330];
-%                                    [0.4940, 0.1840, 0.5560]];
+                    % blue, skyblue, red, green, yellow, orange, pink, violet
+                    GlobalConfigObj.graph_colors = [[0, 0.4470, 0.7410];
+                                    [0.3010, 0.7450, 0.9330];
+                                    [0.6350, 0.0780, 0.1840];
+                                    [0.4660, 0.6740, 0.1880];
+                                    [0.9290, 0.6940, 0.1250];
+                                    [0.8500, 0.3250, 0.0980];
+                                    [247,129,191]/255;
+                                    [0.4940, 0.1840, 0.5560]];
 
                     % blue, pink, skyblue, red, green, light yellow, gray, yellow, orange, violet
 %                    GlobalConfigObj.graph_colors = [[0, 0.4470, 0.7410];
@@ -459,17 +461,17 @@ classdef GlobalConfig
 %                                    [0.4940, 0.1840, 0.5560]];
 
                     % blue, pink, darkgray, skyblue, red, green, light yellow, gray, yellow, orange, violet
-                    GlobalConfigObj.graph_colors = [[0, 0.4470, 0.7410];
-                                    [247,129,191]/255;
-                                    [53,53,53]/255;
-                                    [0.3010, 0.7450, 0.9330];
-                                    [0.6350, 0.0780, 0.1840];
-                                    [0.4660, 0.6740, 0.1880];
-                                    [255,255,153]/255;
-                                    [153,153,153]/255;
-                                    [0.9290, 0.6940, 0.1250];
-                                    [0.8500, 0.3250, 0.0980];
-                                    [0.4940, 0.1840, 0.5560]];
+%                    GlobalConfigObj.graph_colors = [[0, 0.4470, 0.7410];
+%                                    [247,129,191]/255;
+%                                    [53,53,53]/255;
+%                                    [0.3010, 0.7450, 0.9330];
+%                                    [0.6350, 0.0780, 0.1840];
+%                                    [0.4660, 0.6740, 0.1880];
+%                                    [255,255,153]/255;
+%                                    [153,153,153]/255;
+%                                    [0.9290, 0.6940, 0.1250];
+%                                    [0.8500, 0.3250, 0.0980];
+%                                    [0.4940, 0.1840, 0.5560]];
 
                     % blue, yellow, pink, orange, green, red
 %                    GlobalConfigObj.graph_colors = [[0, 0.4470, 0.7410];

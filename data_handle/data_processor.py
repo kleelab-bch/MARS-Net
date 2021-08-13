@@ -56,6 +56,23 @@ def preprocess_input(imgs, std=None, mean=None):
     return imgs_p
 
 
+def minmax_normalize_per_input_image(imgs):
+    imgs_p = to3channel(imgs)
+    for img_index in range(imgs_p.shape[0]):  # scale each image to [0, 1]
+        img = imgs_p[img_index]
+        max = np.amax(img)
+        min = np.amin(img)
+        if max == min:
+            print(f'minmax_normalize_per_input_image max == min, index {img_index}')
+            # raise Exception(f'image index {img_index}\n, max == min, {max} {min}', img)
+            img = (img - min) / min
+        else:
+            img = (img - min) / (max - min)
+        imgs_p[img_index] = img
+
+    return imgs_p
+
+
 def normalize_input(imgs):
     imgs_p = to3channel(imgs)
     imgs_p /= 255.  # scale image to [0, 1]

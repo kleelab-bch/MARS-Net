@@ -8,7 +8,7 @@ prepare generator to lazily load them
 
 referenced: https://medium.com/@mrgarg.rajat/training-on-large-datasets-that-dont-fit-in-memory-in-keras-60a974785d71
 '''
-from data_processor import preprocess_input, preprocess_output, normalize_input, preprocess_per_input_image
+from data_processor import *
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.utils import Sequence
@@ -183,9 +183,11 @@ def getAugmentedImages(x_filenames, y_filenames, dataset_names, aug_batch_size, 
 
     print('getAugmentedImages:', aug_images.shape, aug_images.dtype, aug_masks.shape, aug_masks.dtype)
     # ---------- preprocessing ------------
-    if process_type == 'normalize':
+    if process_type == 'minmax_normalize':
+        aug_images = minmax_normalize_per_input_image(aug_images)
+    elif process_type == 'normalize':
         aug_images = normalize_input(aug_images)
-    elif process_type == 'standardize':
+    elif 'standardize' in process_type:
         aug_images = preprocess_input(aug_images)
     elif process_type == 'clip':
         aug_images = clip_input(aug_images)

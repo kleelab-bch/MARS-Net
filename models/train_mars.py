@@ -165,6 +165,7 @@ def train_model(constants, model_index, frame, repeat_index):
     pretrained_weights_path = constants.get_pretrained_weights_path(frame, constants.model_names[model_index])
 
     print('Load Model...')
+
     if "Res50V2" == str(constants.strategy_type):
         model = ResNet50V2Keras(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
         model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])

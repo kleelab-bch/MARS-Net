@@ -9,7 +9,7 @@ import numpy as np
 import glob
 import os, cv2
 from tqdm import tqdm
-from data_processor import to3channel, preprocess_input, normalize_input, clip_input, heq_norm_input, aggregate_std_mean, get_std_mean_from_images, preprocess_per_input_image
+from data_processor import *
 
 class PredictDataGenerator:
     def __init__(self, img_path, mask_path, strategy_type, img_format='.png'):
@@ -27,6 +27,9 @@ class PredictDataGenerator:
             imgs = to3channel(imgs)
         elif 'clip' in str(self.strategy_type):
             imgs = clip_input(imgs)
+        elif 'minmax_normalize' in str(self.strategy_type):
+            print('---minmax_normalize---')
+            imgs = minmax_normalize_per_input_image(imgs)
         elif 'normalize' in str(self.strategy_type):
             imgs = normalize_input(imgs)
         elif 'heq' in str(self.strategy_type):

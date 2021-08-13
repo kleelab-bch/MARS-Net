@@ -51,6 +51,7 @@ def convert_classified_grids_to_boxes(classified_list, save_path, box_save_name)
     img_height = 1944
     img_width = 2592
     patch_size = 256
+    crop_patch_offset = (patch_size-60) * 0.5
     assert img_width%width_patches == 0
     assert img_height%height_pathces == 0
 
@@ -68,8 +69,8 @@ def convert_classified_grids_to_boxes(classified_list, save_path, box_save_name)
             height_coord = patch_index % height_pathces
             width_coord = patch_index // height_pathces
             # print(height_coord, width_coord)
-            xmin = (img_width//width_patches) * width_coord
-            ymin = (img_height//height_pathces) * height_coord
+            xmin = crop_patch_offset * width_coord
+            ymin = crop_patch_offset * height_coord
             xmax = xmin + patch_size
             ymax = ymin + patch_size
 

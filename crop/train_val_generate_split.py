@@ -153,6 +153,7 @@ class data_generate:
         else:
             m_path = self.mask_folder
         mask_list = glob.glob(m_path + '*' + self.img_format)
+        print(m_path)
         img = cv2.imread(mask_list[0], cv2.IMREAD_GRAYSCALE)
         r, c = img.shape
         if constants.round_num > 1:
@@ -190,11 +191,13 @@ class data_generate:
             img_path = img_list[i]
             mask_path = mask_list[i]
             img_name = img_path[len(r_path):]
-            mask_name = mask_path[len(r_path):]
+            mask_name = mask_path[len(m_path):]
 
             image_id = mask_name[-7:-4]
+            print(img_name, mask_name)
+            print(img_name[:-7], image_id,  img_name[-4:])
             img_name = img_name[:-7] + image_id + img_name[-4:]
-            
+
             framenames.append(image_id)
             if constants.round_num == 1:
                 msks[i], edgs[i] = self.read_msk(mask_list[i])

@@ -39,8 +39,9 @@ function draw_line_with_error_extra_lines(all_means, all_ci, extra_means, extra_
     legend(total_plots, display_names, 'Location', 'SouthEastOutside','Box','off');
     xlabel('Number of training frames');
     ylabel(metric_name);
-    ylim(GlobalConfig.find_graph_ylim(extra_means, extra_ci, 1));
-
+%    ylim(GlobalConfig.find_graph_ylim(extra_means, extra_ci, 1));
+    ylim(graph_ylim)
+    
 %    title([ 'Compare ', metric_name, ' ', title_prefix],'fontweight','bold','fontsize',24);
     xticks(frame_array);
 

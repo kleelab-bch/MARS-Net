@@ -16,7 +16,7 @@ import gc
 from datetime import datetime
 
 import tensorflow as tf
-from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping, TensorBoard
+from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping, TensorBoard
 from tensorflow.keras import backend as K
 from tensorflow.keras.utils import plot_model
 
@@ -44,8 +44,11 @@ def train_model(constants, model_index, frame, repeat_index, history_path):
         process_type = 'normalize'
     elif 'process_clip' in constants.strategy_type:
         process_type = 'clip'
+    elif 'minmax_normalize' in constants.strategy_type:
+        process_type = 'minmax_normalize'
     else:
         process_type = 'standardize'
+    print('process_type', process_type)
 
     # ---------------------- Load Data Generator --------------------------
     if 'FNA' in constants.strategy_type:
@@ -107,6 +110,7 @@ def train_model(constants, model_index, frame, repeat_index, history_path):
     # ---------------------- Fit the Model ----------------------
 
     print('Fit Model...', args.epochs, args.patience)
+    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, verbose=1, min_lr=1e-6)
     earlyStopping = EarlyStopping(monitor='val_loss', patience=args.patience, verbose=0, mode='auto')  # args.patience
     model_checkpoint = ModelCheckpoint(
         'results/model_round{}_{}/model_frame{}_{}_repeat{}.hdf5'.format(constants.round_num, constants.strategy_type,
@@ -140,7 +144,7 @@ def train_model(constants, model_index, frame, repeat_index, history_path):
                          workers=1,
                          batch_size = args.train_batch_size,
                          validation_data=(valid_x, valid_y),
-                         callbacks=[model_checkpoint, earlyStopping, time_callback, TensorBoard(log_dir=logdir)])
+                         callbacks=[model_checkpoint, reduce_lr, earlyStopping, time_callback, TensorBoard(log_dir=logdir)])
 
     # ----------------------  Save the Training History ----------------------
     hist.history['times'] = time_callback.times
