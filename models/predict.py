@@ -201,7 +201,7 @@ if __name__ == "__main__":
 
     # for self training, ABCD model predicts for dataset A,B,C,D
     # for test set prediction, ABCD model predicts the dataset E
-    for repeat_index in range(constants.REPEAT_MAX):
+    for repeat_index in range(1, constants.REPEAT_MAX):
         for frame in constants.frame_list:
             for model_index in range(len(constants.model_names)):
                 prediction(constants, frame, model_index, repeat_index)
