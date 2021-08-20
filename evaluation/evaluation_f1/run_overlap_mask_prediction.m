@@ -29,9 +29,9 @@ for prediction_num = 1 : length(constants_struct.prediction_path_list)
                              constants_struct.display_names{prediction_num} ,'_', dataset_name, '_', fold_name, '/']
                  constants_struct.concat_display_names()
 
-%                overlap_mask_prediction(prediction_path, mask_path, img_path, frame_num, constants_struct.max_dist_pixel, visualize_bool, save_path);
+                overlap_mask_prediction(prediction_path, mask_path, img_path, frame_num, constants_struct.max_dist_pixel, visualize_bool, save_path);
 %                overlap_mask_only(mask_path, img_path, save_path);
-                overlap_prediction_only(prediction_path, img_path, save_path);
+%                overlap_prediction_only(prediction_path, img_path, save_path);
 %                draw_edge_evolution(prediction_path, img_path, frame_num, save_path);
             end
 

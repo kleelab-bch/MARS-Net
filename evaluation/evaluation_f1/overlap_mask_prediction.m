@@ -33,14 +33,25 @@ function overlap_mask_prediction(prediction_path, mask_path, img_path, frame_num
             mask = double(imread([mask_path, mask_name]));
             img_predicted = imread([prediction_path, image_name]);
 
-            %% cropping images
-            img = img(30:row, 30:col);
-            mask = mask(30:row, 30:col);
-            img_predicted = img_predicted(30:row, 30:col);
-
             %% Extracting the Boundary for F1, precision and recall
             mask_edge = extract_edge(mask, 0);
             predicted_edge = extract_edge(img_predicted);
+
+            %% cropping images
+            img = img(30:row, 30:col);
+            mask_edge = mask_edge(30:row, 30:col);
+            predicted_edge = predicted_edge(30:row, 30:col);
+
+            % ----------------------
+%            %% cropping images
+%            img = img(30:row, 30:col);
+%            mask = mask(30:row, 30:col);
+%            img_predicted = img_predicted(30:row, 30:col);
+%
+%            %% Extracting the Boundary for F1, precision and recall
+%            mask_edge = extract_edge(mask, 0);
+%            predicted_edge = extract_edge(img_predicted);
+%            % ------------------------------------
 
             % processing the images for dice
             mask = process_image(mask);
@@ -65,7 +76,6 @@ function overlap_mask_prediction(prediction_path, mask_path, img_path, frame_num
             end
 
             [match1_U,match2_U] = correspondPixels(predicted_edge, mask_edge, maxDist);
-            
             %Precision
             precision = double(sum(match1_U(:) > 0)) / double(sum(predicted_edge(:)));
             model_precision = [model_precision, precision];
@@ -81,6 +91,13 @@ function overlap_mask_prediction(prediction_path, mask_path, img_path, frame_num
             model_F_score = [model_F_score, F_score];
             %Dice
             model_dice = [model_dice, dice(mask, img_predicted)];
+
+%            disp('---------')
+%            double(sum(predicted_edge(:)))
+%            double(sum(mask_edge(:)))
+%            double(sum(match2_U(:) > 0))
+%            precision
+%            recall
 
         end
         save([save_path, 'Recall_Precision_F_score_frame', num2str(frame_num), '.mat'], 'model_recall', 'model_precision', 'model_F_score', 'model_dice', 'image_list');

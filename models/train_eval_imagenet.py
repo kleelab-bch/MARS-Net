@@ -37,7 +37,8 @@ constants = UserParams('imagenet')
 repeat_index = 0
 model_name = 'A'
 frame = 0
-input_size = 224
+orig_input_size = 256
+crop_input_size = 224
 batch_size = 256
 
 from tensorflow.python.ops import array_ops
@@ -142,20 +143,22 @@ def parse_train_input(filename, label):
     image = tf.cast(image_decoded, tf.float32)
 
     # resize to size 256 x 256
-    image = smart_resize(image, [input_size, input_size], interpolation='bilinear')
-    # image = tf.image.per_image_standardization(image)
+    image = smart_resize(image, [orig_input_size, orig_input_size], interpolation='bilinear')
 
     return image, label
 
 
-def train_preprocess(image, label):
-    image = tf.image.random_flip_left_right(image)
+def preprocess_train_input(image, label):
+    # crop patch of size 224 x 224 from the size 256 x 256
+    image = tf.image.random_crop(value=image, size=(crop_input_size, crop_input_size, 3))
 
-    image = tf.image.random_brightness(image, max_delta=32.0 / 255.0)
+    # Augment by random horizontal flipping and randomRGB colour shift
+    # reference https://www.codestudyblog.com/cnb/0319190238.html
+    image = tf.image.random_flip_left_right(image)
+    image = tf.image.random_brightness(image, max_delta=25.0 / 255.0)
     image = tf.image.random_saturation(image, lower=0.5, upper=1.5)
 
-    #Make sure the image is still in [0, 1]
-    image = tf.clip_by_value(image, 0.0, 1.0)
+    image = tf.image.per_image_standardization(image)
 
     return image, label
 
@@ -165,7 +168,7 @@ def parse_prediction_input(filename):
     image_decoded = tf.io.decode_jpeg(image_string, channels=3)
     image = tf.cast(image_decoded, tf.float32)
 
-    image = smart_resize(image, [input_size, input_size], interpolation='bilinear')
+    image = smart_resize(image, [crop_input_size, crop_input_size], interpolation='bilinear')
     # tf.print(tf.math.reduce_max(image))
     # image /= 127.5
     # image -= 1.
@@ -203,7 +206,7 @@ def get_filenames_from_directory(directory_path):
 # -----------------------------------------------------------
 
 def get_model(input_size, weights_path, strategy_type):
-    if strategy_type == 'unet_encoder_classifier':
+    if 'unet_encoder_classifier' in strategy_type:
         model = UNet_encoder_classifier(input_size, input_size, weights_path)
     elif strategy_type == 'VGG16_imagenet_classifier':
         model = VGG16_imagenet_classifier(input_size, input_size, weights_path)
@@ -234,11 +237,13 @@ def train():
         train_dataset = full_dataset.take(train_size)
         valid_dataset = full_dataset.skip(train_size)
 
-        # preprocess every image in the dataset using `map`
+        # Load data
         train_dataset = train_dataset.map(parse_train_input, num_parallel_calls=4)
         valid_dataset = valid_dataset.map(parse_train_input, num_parallel_calls=4)
 
-        # Augment data: random horizontal flipping and randomRGB colour shift
+        # Preprocess and Augment data
+        train_dataset = train_dataset.map(preprocess_train_input, num_parallel_calls=4)
+        valid_dataset = valid_dataset.map(preprocess_train_input, num_parallel_calls=4)
 
         # batch
         train_dataset = train_dataset.batch(batch_size)
@@ -256,7 +261,7 @@ def train():
     # with strategy.scope():
     epochs = 74
 
-    model = get_model(input_size, '', constants.strategy_type)
+    model = get_model(crop_input_size, '', constants.strategy_type)
 
     top_1_accuracy = tf.keras.metrics.SparseTopKCategoricalAccuracy(k=1, name="top_1_categorical_accuracy")
     top_5_accuracy = tf.keras.metrics.SparseTopKCategoricalAccuracy(k=5, name="top_5_categorical_accuracy")
@@ -354,6 +359,7 @@ def evaluate():
     orig_dataset = orig_dataset.prefetch(1000)
 
     fliped_dataset = full_dataset.map(parse_prediction_input, num_parallel_calls=4)
+    fliped_dataset = full_dataset.map(fliped_dataset, num_parallel_calls=4)
     fliped_dataset = fliped_dataset.map(flip_input_image, num_parallel_calls=4)
     fliped_dataset = fliped_dataset.batch(1)
     fliped_dataset = fliped_dataset.prefetch(1000)
@@ -361,7 +367,7 @@ def evaluate():
     # ------------------- Load trained model ---------------------
     weights_path = constants.get_trained_weights_path(str(frame), model_name, str(repeat_index))
 
-    model = get_model(input_size, weights_path, constants.strategy_type)
+    model = get_model(crop_input_size, weights_path, constants.strategy_type)
 
     # ------------------- Predict ----------------------
     # combine multiple prediction results from multiple scales
@@ -392,5 +398,5 @@ def evaluate():
 
 
 if __name__ == "__main__":
-    # train()
-    evaluate()
+    train()
+    # evaluate()

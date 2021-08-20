@@ -51,7 +51,7 @@ def prediction(constants, frame, model_index, repeat_index):
         orig_input_images, input_images, masks, image_filenames = get_data_generator_MTL([dataset_name], repeat_index, args.crop_mode, constants.img_format, 'predict')
         masks, mask_area_list, mask_classes = masks[0], masks[1], masks[2]
         image_rows, image_cols = input_images.shape[2:]
-        orig_rows, orig_cols = 0, 0
+        orig_rows, orig_cols = input_images.shape[2:]
 
     else:
         prediction_data_generator = PredictDataGenerator(img_path, mask_path, a_strategy, img_format=constants.img_format)
@@ -70,9 +70,8 @@ def prediction(constants, frame, model_index, repeat_index):
         # else:
         input_images, image_filenames, image_cols, image_rows, orig_cols, orig_rows = prediction_data_generator.get_expanded_whole_frames()
 
-
-        print('img size:', image_rows, image_cols)
-        print('orig img size:', orig_rows, orig_cols)
+    print('img size:', image_rows, image_cols)
+    print('orig img size:', orig_rows, orig_cols)
 
     if "deeplabv3" == str(constants.strategy_type) or "EFF_B" in str(constants.strategy_type) \
         or "imagenet_pretrained" in str(constants.strategy_type) \
@@ -106,6 +105,7 @@ def prediction(constants, frame, model_index, repeat_index):
             if '_MTL' in str(constants.strategy_type):
                 pred_mask, pred_aut, pred_mask_area_list, pred_class_list, encoded_feature_vector = model.predict(input_images, batch_size=1, verbose=1)
                 print(pred_mask.shape, pred_aut.shape)
+                save_segmented_image(pred_mask, constants.strategy_type, save_path, image_filenames)
             else:
                 pred_mask_area_list, pred_class_list, encoded_feature_vector = model.predict(input_images, batch_size=1, verbose=1)
             print(pred_mask_area_list.shape, pred_class_list.shape, encoded_feature_vector.shape)
@@ -146,7 +146,7 @@ def prediction(constants, frame, model_index, repeat_index):
 
         np.save(save_path + 'prediction_result_list.npy', prediction_result_list)
 
-    # ----------------- For segmentation outputs ---------------------
+    # ----------------- Post Process segmentation outputs ---------------------
     else:
         if "feature_extractor" in str(constants.strategy_type):
             segmented_output, style_output = model.predict(input_images, batch_size = 1, verbose = 1)
@@ -157,29 +157,33 @@ def prediction(constants, frame, model_index, repeat_index):
             input_images = np.moveaxis(input_images, 1, 2)  # new image shape: 1, channel, depth, width, height
             segmented_output = model.predict(input_images, batch_size = 1, verbose = 1) # output shape (1, 1, 16, 474, 392)
             segmented_output = np.moveaxis(segmented_output[0], 0, 1)  # new output shape: (16, 1, 474, 392)
-        else:
-            segmented_output = model.predict(input_images, batch_size = 1, verbose = 1)
 
-        segmented_output = 255 * segmented_output  # 0=black color and 255=white color
-
-        # post process segmentation
-        # if "spheroid_test" in str(constants.strategy_type):
-        #     segmented_output = prediction_data_generator.stitch_cropped_patches_into_whole_frame(segmented_output)
-
-        if "deeplabv3" == str(constants.strategy_type) or "EFF_B" in str(constants.strategy_type) or "imagenet_pretrained" in str(constants.strategy_type):
+        elif "deeplabv3" == str(constants.strategy_type) or "EFF_B" in str(constants.strategy_type) or "imagenet_pretrained" in str(constants.strategy_type):
             # move last channel to first channel
             segmented_output = np.moveaxis(segmented_output, -1, 1)
             print(segmented_output.shape)
 
-        # save segmentation into images
-        for f in tqdm(range(segmented_output.shape[0])):
-            if constants.strategy_type == 'movie3' or constants.strategy_type == 'movie3_loss':
-                out = segmented_output[f, 1, :, :]
-            else:
-                out = segmented_output[f, 0, :, :]
-            cv2.imwrite(save_path + image_filenames[f], out)
+        else:
+            segmented_output = model.predict(input_images, batch_size = 1, verbose = 1)
+
+        # if "spheroid_test" in str(constants.strategy_type):   # not used because prediction results are worse
+        #     segmented_output = prediction_data_generator.stitch_cropped_patches_into_whole_frame(segmented_output)
+
+        save_segmented_image(segmented_output, constants.strategy_type, save_path, image_filenames)
 
     K.clear_session()
+
+
+def save_segmented_image(segmented_output, strategy_type, save_path, image_filenames):
+    segmented_output = 255 * segmented_output  # 0=black color and 255=white color
+
+    # save segmentation into images
+    for f in tqdm(range(segmented_output.shape[0])):
+        if strategy_type == 'movie3' or strategy_type == 'movie3_loss':
+            out = segmented_output[f, 1, :, :]
+        else:
+            out = segmented_output[f, 0, :, :]
+        cv2.imwrite(save_path + image_filenames[f], out)
 
 
 def get_dataset_name(constants):
@@ -201,7 +205,7 @@ if __name__ == "__main__":
 
     # for self training, ABCD model predicts for dataset A,B,C,D
     # for test set prediction, ABCD model predicts the dataset E
-    for repeat_index in range(1, constants.REPEAT_MAX):
+    for repeat_index in range(constants.REPEAT_MAX):
         for frame in constants.frame_list:
             for model_index in range(len(constants.model_names)):
                 prediction(constants, frame, model_index, repeat_index)

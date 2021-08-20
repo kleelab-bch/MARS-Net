@@ -37,7 +37,7 @@ classdef GlobalConfig
         dataset_interval_list = [];
 
         dice_ylim = [0,0.8];
-        f1_ylim = [0.84, 0.96];
+        f1_ylim = [0.84, 0.95];
         recall_ylim = [0.86, 0.92];
         precision_ylim = [0.93, 0.985];
 
@@ -116,17 +116,19 @@ classdef GlobalConfig
 
 %        prediction_path_list = {'../../models/results/predict_wholeframe_round1_unet/';
 %                                 '../../models/results/predict_wholeframe_round1_unet_imagenet_pretrained/';};
-%        prediction_path_list = {'../../models/results/predict_wholeframe_round1_unet/';
-%                                 '../../models/results/predict_wholeframe_round1_VGG16_no_pretrain/';
-%                                 '../../models/results/predict_wholeframe_round1_VGG19_no_pretrain/';
-%                                 '../../models/results/predict_wholeframe_round1_unet_imagenet_pretrained_marsnet/';
-%                                 '../../models/results/predict_wholeframe_round1_VGG16/';
-%                                 '../../models/results/predict_wholeframe_round1_VGG19/';
-%                                 '../../models/results/predict_wholeframe_round1_VGG16_batchnorm/';
-%                                  '../../models/results/predict_wholeframe_round1_VGG19_batchnorm/';
-%                                  '../../models/results/predict_wholeframe_round1_VGG16_dropout/';
-%                                  '../../models/results/predict_wholeframe_round1_VGG19_dropout/';
-%                                  '../../models/results/predict_wholeframe_round1_VGG19_batchnorm_dropout/'};
+        prediction_path_list = {'../../models/results/predict_wholeframe_round1_unet/';
+                                 '../../models/results/predict_wholeframe_round1_VGG16_no_pretrain/';
+                                 '../../models/results/predict_wholeframe_round1_VGG19_no_pretrain/';
+                                 '../../models/results/predict_wholeframe_round1_unet_imagenet_pretrained_marsnet/';
+                                 '../../models/results/predict_wholeframe_round1_VGG16/';
+                                 '../../models/results/predict_wholeframe_round1_VGG19/';
+                                 '../../models/results/predict_wholeframe_round1_VGG16_batchnorm/';
+                                  '../../models/results/predict_wholeframe_round1_VGG19_batchnorm/';
+                                  '../../models/results/predict_wholeframe_round1_VGG16_dropout/';
+                                  '../../models/results/predict_wholeframe_round1_VGG19_dropout/';
+                                  '../../models/results/predict_wholeframe_round1_VGG19_batchnorm_dropout/'};
+
+
 %         prediction_path_list = {'../../models/results/predict_wholeframe_round1_unet/';
 %                                 '../../models/results/predict_wholeframe_round1_unet_imagenet_pretrained_marsnet/';
 %                                 '../../models/results/predict_wholeframe_round1_VGG16/';
@@ -139,7 +141,7 @@ classdef GlobalConfig
 %        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_unet/';
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_VGG19_no_pretrain/';
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_VGG19/'};
-        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_test_VGG19_upscaled/'};
+%        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_test_VGG19_upscaled/'};
 
 %        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_organoid_VGG19_dropout_crop_even/'};
 %% --------------------------------------------------------------
@@ -172,17 +174,25 @@ classdef GlobalConfig
 
 %        display_names = {'64';'80';'96';'128'; '192'; '256'};
 %        display_names = {'U-Net'; 'U-Net pretrained';};
-%        display_names = {'U-Net';
-%                         'VGG16P-U-Net';
-%                         'VGG19P-U-Net';
-%                         'U-Net P';
+        display_names = {'U-Net';
+                         'VGG16P-U-Net';
+                         'VGG19P-U-Net';
+                         'U-Net P';
+                         'VGG16-U-Net';
+                         'VGG19-U-Net';
+                         'VGG16B-U-Net';
+                         'VGG19B-U-Net';
+                         'VGG16D-U-Net';
+                         'VGG19D-U-Net';
+                         'VGG19D&B-U-Net'};
+
+%        display_names = {'U-Net no pretrain';
 %                         'VGG16-U-Net';
 %                         'VGG19-U-Net';
-%                         'VGG16B-U-Net';
-%                         'VGG19B-U-Net';
-%                         'VGG16D-U-Net';
-%                         'VGG19D-U-Net';
-%                         'VGG19D&B-U-Net'};
+%                         'VGG16-U-Net dropout';
+%                         'VGG19-U-Net dropout';
+%                         'Res50V2-U-Net';
+%                         'EFF-B7-U-Net'};
 %        display_names = {'U-Net NP';
 %                         'U-Net P';
 %                         'VGG16-U-Net';
@@ -192,7 +202,7 @@ classdef GlobalConfig
 %                         'Res50V2-U-Net';
 %                         'EFF-B7-U-Net'};
 
-        display_names = {'spheroid_test_VGG19_upscaled';};
+%        display_names = {'spheroid_test_VGG19_upscaled';};
 
 %% --------------------------------------------------------------
 % In the frame_list matrix,
@@ -214,10 +224,11 @@ classdef GlobalConfig
 %        frame_list = [2 ;
 %                      200];
 
-%        frame_list = [10;10;10;10;10;
-%                      10;10;10;10;10;10];
+        frame_list = [10;10;10;10;10;
+                      10;10;10;10;10;10];
 %        frame_list = [10;10;10;10;
 %                      10;10;10;10];
+
 %        frame_list = [1,2,6,10,22,34;
 %                     1,2,6,10,22,34;
 %                     1,2,6,10,22,34;
@@ -227,7 +238,7 @@ classdef GlobalConfig
 %                     1,2,6,10,22,34;
 %                     1,2,6,10,22,34];
 
-        frame_list = [1];
+%        frame_list = [1];
 
 %% --------------------------------------------------------------
     end  % properties end
@@ -523,6 +534,7 @@ classdef GlobalConfig
             assert(GlobalConfigObj.total_prediction_path_num > 0)
             assert(size(GlobalConfigObj.prediction_path_list, 1) == size(GlobalConfigObj.display_names, 1))
             assert(size(GlobalConfigObj.dataset_list, 1) == size(GlobalConfigObj.fold_name_list, 1))
+            assert(GlobalConfigObj.chosen_frame_index <= size(GlobalConfigObj.frame_list, 2))
 
         end
 

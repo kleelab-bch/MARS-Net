@@ -194,8 +194,6 @@ class data_generate:
             mask_name = mask_path[len(m_path):]
 
             image_id = mask_name[-7:-4]
-            print(img_name, mask_name)
-            print(img_name[:-7], image_id,  img_name[-4:])
             img_name = img_name[:-7] + image_id + img_name[-4:]
 
             framenames.append(image_id)

@@ -1,10 +1,10 @@
 % Author Junbong Jang
 % Date: March 2020
 
-%dataset = {'040119_PtK1_S01_01_phase_3_DMSO_nd_03'; '040119_PtK1_S01_01_phase_2_DMSO_nd_02'; '040119_PtK1_S01_01_phase_2_DMSO_nd_01'; '040119_PtK1_S01_01_phase_ROI2'; '040119_PtK1_S01_01_phase'};
-%model_names = {'ABCD';'ABCE'; 'ABDE'; 'ACDE'; 'BCDE'};
-%root_path_list = {'../models/results/predict_wholeframe_round1_unet/'; '../models/results/predict_wholeframe_round1_VGG19_dropout/';};
-%frame_list = {'1','2','6','10','22','34'};
+dataset = {'040119_PtK1_S01_01_phase_3_DMSO_nd_03'; '040119_PtK1_S01_01_phase_2_DMSO_nd_02'; '040119_PtK1_S01_01_phase_2_DMSO_nd_01'; '040119_PtK1_S01_01_phase_ROI2'; '040119_PtK1_S01_01_phase'};
+model_names = {'ABCD';'ABCE'; 'ABDE'; 'ACDE'; 'BCDE'};
+root_path_list = {'../models/results/predict_wholeframe_round1_unet/'; '../models/results/predict_wholeframe_round1_VGG19_dropout/';};
+frame_list = {'1','2','6','10','22','34'};
 
 
 %dataset= {'1121-1'; '1121-3'; '1121-4'; '1121-5'; '1121-6'};
@@ -57,10 +57,10 @@
 %frame_list = {'2'};
 
 
-root_path_list = {'../models/results/predict_wholeframe_round1_single_micro_VGG19D_temporal_attn_v2/'}
-dataset = {'040119_PtK1_S01_01_phase_3_DMSO_nd_03'};
-model_names = {'ABCD'};
-frame_list = {'2'};
+%root_path_list = {'../models/results/predict_wholeframe_round1_single_micro_VGG19D_temporal_attn_v2/'}
+%dataset = {'040119_PtK1_S01_01_phase_3_DMSO_nd_03'};
+%model_names = {'ABCD'};
+%frame_list = {'2'};
 
 repeat_index = 0;
 for root_path_index = 1 : length(root_path_list)

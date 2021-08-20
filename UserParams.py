@@ -8,7 +8,7 @@
 import os
 from models.model_utils import get_available_gpu, find_param_after_string
 # tensorflow import must come after os.environ gpu setting
-os.environ["CUDA_VISIBLE_DEVICES"] = '0'  # get_available_gpu()
+os.environ["CUDA_VISIBLE_DEVICES"] = '1'  # get_available_gpu()
 import argparse
 import numpy as np
 import random
@@ -33,7 +33,7 @@ class UserParams:
         # ['unet', 'VGG16_no_pretrain', 'VGG19_no_pretrain', 'VGG16', 'VGG19', 'VGG16_batchnorm', 'VGG19_batchnorm', 'VGG16_dropout', 'VGG19_dropout']
         # ['mDia_raw_unet', 'mDia_raw_VGG19_dropout']
         # ['paxillin_TIRF_normalize_cropped_unet_patience_10', 'paxillin_TIRF_normalize_cropped_VGG19_dropout_patience_10']
-        self.strategy_type = 'unet_imagenet_pretrained_marsnet' # 'spheroid_test_VGG19_minmax_normalize' # 'unet_imagenet_pretrained_marsnet' # 'unet_small' # 'FNA_VGG19_MTL_cls1_reg0_aut0_seg0.75_input256' # 'FNA_VGG19_MTL_auto_reg_aut_input256_patience_10' #'unet_imagenet_pretrained_marsnet' # 'FNA_CV_VGG19_MTL_auto_input256' # 'FNA_CV_VGG19_MTL_auto_input256' # 'unet_encoder_classifier' # 'FNA_CV_VGG19_MTL_auto_reg_aut_input256' # 'FNA_VGG19_classifier_input256' #'FNA_CV_VGG19_classifier_binary_input256' # 'spheroid_VGG19_freeze' #'single_micro_small_unet' # 'cryptic_VGG19D_temporal_context_residual' # 'single_micro_VGG19D_temporal_context_residual' # 'cryptic_VGG19D_temporal_distributed_v2' # 'organoid_VGG19_dropout_crop_even' # 'cryptic_VGG19_dropout_mm_patience_10'
+        self.strategy_type = 'unet_marsnet' # 'unet_encoder_classifier_1024' # 'FNA_VGG19_MTL_cls0_reg0_aut0_seg1_input256_patience_10' # 'unet_imagenet_pretrained_marsnet' # 'spheroid_test_VGG19_minmax_normalize' # 'FNA_VGG19_MTL_cls1_reg0_aut0_seg0.75_input256' # 'FNA_VGG19_MTL_auto_reg_aut_input256_patience_10' # 'FNA_CV_VGG19_MTL_auto_input256' # 'unet_encoder_classifier' # 'FNA_CV_VGG19_MTL_auto_reg_aut_input256' # 'FNA_VGG19_classifier_input256' #'FNA_CV_VGG19_classifier_binary_input256' # 'spheroid_VGG19_freeze' #'single_micro_small_unet' # 'cryptic_VGG19D_temporal_context_residual' # 'single_micro_VGG19D_temporal_context_residual' # 'cryptic_VGG19D_temporal_distributed_v2' # 'organoid_VGG19_dropout_crop_even' # 'cryptic_VGG19_dropout_mm_patience_10'
         self.self_training_type = None
         self.dataset_folders = '../assets/'
         self.img_format = '.png'
@@ -316,10 +316,10 @@ class UserParams:
                     self.img_folders = ['/img/','/img/','/img/','/img/','/img/']
                     self.mask_folders = ['/mask_fixed/','/mask_fixed/','/mask_fixed/','/mask_fixed/','/mask_fixed/']
 
-                    self.frame_list = [1,2,6,10,22,34]
+                    self.frame_list = [10] # [1,2,6,10,22,34]
                     self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03', '040119_PtK1_S01_01_phase_2_DMSO_nd_02', '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2','040119_PtK1_S01_01_phase']
                     self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
-                    self.REPEAT_MAX = 5
+                    self.REPEAT_MAX = 1
 
             elif self.round_num == 2:  # self-training
                 self.img_folder = '/img_all/'
@@ -651,13 +651,13 @@ class UserParams:
                     self.img_folders = ['/img/', '/img/', '/img/', '/img/', '/img/']
                     self.mask_folders = ['/mask_fixed/', '/mask_fixed/', '/mask_fixed/', '/mask_fixed/', '/mask_fixed/']
 
-                    self.frame_list = [1,2,6,10,22,34]
+                    self.frame_list = [10] # [1,2,6,10,22,34]
                     self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03',
                                           '040119_PtK1_S01_01_phase_2_DMSO_nd_02',
                                           '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2',
                                           '040119_PtK1_S01_01_phase']
                     self.model_names = ['ABCD', 'ABCE', 'ABDE', 'ACDE', 'BCDE']
-                    self.REPEAT_MAX = 5
+                    self.REPEAT_MAX = 1
 
                     # self.img_folders = ['/raw/','/raw/','/raw/','/raw/','/raw/',
                     #                     '/img_cropped/','/img_cropped/','/img_cropped/','/img_cropped/','/img_cropped/','/img_cropped/']

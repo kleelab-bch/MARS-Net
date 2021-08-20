@@ -9,12 +9,11 @@ addpath('evaluation_dice')
 constants_struct = GlobalConfig().update_config('');
 
 %% For comparing two model at one specific frame
-%chosen_first_model_index = 1;
-%chosen_second_model_index = 3;
-prediction_counter = 1;
-for prediction_counter = 1:length(constants_struct.prediction_path_list)-1
-    chosen_first_model_index = prediction_counter
-    chosen_second_model_index = chosen_first_model_index + 1
+chosen_first_model_index = 6;
+chosen_second_model_index = 10;
+%for prediction_counter = 1:length(constants_struct.prediction_path_list)-1
+%    chosen_first_model_index = prediction_counter
+%    chosen_second_model_index = chosen_first_model_index + 1
     name_pair = [constants_struct.display_names{chosen_first_model_index}, '_', constants_struct.display_names{chosen_second_model_index}]
     root_save_path = [constants_struct.root_path, 'generated/violin_compare/', constants_struct.concat_display_names(), '/', name_pair, '/'];
     first_model_constants = constants_struct.update_config(constants_struct.prediction_path_list{chosen_first_model_index});
@@ -59,6 +58,7 @@ for prediction_counter = 1:length(constants_struct.prediction_path_list)-1
         repeat_combined_second_model_recall = [];
         repeat_combined_second_model_dice_coeff = [];
 
+        repeat_counter = 0;
         for repeat_index = 1 : constants_struct.repeat_max
             % get f1 data
             try
@@ -90,7 +90,7 @@ for prediction_counter = 1:length(constants_struct.prediction_path_list)-1
                     repeat_combined_second_model_precision = repeat_combined_second_model_precision + second_model_loaded_data.model_precision(1:constants_struct.dataset_interval_list(dataset_split_index):end);
                     repeat_combined_second_model_recall = repeat_combined_second_model_recall + second_model_loaded_data.model_recall(1:constants_struct.dataset_interval_list(dataset_split_index):end);
                 end
-
+                repeat_counter = repeat_counter + 1;
                 % if you uncomment this, comment out upper and lower block of codes
     %            repeat_combined_first_model_f1 = [repeat_combined_first_model_f1, first_model_loaded_data.model_F_score(1:constants_struct.dataset_interval_list(dataset_split_index):end)];
     %            repeat_combined_first_model_precision = [repeat_combined_first_model_precision, first_model_loaded_data.model_precision(1:constants_struct.dataset_interval_list(dataset_split_index):end) ];
@@ -108,13 +108,13 @@ for prediction_counter = 1:length(constants_struct.prediction_path_list)-1
         end
 
         % adding and averaging the technical replicate is necessary to reduce its statistical importance relative to biological replicates
-        repeat_combined_first_model_f1 = repeat_combined_first_model_f1 / constants_struct.repeat_max;
-        repeat_combined_first_model_precision = repeat_combined_first_model_precision / constants_struct.repeat_max;
-        repeat_combined_first_model_recall = repeat_combined_first_model_recall / constants_struct.repeat_max;
+        repeat_combined_first_model_f1 = repeat_combined_first_model_f1 / repeat_counter;
+        repeat_combined_first_model_precision = repeat_combined_first_model_precision / repeat_counter;
+        repeat_combined_first_model_recall = repeat_combined_first_model_recall / repeat_counter;
 
-        repeat_combined_second_model_f1 = repeat_combined_second_model_f1 / constants_struct.repeat_max;
-        repeat_combined_second_model_precision = repeat_combined_second_model_precision / constants_struct.repeat_max;
-        repeat_combined_second_model_recall = repeat_combined_second_model_recall / constants_struct.repeat_max;
+        repeat_combined_second_model_f1 = repeat_combined_second_model_f1 / repeat_counter;
+        repeat_combined_second_model_precision = repeat_combined_second_model_precision / repeat_counter;
+        repeat_combined_second_model_recall = repeat_combined_second_model_recall / repeat_counter;
 
 
         %% -------------- violinplot for comparing two methods at one frame and data -----------------------
@@ -133,11 +133,11 @@ for prediction_counter = 1:length(constants_struct.prediction_path_list)-1
         data_split_repeat_combined_first_model_f1 = [data_split_repeat_combined_first_model_f1, repeat_combined_first_model_f1];
         data_split_repeat_combined_first_model_precision = [data_split_repeat_combined_first_model_precision, repeat_combined_first_model_precision];
         data_split_repeat_combined_first_model_recall = [data_split_repeat_combined_first_model_recall, repeat_combined_first_model_recall];
-        data_split_repeat_combined_first_model_dice_coeff = [data_split_repeat_combined_first_model_dice_coeff, repeat_combined_first_model_dice_coeff];
+%        data_split_repeat_combined_first_model_dice_coeff = [data_split_repeat_combined_first_model_dice_coeff, repeat_combined_first_model_dice_coeff];
         data_split_repeat_combined_second_model_f1 = [data_split_repeat_combined_second_model_f1, repeat_combined_second_model_f1];
         data_split_repeat_combined_second_model_precision = [data_split_repeat_combined_second_model_precision, repeat_combined_second_model_precision];
         data_split_repeat_combined_second_model_recall = [data_split_repeat_combined_second_model_recall, repeat_combined_second_model_recall];
-        data_split_repeat_combined_second_model_dice_coeff = [data_split_repeat_combined_second_model_dice_coeff, repeat_combined_second_model_dice_coeff];
+%        data_split_repeat_combined_second_model_dice_coeff = [data_split_repeat_combined_second_model_dice_coeff, repeat_combined_second_model_dice_coeff];
 
         % per dataset summary for evaluating multi-modal model
         if data_index == constants_struct.dataset_split_list(dataset_split_index)
@@ -160,11 +160,11 @@ for prediction_counter = 1:length(constants_struct.prediction_path_list)-1
             data_repeat_combined_first_model_f1 = [data_repeat_combined_first_model_f1, data_split_repeat_combined_first_model_f1];
             data_repeat_combined_first_model_precision = [data_repeat_combined_first_model_precision, data_split_repeat_combined_first_model_precision];
             data_repeat_combined_first_model_recall = [data_repeat_combined_first_model_recall, data_split_repeat_combined_first_model_recall];
-            data_repeat_combined_first_model_dice_coeff = [data_repeat_combined_first_model_dice_coeff, data_split_repeat_combined_first_model_dice_coeff];
+%            data_repeat_combined_first_model_dice_coeff = [data_repeat_combined_first_model_dice_coeff, data_split_repeat_combined_first_model_dice_coeff];
             data_repeat_combined_second_model_f1 = [data_repeat_combined_second_model_f1, data_split_repeat_combined_second_model_f1];
             data_repeat_combined_second_model_precision = [data_repeat_combined_second_model_precision, data_split_repeat_combined_second_model_precision];
             data_repeat_combined_second_model_recall = [data_repeat_combined_second_model_recall, data_split_repeat_combined_second_model_recall];
-            data_repeat_combined_second_model_dice_coeff = [data_repeat_combined_second_model_dice_coeff, data_split_repeat_combined_second_model_dice_coeff];
+%            data_repeat_combined_second_model_dice_coeff = [data_repeat_combined_second_model_dice_coeff, data_split_repeat_combined_second_model_dice_coeff];
 
             data_split_repeat_combined_first_model_f1 = [];
             data_split_repeat_combined_first_model_precision = [];
@@ -180,25 +180,25 @@ for prediction_counter = 1:length(constants_struct.prediction_path_list)-1
     end
 
     % get dice data
-    dice_folder_first = [constants_struct.root_path, 'evaluation_dice/dice_generated/round1_', constants_struct.display_names{chosen_first_model_index}];
-    dice_folder_second = [constants_struct.root_path, 'evaluation_dice/dice_generated/round1_', constants_struct.display_names{chosen_second_model_index}];
-    data_repeat_combined_first_model_dice_coeff = readNPY([dice_folder_first '/dice_value.npy']);
-    data_repeat_combined_second_model_dice_coeff = readNPY([dice_folder_second '/dice_value.npy']);
+%    dice_folder_first = [constants_struct.root_path, 'evaluation_dice/dice_generated/round1_', constants_struct.display_names{chosen_first_model_index}];
+%    dice_folder_second = [constants_struct.root_path, 'evaluation_dice/dice_generated/round1_', constants_struct.display_names{chosen_second_model_index}];
+%    data_repeat_combined_first_model_dice_coeff = readNPY([dice_folder_first '/dice_value.npy']);
+%    data_repeat_combined_second_model_dice_coeff = readNPY([dice_folder_second '/dice_value.npy']);
 
     % all datasets summary
     saved_path = [root_save_path, 'all_dataset_summary_', first_model_frame, '_', second_model_frame, '/'];
     mkdir(saved_path);
 
-    draw_boxplot([data_repeat_combined_first_model_dice_coeff, data_repeat_combined_second_model_dice_coeff], saved_path, 'Dice', constants_struct.graph_colors, constants_struct.display_names)
+%    draw_boxplot([data_repeat_combined_first_model_dice_coeff, data_repeat_combined_second_model_dice_coeff], saved_path, 'Dice', constants_struct.graph_colors, constants_struct.display_names)
 
     %% violinplot for comparing two methods at one frame across datasets
     violinplot_two_models(data_repeat_combined_first_model_f1, data_repeat_combined_second_model_f1, saved_path, 'F1', 'Model Comparison', constants_struct.display_names{chosen_first_model_index}, constants_struct.display_names{chosen_second_model_index}, constants_struct.graph_colors);
     violinplot_two_models(data_repeat_combined_first_model_precision, data_repeat_combined_second_model_precision, saved_path, 'Precision', 'Model Comparison', constants_struct.display_names{chosen_first_model_index}, constants_struct.display_names{chosen_second_model_index}, constants_struct.graph_colors);
     violinplot_two_models(data_repeat_combined_first_model_recall, data_repeat_combined_second_model_recall, saved_path, 'Recall', 'Model Comparison', constants_struct.display_names{chosen_first_model_index}, constants_struct.display_names{chosen_second_model_index}, constants_struct.graph_colors);
-    violinplot_two_models(data_repeat_combined_first_model_dice_coeff, data_repeat_combined_second_model_dice_coeff, saved_path, 'Dice', 'Model Comparison', constants_struct.display_names{chosen_first_model_index}, constants_struct.display_names{chosen_second_model_index}, constants_struct.graph_colors);
+%    violinplot_two_models(data_repeat_combined_first_model_dice_coeff, data_repeat_combined_second_model_dice_coeff, saved_path, 'Dice', 'Model Comparison', constants_struct.display_names{chosen_first_model_index}, constants_struct.display_names{chosen_second_model_index}, constants_struct.graph_colors);
 
     violinplot_diff(data_repeat_combined_second_model_f1 - data_repeat_combined_first_model_f1, ...
                      data_repeat_combined_second_model_precision - data_repeat_combined_first_model_precision, ...
                      data_repeat_combined_second_model_recall - data_repeat_combined_first_model_recall, ...
                      constants_struct.violin_diff_ylim, saved_path, 'Performance Difference', 'Model Comparison');
-end
+%end

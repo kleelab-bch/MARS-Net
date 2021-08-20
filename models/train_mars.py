@@ -162,134 +162,136 @@ def train_model(constants, model_index, frame, repeat_index):
 
     # ------------------- Model Creation ---------------------------
     # Set Model Hyper Parameters
-    pretrained_weights_path = constants.get_pretrained_weights_path(frame, constants.model_names[model_index])
+    # pretrained_weights_path = constants.get_pretrained_weights_path(frame, constants.model_names[model_index])
+    #
+    # print('Load Model...')
+    #
+    # if "Res50V2" == str(constants.strategy_type):
+    #     model = ResNet50V2Keras(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
+    #     model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
+    #
+    # elif "InceptionResV2" == str(constants.strategy_type):
+    #     model = InceptionResV2(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
+    #     model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
+    #
+    # elif "Dense201" == str(constants.strategy_type):
+    #     model = DenseNet201Keras(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
+    #     model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
+    #
+    # elif "deeplabv3" == str(constants.strategy_type):
+    #     K.set_image_data_format('channels_last')
+    #     comb_train = np.moveaxis(comb_train, 1, -1)  # first channel to last channel
+    #     comb_mask = np.moveaxis(comb_mask, 1, -1)
+    #     print(comb_train.dtype, comb_train.shape)
+    #     print(comb_mask.dtype, comb_mask.shape)
+    #
+    #     model = Deeplabv3(input_shape=(args.input_size, args.input_size, 3), output_shape=(68, 68), right_crop = 0, bottom_crop = 0)
+    #     model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
+    #
+    # elif "VGG16_dropout" == str(constants.strategy_type):
+    #     model = VGG16_dropout(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
+    #     model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
+    #
+    # elif "VGG16_batchnorm" == str(constants.strategy_type):
+    #     model = VGG16_batchnorm(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
+    #     model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
+    #
+    # elif "VGG16_instancenorm" == str(constants.strategy_type):
+    #     model = VGG16_instancenorm(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
+    #     model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
+    #
+    # elif "VGG16_movie3" == str(constants.strategy_type):
+    #     model = VGG16_movie(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
+    #     model.compile(optimizer=Adam(lr=1e-5), loss=loss.temporal_cross_entropy, metrics=[loss.dice_coef])
+    #
+    # elif "VGG16_dice" == str(constants.strategy_type):
+    #     model = VGG16(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
+    #     model.compile(optimizer=Adam(lr=1e-5), loss=[loss.dice_coef], metrics=['binary_crossentropy'])
+    #
+    # elif "VGG16_l2" == str(constants.strategy_type):
+    #     model = VGG16_l2(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
+    #     model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
+    #
+    # elif "VGG16_dac_input256" == constants.strategy_type:
+    #     model = VGG16_dac(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
+    #     model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
+    #
+    # elif "VGG16_spp_input256" == constants.strategy_type:
+    #     model = VGG16_spp(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
+    #     model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
+    #
+    # elif "VGG16_no_pretrain" == str(constants.strategy_type):
+    #     model = VGG16(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path, encoder_weights = None)
+    #     model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
+    #
+    # elif "VGG16" in str(constants.strategy_type):
+    #     model = VGG16(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
+    #     model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
+    #
+    # elif "VGG19_dropout_dac_input256" == str(constants.strategy_type):
+    #     model = VGG19_dropout_dac(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
+    #     model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
+    #
+    # elif "VGG19_dropout_feature_extractor" in str(constants.strategy_type):
+    #     model = VGG19_dropout_feature_extractor(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
+    #     model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy', loss.zero_loss], metrics=[loss.dice_coef, loss.zero_loss])
+    #
+    # elif "VGG19_batchnorm_dropout" in str(constants.strategy_type):
+    #     model = VGG19_batchnorm_dropout(args.input_size, args.input_size, args.cropped_boundary, 0, 0, weights_path=pretrained_weights_path)
+    #     model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
+    #
+    # elif "VGG19_dropout" in str(constants.strategy_type):
+    #     model = VGG19_dropout(args.input_size, args.input_size, args.cropped_boundary, 0, 0, weights_path=pretrained_weights_path)
+    #     model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
+    #
+    # elif "VGG19_batchnorm" == str(constants.strategy_type):
+    #     model = VGG19_batchnorm(args.input_size, args.input_size, args.cropped_boundary, 0, 0, weights_path=pretrained_weights_path)
+    #     model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
+    #
+    # elif "VGG19_no_pretrain" == str(constants.strategy_type):
+    #     model = VGG19(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path, encoder_weights = None)
+    #     model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
+    #
+    # elif "VGG19_imagenet_pretrained" in str(constants.strategy_type):
+    #     K.set_image_data_format('channels_last')
+    #     comb_train = np.moveaxis(comb_train, 1, -1)  # first channel to last channel
+    #     comb_mask = np.moveaxis(comb_mask, 1, -1)
+    #
+    #     model = VGG19_imagenet_pretrained(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
+    #     model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
+    #
+    # elif "VGG19" in str(constants.strategy_type):
+    #     model = VGG19(args.input_size, args.input_size, args.cropped_boundary, 0, 0, weights_path=pretrained_weights_path)
+    #     model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
+    #
+    # elif "EFF_B7" == str(constants.strategy_type) or "EFF_B7_no_preprocessing" == str(constants.strategy_type):
+    #     K.set_image_data_format('channels_last')
+    #     comb_train = np.moveaxis(comb_train, 1, -1)  # first channel to last channel
+    #     comb_mask = np.moveaxis(comb_mask, 1, -1)
+    #     print(comb_train.dtype, comb_train.shape)
+    #     print(comb_mask.dtype, comb_mask.shape)
+    #
+    #     model = EFF_B7(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
+    #     model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
+    #
+    # elif "unet_feature_extractor" in str(constants.strategy_type):
+    #     model = UNet_feature_extractor(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
+    #     model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy', loss.zero_loss], metrics=[loss.dice_coef, loss.zero_loss])
+    #
+    # elif "unet_imagenet_pretrained" in str(constants.strategy_type):
+    #     K.set_image_data_format('channels_last')
+    #     comb_train = np.moveaxis(comb_train, 1, -1)  # first channel to last channel
+    #     comb_mask = np.moveaxis(comb_mask, 1, -1)
+    #
+    #     model = UNet_imagenet_pretrained(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
+    #     model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
+    #
+    # elif "unet" in str(constants.strategy_type):
+    #     model = UNet(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
+    #     model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
 
-    print('Load Model...')
-
-    if "Res50V2" == str(constants.strategy_type):
-        model = ResNet50V2Keras(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
-
-    elif "InceptionResV2" == str(constants.strategy_type):
-        model = InceptionResV2(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
-
-    elif "Dense201" == str(constants.strategy_type):
-        model = DenseNet201Keras(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
-
-    elif "deeplabv3" == str(constants.strategy_type):
-        K.set_image_data_format('channels_last')
-        comb_train = np.moveaxis(comb_train, 1, -1)  # first channel to last channel
-        comb_mask = np.moveaxis(comb_mask, 1, -1)
-        print(comb_train.dtype, comb_train.shape)
-        print(comb_mask.dtype, comb_mask.shape)
-
-        model = Deeplabv3(input_shape=(args.input_size, args.input_size, 3), output_shape=(68, 68), right_crop = 0, bottom_crop = 0)
-        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
-
-    elif "VGG16_dropout" == str(constants.strategy_type):
-        model = VGG16_dropout(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
-
-    elif "VGG16_batchnorm" == str(constants.strategy_type):
-        model = VGG16_batchnorm(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
-
-    elif "VGG16_instancenorm" == str(constants.strategy_type):
-        model = VGG16_instancenorm(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
-
-    elif "VGG16_movie3" == str(constants.strategy_type):
-        model = VGG16_movie(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=loss.temporal_cross_entropy, metrics=[loss.dice_coef])
-
-    elif "VGG16_dice" == str(constants.strategy_type):
-        model = VGG16(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=[loss.dice_coef], metrics=['binary_crossentropy'])
-
-    elif "VGG16_l2" == str(constants.strategy_type):
-        model = VGG16_l2(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
-
-    elif "VGG16_dac_input256" == constants.strategy_type:
-        model = VGG16_dac(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
-
-    elif "VGG16_spp_input256" == constants.strategy_type:
-        model = VGG16_spp(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
-
-    elif "VGG16_no_pretrain" == str(constants.strategy_type):
-        model = VGG16(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path, encoder_weights = None)
-        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
-
-    elif "VGG16" in str(constants.strategy_type):
-        model = VGG16(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
-
-    elif "VGG19_dropout_dac_input256" == str(constants.strategy_type):
-        model = VGG19_dropout_dac(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
-
-    elif "VGG19_dropout_feature_extractor" in str(constants.strategy_type):
-        model = VGG19_dropout_feature_extractor(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy', loss.zero_loss], metrics=[loss.dice_coef, loss.zero_loss])
-
-    elif "VGG19_batchnorm_dropout" in str(constants.strategy_type):
-        model = VGG19_batchnorm_dropout(args.input_size, args.input_size, args.cropped_boundary, 0, 0, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
-
-    elif "VGG19_dropout" in str(constants.strategy_type):
-        model = VGG19_dropout(args.input_size, args.input_size, args.cropped_boundary, 0, 0, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
-
-    elif "VGG19_batchnorm" == str(constants.strategy_type):
-        model = VGG19_batchnorm(args.input_size, args.input_size, args.cropped_boundary, 0, 0, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
-
-    elif "VGG19_no_pretrain" == str(constants.strategy_type):
-        model = VGG19(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path, encoder_weights = None)
-        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
-
-    elif "VGG19_imagenet_pretrained" in str(constants.strategy_type):
-        K.set_image_data_format('channels_last')
-        comb_train = np.moveaxis(comb_train, 1, -1)  # first channel to last channel
-        comb_mask = np.moveaxis(comb_mask, 1, -1)
-
-        model = VGG19_imagenet_pretrained(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
-
-    elif "VGG19" in str(constants.strategy_type):
-        model = VGG19(args.input_size, args.input_size, args.cropped_boundary, 0, 0, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
-
-    elif "EFF_B7" == str(constants.strategy_type) or "EFF_B7_no_preprocessing" == str(constants.strategy_type):
-        K.set_image_data_format('channels_last')
-        comb_train = np.moveaxis(comb_train, 1, -1)  # first channel to last channel
-        comb_mask = np.moveaxis(comb_mask, 1, -1)
-        print(comb_train.dtype, comb_train.shape)
-        print(comb_mask.dtype, comb_mask.shape)
-
-        model = EFF_B7(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
-
-    elif "unet_feature_extractor" in str(constants.strategy_type):
-        model = UNet_feature_extractor(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy', loss.zero_loss], metrics=[loss.dice_coef, loss.zero_loss])
-
-    elif "unet_imagenet_pretrained" in str(constants.strategy_type):
-        K.set_image_data_format('channels_last')
-        comb_train = np.moveaxis(comb_train, 1, -1)  # first channel to last channel
-        comb_mask = np.moveaxis(comb_mask, 1, -1)
-
-        model = UNet_imagenet_pretrained(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
-
-    elif "unet" in str(constants.strategy_type):
-        model = UNet(args.input_size, args.input_size, args.cropped_boundary,0,0, weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
-
+    from model_builder import build_model_train
+    model = build_model_train(constants, args, frame, constants.model_names[model_index])
 
     # ------------ Sanity Check the Model ------------
     print(model.summary())

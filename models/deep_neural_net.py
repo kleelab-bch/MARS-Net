@@ -1490,8 +1490,8 @@ def UNet_imagenet_pretrained(img_rows, img_cols, crop_margin, right_crop, bottom
     conv4 = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv4_2')(conv4)
     pool4 = MaxPooling2D(pool_size=(2, 2))(conv4)
 
-    conv5 = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv5_1')(pool4)
-    conv5 = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv5_2')(conv5)
+    conv5 = Conv2D(1024, (3, 3), activation='relu', padding='same', name='conv5_1')(pool4)
+    conv5 = Conv2D(1024, (3, 3), activation='relu', padding='same', name='conv5_2')(conv5)
 
     up6 = concatenate([UpSampling2D(size=(2, 2))(conv5), conv4], axis=-1)
     conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(up6)
