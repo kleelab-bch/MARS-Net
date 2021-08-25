@@ -114,19 +114,20 @@ classdef GlobalConfig
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_paxillin_TIRF_normalize/';};
 
 
-%        prediction_path_list = {'../../models/results/predict_wholeframe_round1_unet/';
-%                                 '../../models/results/predict_wholeframe_round1_unet_imagenet_pretrained/';};
         prediction_path_list = {'../../models/results/predict_wholeframe_round1_unet/';
-                                 '../../models/results/predict_wholeframe_round1_VGG16_no_pretrain/';
-                                 '../../models/results/predict_wholeframe_round1_VGG19_no_pretrain/';
-                                 '../../models/results/predict_wholeframe_round1_unet_imagenet_pretrained_marsnet/';
-                                 '../../models/results/predict_wholeframe_round1_VGG16/';
-                                 '../../models/results/predict_wholeframe_round1_VGG19/';
-                                 '../../models/results/predict_wholeframe_round1_VGG16_batchnorm/';
-                                  '../../models/results/predict_wholeframe_round1_VGG19_batchnorm/';
-                                  '../../models/results/predict_wholeframe_round1_VGG16_dropout/';
-                                  '../../models/results/predict_wholeframe_round1_VGG19_dropout/';
-                                  '../../models/results/predict_wholeframe_round1_VGG19_batchnorm_dropout/'};
+                                 '../../models/results/predict_wholeframe_round1_unet_small/';
+                                 '../../models/results/predict_wholeframe_round1_unet_marsnet/';};
+%        prediction_path_list = {'../../models/results/predict_wholeframe_round1_unet/';
+%                                 '../../models/results/predict_wholeframe_round1_VGG16_no_pretrain/';
+%                                 '../../models/results/predict_wholeframe_round1_VGG19_no_pretrain/';
+%                                 '../../models/results/predict_wholeframe_round1_unet_imagenet_pretrained_marsnet/';
+%                                 '../../models/results/predict_wholeframe_round1_VGG16/';
+%                                 '../../models/results/predict_wholeframe_round1_VGG19/';
+%                                 '../../models/results/predict_wholeframe_round1_VGG16_batchnorm/';
+%                                  '../../models/results/predict_wholeframe_round1_VGG19_batchnorm/';
+%                                  '../../models/results/predict_wholeframe_round1_VGG16_dropout/';
+%                                  '../../models/results/predict_wholeframe_round1_VGG19_dropout/';
+%                                  '../../models/results/predict_wholeframe_round1_VGG19_batchnorm_dropout/'};
 
 
 %         prediction_path_list = {'../../models/results/predict_wholeframe_round1_unet/';
@@ -166,6 +167,7 @@ classdef GlobalConfig
 %        display_names = {'cryptic_all VGG19D pat10'; 'cryptic_all VGG19D mm pat10'; 'cryptic_all heq VGG19D mm pat10'};
 %        display_names = {'VGG19D-U-Net'; 'VGG19D-U-Net input256'};
 %        display_names = {'U-Net';'VGG19-U-Net Dropout'};
+        display_names = {'U-Net';'U-Net small';'U-Net marsnet'};
 %        display_names = {'WF norm'; 'TIRF norm'};
 %        display_names = {'Teacher TIRF'; 'Student TIRF'};
 
@@ -174,17 +176,17 @@ classdef GlobalConfig
 
 %        display_names = {'64';'80';'96';'128'; '192'; '256'};
 %        display_names = {'U-Net'; 'U-Net pretrained';};
-        display_names = {'U-Net';
-                         'VGG16P-U-Net';
-                         'VGG19P-U-Net';
-                         'U-Net P';
-                         'VGG16-U-Net';
-                         'VGG19-U-Net';
-                         'VGG16B-U-Net';
-                         'VGG19B-U-Net';
-                         'VGG16D-U-Net';
-                         'VGG19D-U-Net';
-                         'VGG19D&B-U-Net'};
+%        display_names = {'U-Net';
+%                         'VGG16P-U-Net';
+%                         'VGG19P-U-Net';
+%                         'U-Net P';
+%                         'VGG16-U-Net';
+%                         'VGG19-U-Net';
+%                         'VGG16B-U-Net';
+%                         'VGG19B-U-Net';
+%                         'VGG16D-U-Net';
+%                         'VGG19D-U-Net';
+%                         'VGG19D&B-U-Net'};
 
 %        display_names = {'U-Net no pretrain';
 %                         'VGG16-U-Net';
@@ -213,7 +215,7 @@ classdef GlobalConfig
 %        frame_list = [10;10;10;10];
 
 %         frame_list = [34;34];
-%        frame_list =[10;10];
+        frame_list =[10;10;10];
 
 %        frame_list = [10;10;10;10;10;10;10];
 %        frame_list = [10;10;10;10;10;10];
@@ -224,8 +226,8 @@ classdef GlobalConfig
 %        frame_list = [2 ;
 %                      200];
 
-        frame_list = [10;10;10;10;10;
-                      10;10;10;10;10;10];
+%        frame_list = [10;10;10;10;10;
+%                      10;10;10;10;10;10];
 %        frame_list = [10;10;10;10;
 %                      10;10;10;10];
 
@@ -438,7 +440,7 @@ classdef GlobalConfig
                     GlobalConfigObj.dataset_interval_list = [1];
                 
                 elseif contains(prediction_path, '_VGG') || contains(prediction_path, '_unet') || contains(prediction_path, '_Res') || contains(prediction_path, '_Dense') || contains(prediction_path, '_EFF_B7')
-                    GlobalConfigObj.repeat_max = 5;
+                    GlobalConfigObj.repeat_max = 1;
                     GlobalConfigObj.img_root_path = '/media/bch_drive/Public/JunbongJang/Segmentation/assets/';
                     GlobalConfigObj.mask_type = '/mask_fixed/';
                     GlobalConfigObj.img_type = '/img/';

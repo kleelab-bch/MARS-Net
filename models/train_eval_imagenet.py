@@ -174,7 +174,7 @@ def parse_prediction_input(filename):
     # image -= 1.
     # tf.print(tf.math.reduce_max(image), '---------------')
 
-    # image = tf.image.per_image_standardization(image)
+    image = tf.image.per_image_standardization(image)
 
     return image
 
@@ -358,11 +358,11 @@ def evaluate():
     orig_dataset = orig_dataset.batch(1)
     orig_dataset = orig_dataset.prefetch(1000)
 
-    fliped_dataset = full_dataset.map(parse_prediction_input, num_parallel_calls=4)
-    fliped_dataset = full_dataset.map(fliped_dataset, num_parallel_calls=4)
-    fliped_dataset = fliped_dataset.map(flip_input_image, num_parallel_calls=4)
-    fliped_dataset = fliped_dataset.batch(1)
-    fliped_dataset = fliped_dataset.prefetch(1000)
+    # fliped_dataset = full_dataset.map(parse_prediction_input, num_parallel_calls=4)
+    # fliped_dataset = full_dataset.map(fliped_dataset, num_parallel_calls=4)
+    # fliped_dataset = fliped_dataset.map(flip_input_image, num_parallel_calls=4)
+    # fliped_dataset = fliped_dataset.batch(1)
+    # fliped_dataset = fliped_dataset.prefetch(1000)
 
     # ------------------- Load trained model ---------------------
     weights_path = constants.get_trained_weights_path(str(frame), model_name, str(repeat_index))
@@ -372,10 +372,10 @@ def evaluate():
     # ------------------- Predict ----------------------
     # combine multiple prediction results from multiple scales
     # referenced ensemble model prediction https://machinelearningmastery.com/weighted-average-ensemble-for-deep-learning-neural-networks/
-    y_pred_orig = model.predict(orig_dataset, batch_size=1, verbose=1)
-    y_pred_fliped = model.predict(fliped_dataset, batch_size=1, verbose=1)
+    y_pred = model.predict(orig_dataset, batch_size=1, verbose=1)
+    # y_pred_fliped = model.predict(fliped_dataset, batch_size=1, verbose=1)
 
-    y_pred = (y_pred_orig + y_pred_fliped) / 2
+    # y_pred = (y_pred_orig + y_pred_fliped) / 2
     # ------------------- evaluate using Top1 and Top5 accuracy -------------------
     y_true = np.zeros(shape=(len(img_filenames)))
     print(y_true.shape, y_pred.shape)
@@ -398,5 +398,5 @@ def evaluate():
 
 
 if __name__ == "__main__":
-    train()
-    # evaluate()
+    # train()
+    evaluate()
