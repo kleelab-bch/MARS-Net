@@ -33,7 +33,7 @@ class UserParams:
         # ['unet', 'VGG16_no_pretrain', 'VGG19_no_pretrain', 'VGG16', 'VGG19', 'VGG16_batchnorm', 'VGG19_batchnorm', 'VGG16_dropout', 'VGG19_dropout']
         # ['mDia_raw_unet', 'mDia_raw_VGG19_dropout']
         # ['paxillin_TIRF_normalize_cropped_unet_patience_10', 'paxillin_TIRF_normalize_cropped_VGG19_dropout_patience_10']
-        self.strategy_type = 'unet_imagenet_pretrained_1024' # 'FNA_VGG19_MTL_cls0_reg0_aut0_seg1_input256_patience_10' # 'unet_imagenet_pretrained_marsnet' # 'spheroid_test_VGG19_minmax_normalize' # 'FNA_VGG19_MTL_cls1_reg0_aut0_seg0.75_input256' # 'FNA_VGG19_MTL_auto_reg_aut_input256_patience_10' # 'FNA_CV_VGG19_MTL_auto_input256' # 'unet_encoder_classifier' # 'FNA_CV_VGG19_MTL_auto_reg_aut_input256' # 'FNA_VGG19_classifier_input256' #'FNA_CV_VGG19_classifier_binary_input256' # 'spheroid_VGG19_freeze' #'single_micro_small_unet' # 'cryptic_VGG19D_temporal_context_residual' # 'single_micro_VGG19D_temporal_context_residual' # 'cryptic_VGG19D_temporal_distributed_v2' # 'organoid_VGG19_dropout_crop_even' # 'cryptic_VGG19_dropout_mm_patience_10'
+        self.strategy_type = 'FNA_VGG19_MTL_cls0_reg0_aut0_seg1_input256_patience_10' # 'spheroid_test_VGG19_minmax_normalize' # 'FNA_VGG19_MTL_cls1_reg0_aut0_seg0.75_input256' # 'FNA_VGG19_MTL_auto_reg_aut_input256_patience_10' # 'FNA_CV_VGG19_MTL_auto_input256' # 'unet_encoder_classifier' # 'FNA_CV_VGG19_MTL_auto_reg_aut_input256' # 'FNA_VGG19_classifier_input256' #'FNA_CV_VGG19_classifier_binary_input256' # 'spheroid_VGG19_freeze' #'single_micro_small_unet' # 'cryptic_VGG19D_temporal_context_residual' # 'single_micro_VGG19D_temporal_context_residual' # 'cryptic_VGG19D_temporal_distributed_v2' # 'organoid_VGG19_dropout_crop_even' # 'cryptic_VGG19_dropout_mm_patience_10'
         self.self_training_type = None
         self.dataset_folders = '../assets/'
         self.img_format = '.png'
@@ -659,21 +659,6 @@ class UserParams:
                     self.model_names = ['ABCD', 'ABCE', 'ABDE', 'ACDE', 'BCDE']
                     self.REPEAT_MAX = 1
 
-                    # self.img_folders = ['/raw/','/raw/','/raw/','/raw/','/raw/',
-                    #                     '/img_cropped/','/img_cropped/','/img_cropped/','/img_cropped/','/img_cropped/','/img_cropped/']
-                    # self.mask_folders = ['/mask/','/mask/','/mask/','/mask/','/mask/',
-                    #                      '/mask_cropped/','/mask_cropped/','/mask_cropped/','/mask_cropped/','/mask_cropped/','/mask_cropped/']
-                    # self.frame_list = [10]
-                    #
-                    # self.dataset_names = ['1121-1', '1121-3', '1121-4', '1121-5', '1121-6',
-                    #                       'Paxilin-HaloTMR-TIRF3', 'Paxilin-HaloTMR-TIRF4', 'Paxilin-HaloTMR-TIRF5',
-                    #                       'Paxilin-HaloTMR-TIRF6', 'Paxilin-HaloTMR-TIRF7', 'Paxilin-HaloTMR-TIRF8']
-                    # self.model_names = ['ABCD','ABCD','ABCD','ABCD','ABCD',
-                    #                     'ABCD','ABCD','ABCD','ABCD','ABCD','ABCD']
-                    # self.REPEAT_MAX = 1
-                    # self.dataset_folders = ['../assets/mDia_chauncey/','../assets/mDia_chauncey/','../assets/mDia_chauncey/','../assets/mDia_chauncey/','../assets/mDia_chauncey/',
-                    #                        '../assets/','../assets/','../assets/','../assets/','../assets/','../assets/']
-
                 elif self.strategy_type == 2:
                     self.dataset_names = ['040119_PtK1_S01_01_phase_2_DMSO_nd_02', '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2','040119_PtK1_S01_01_phase']
                     self.frame_list = [2]
@@ -928,8 +913,6 @@ class UserParams:
             weights_path = '../models/results/model_round1_generalist_VGG19_dropout/model_frame2_A_repeat0.hdf5'
         elif 'VGG19_imagenet_pretrained' in str(self.strategy_type):
             weights_path = '../models/results/model_round1_VGG19_imagenet_classifier/model_frame0_A_repeat0.hdf5'
-        elif 'unet_imagenet_pretrained_1024' in str(self.strategy_type):
-            weights_path = '../models/results/model_round1_unet_encoder_classifier_1024/model_frame0_A_repeat0_backup.hdf5'
         elif 'unet_imagenet_pretrained' in str(self.strategy_type):
             weights_path = '../models/results/model_round1_unet_encoder_classifier/model_frame0_A_repeat0.hdf5'
 

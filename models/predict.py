@@ -159,9 +159,9 @@ def prediction(constants, frame, model_index, repeat_index):
             segmented_output = np.moveaxis(segmented_output[0], 0, 1)  # new output shape: (16, 1, 474, 392)
 
         elif "deeplabv3" == str(constants.strategy_type) or "EFF_B" in str(constants.strategy_type) or "imagenet_pretrained" in str(constants.strategy_type):
-            # move last channel to first channel
-            segmented_output = np.moveaxis(segmented_output, -1, 1)
-            print(segmented_output.shape)
+            segmented_output = model.predict(input_images, batch_size = 1, verbose = 1)
+            segmented_output = np.moveaxis(segmented_output, -1, 1)  # move last channel to first channel
+            print('segmented_output', segmented_output.shape)
 
         else:
             segmented_output = model.predict(input_images, batch_size = 1, verbose = 1)

@@ -115,8 +115,8 @@ classdef GlobalConfig
 
 
         prediction_path_list = {'../../models/results/predict_wholeframe_round1_unet/';
-                                 '../../models/results/predict_wholeframe_round1_unet_small/';
-                                 '../../models/results/predict_wholeframe_round1_unet_marsnet/';};
+                                 '../../models/results/predict_wholeframe_round1_unet_marsnet/';
+                                 '../../models/results/predict_wholeframe_round1_unet_imagenet_pretrained_1024/';};
 %        prediction_path_list = {'../../models/results/predict_wholeframe_round1_unet/';
 %                                 '../../models/results/predict_wholeframe_round1_VGG16_no_pretrain/';
 %                                 '../../models/results/predict_wholeframe_round1_VGG19_no_pretrain/';
@@ -167,7 +167,7 @@ classdef GlobalConfig
 %        display_names = {'cryptic_all VGG19D pat10'; 'cryptic_all VGG19D mm pat10'; 'cryptic_all heq VGG19D mm pat10'};
 %        display_names = {'VGG19D-U-Net'; 'VGG19D-U-Net input256'};
 %        display_names = {'U-Net';'VGG19-U-Net Dropout'};
-        display_names = {'U-Net';'U-Net small';'U-Net marsnet'};
+        display_names = {'U-Net';'U-Net marsnet';'U-Net pretrained marsnet'};
 %        display_names = {'WF norm'; 'TIRF norm'};
 %        display_names = {'Teacher TIRF'; 'Student TIRF'};
 

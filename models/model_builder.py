@@ -115,8 +115,6 @@ def build_model_predict(constants, frame, repeat_index, model_name, image_rows, 
         model = UNet_feature_extractor(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
     elif "unet_imagenet_pretrained" in str(constants.strategy_type):
         model = UNet_imagenet_pretrained(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
-    elif "unet_small" in str(constants.strategy_type):
-        model = UNet_small(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
     elif "unet" in str(constants.strategy_type):
         model = UNet(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
 
@@ -360,11 +358,6 @@ def build_model_train(constants, args, frame, model_name):
                                        weights_path=pretrained_weights_path)
         model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy', loss.zero_loss],
                       metrics=[loss.dice_coef, loss.zero_loss])
-
-    elif "unet_small" in str(constants.strategy_type):
-        model = UNet_small(args.input_size, args.input_size, args.cropped_boundary, 0, 0,
-                     weights_path=pretrained_weights_path)
-        model.compile(optimizer=Adam(lr=1e-5), loss=['binary_crossentropy'], metrics=[loss.dice_coef])
 
     elif "unet_imagenet_pretrained" in str(constants.strategy_type):
         model = UNet_imagenet_pretrained(args.input_size, args.input_size, args.cropped_boundary, 0, 0,

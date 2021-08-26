@@ -288,8 +288,8 @@ def UNet_encoder_classifier(img_rows, img_cols, weights_path):
     x = MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool')(x)
 
     # Block 5
-    x = Conv2D(1024, (3, 3), activation='relu', padding='same', name='conv5_1')(x)
-    x = Conv2D(1024, (3, 3), activation='relu', padding='same', name='conv5_2')(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv5_1')(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv5_2')(x)
     x = MaxPooling2D((2, 2), strides=(2, 2), name='block5_pool')(x)
 
     x = Flatten(name='flatten')(x)
