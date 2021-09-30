@@ -1,6 +1,7 @@
 # MARS-Net 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=plastic)](https://opensource.org/licenses/MIT) 
 [![Repo Size](https://img.shields.io/github/repo-size/kleelab-bch/MARS-Net?style=plastic)]()
+[![DOI](https://zenodo.org/badge/356401230.svg)](https://zenodo.org/badge/latestdoi/356401230)
 
 **Deep learning-based segmentation pipeline for profiling cellular morphodynamics from multiple types of live cell microscope**  
 by Junbong Jang, Chuangqi Wang, Xitong Zhang, Hee June Choi, Xiang Pan, Bolun Lin, Yudong Yu, Carly Whittle, Madison Ryan, Yenyu Chen, Kwonmoo Lee
