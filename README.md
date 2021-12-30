@@ -8,8 +8,8 @@ by Junbong Jang, Chuangqi Wang, Xitong Zhang, Hee June Choi, Xiang Pan, Bolun Li
 
 To learn more about our pipeline (MARS-Net), please read the [paper](https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(21)00164-8)
 
-<div text-align="center">
-  <img width="300" src="./assets/MARS-Net_logo.png" alt="MARS-Net Logo">
+<div align="center">
+  <img width="500" src="./assets/MARS-Net_logo.png" alt="MARS-Net Logo">
 </div>  
 
 
