@@ -1,6 +1,7 @@
 from tensorflow.keras import backend as K
 import tensorflow as tf
 
+
 def dice_coef(y_true, y_pred):
     smooth = 1.
 
@@ -11,19 +12,9 @@ def dice_coef(y_true, y_pred):
 
     return dice
 
-def recall(y_true, y_pred):
-    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
-    possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
-    recall = true_positives / (possible_positives + K.epsilon())
-    return recall
-
-def precision(y_true, y_pred):
-    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
-    predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
-    precision = true_positives / (predicted_positives + K.epsilon())
-    return precision
 
 def f1(y_true, y_pred):
+    # referenced https://datascience.stackexchange.com/questions/45165/how-to-get-accuracy-f1-precision-and-recall-for-a-keras-model
     def recall(y_true, y_pred):
         true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
         possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
@@ -37,9 +28,21 @@ def f1(y_true, y_pred):
         return precision
     precision = precision(y_true, y_pred)
     recall = recall(y_true, y_pred)
-    return 2*((precision*recall)/(precision+recall))
-       
-       
+    return 2*((precision*recall)/(precision+recall + K.epsilon()))
+
+
+def normalized_MSE(y_true, y_pred):
+    # nmse = K.mean(K.square(y_true - y_pred)/K.square(y_true), axis=-1)
+    nmse = K.mean(K.square(y_true - y_pred))
+
+    # tf.print('---', K.max(y_true), K.max(y_pred), K.square(y_true - y_pred))
+    # tf.print('nmse', nmse)
+    # tf.print("ksquare @@@@@@@@@@@@@@@", K.square(y_true - y_pred))
+    # tf.print('denominator', (K.square(y_true) + K.square(y_pred)))
+
+    return nmse
+
+
 def weighted_cross_entropy(beta):
   def convert_to_logits(y_pred):
       # see https://github.com/tensorflow/tensorflow/blob/r1.10/tensorflow/python/keras/backend.py#L3525
@@ -107,6 +110,7 @@ def temporal_cross_entropy(y_true, y_pred):
     '''
     
     return reduced_loss
+
 
 def zero_loss(y_true, y_pred):
     return 0

@@ -9,13 +9,10 @@ similarity_mean_array = [];
 frame_array = [1,2,6,10,22,34];
 for n = 1 : length(dataset)
     folder = dataset(n)
-% 	mask_path = strcat('../assets/', folder, '/mask_test/');
 	mask_path = strcat('../assets/', folder, '/mask/');
 	mask_path = mask_path{1}
 
     for frame_index = frame_array
-%         predict_path = strcat('../vUnet/average_hist/predict_wholeframe_teacher_strat_FNA/', folder, '/test/', num2str(frame_index) ,'_0_', folder, '/');
-%         generate_path = strcat('../vUnet/average_hist/predict_wholeframe_teacher_strat_FNA/', folder, '/test/', num2str(frame_index) ,'_dice/');
         predict_path = strcat('../models/results/', folder, '/', num2str(frame_index) ,'_0_', folder, '/');
         generate_path = strcat('../models/results/', folder, '/', num2str(frame_index) ,'_dice/');
                 

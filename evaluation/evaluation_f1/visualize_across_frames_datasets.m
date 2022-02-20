@@ -58,21 +58,35 @@ for prediction_num = 1:constants_struct.total_prediction_path_num
 %    dice_across_frame_across_dataset_across_predictions = [dice_across_frame_across_dataset_across_predictions; dice_across_frame_across_dataset];
 end
 
+% get dice data
+%disp('--------')
+%dice_across_frame_across_dataset_across_predictions = [];
+%for i = 1:size(constants_struct.display_names,1)
+%    dice_folder = [constants_struct.root_path, 'evaluation_dice/dice_generated/round1_', constants_struct.display_names{i}];
+%    data_repeat_combined_model_dice_coeff = readNPY([dice_folder '/dice_value.npy']);
+%    data_repeat_combined_model_dice_coeff = data_repeat_combined_model_dice_coeff';
+%
+%    dice_across_frame_across_dataset_across_predictions = [dice_across_frame_across_dataset_across_predictions; data_repeat_combined_model_dice_coeff];
+%end
+
+%assert(size(dice_across_frame_across_dataset_across_predictions,1) == size(f1_across_frame_across_dataset_across_predictions,1))
+%assert(size(dice_across_frame_across_dataset_across_predictions,2) == size(f1_across_frame_across_dataset_across_predictions,2))
 % ------------------- Multiple Line plots across frames for each dataset --------
 % draw_line_with_error(precision_mean_across_frame_across_dataset, precision_errorci_across_frame_across_dataset, 'Datasets', 'Precision', saved_folder, constants_struct.frame_list, constants_struct.fold_name_list);
 % draw_line_with_error(recall_mean_across_frame_across_dataset, recall_errorci_across_frame_across_dataset, 'Datasets', 'Recall', saved_folder, constants_struct.frame_list, constants_struct.fold_name_list);
 % draw_line_with_error(f1_mean_across_frame_across_dataset, f1_errorci_across_frame_across_dataset, 'Datasets', 'F1', saved_folder, constants_struct.frame_list, constants_struct.fold_name_list);
 
-% ------------------- Two Line plot across frames and dataset -----------------------------
-draw_violinplot(f1_across_frame_across_dataset_across_predictions.', saved_folder, 'F1', constants_struct.graph_colors, constants_struct.display_names);
-draw_violinplot(recall_across_frame_across_dataset_across_predictions.', saved_folder, 'Recall', constants_struct.graph_colors, constants_struct.display_names);
-draw_violinplot(precision_across_frame_across_dataset_across_predictions.', saved_folder, 'Precision', constants_struct.graph_colors, constants_struct.display_names);
+% ------------------- Barplot or Violin plot of performance at one frame averaged across frames and dataset -----------------------------
+%draw_violinplot(f1_across_frame_across_dataset_across_predictions.', saved_folder, 'F1', constants_struct.graph_colors, constants_struct.display_names);
+%draw_violinplot(recall_across_frame_across_dataset_across_predictions.', saved_folder, 'Recall', constants_struct.graph_colors, constants_struct.display_names);
+%draw_violinplot(precision_across_frame_across_dataset_across_predictions.', saved_folder, 'Precision', constants_struct.graph_colors, constants_struct.display_names);
 %draw_violinplot(dice_across_frame_across_dataset_across_predictions.', saved_folder, 'Dice', constants_struct.graph_colors, constants_struct.display_names);
 
 %draw_boxplot(f1_across_frame_across_dataset_across_predictions.', saved_folder, 'F1', constants_struct.graph_colors, constants_struct.display_names);
 %draw_boxplot(recall_across_frame_across_dataset_across_predictions.', saved_folder, 'Recall', constants_struct.graph_colors, constants_struct.display_names);
 %draw_boxplot(precision_across_frame_across_dataset_across_predictions.', saved_folder, 'Precision', constants_struct.graph_colors, constants_struct.display_names);
 
+% ------------------- Line plot across frames and dataset -----------------------------
 draw_line_for_models(f1_mean_across_frame_across_dataset, f1_errorci_across_frame_across_dataset, constants_struct.total_prediction_path_num, 'F1', constants_struct.frame_list, constants_struct.chosen_frame_index, constants_struct.display_names, constants_struct.graph_colors, constants_struct.f1_ylim, constants_struct.f1_bar_ylim, saved_folder);
 draw_line_for_models(precision_mean_across_frame_across_dataset, precision_errorci_across_frame_across_dataset, constants_struct.total_prediction_path_num, 'Precision', constants_struct.frame_list, constants_struct.chosen_frame_index, constants_struct.display_names, constants_struct.graph_colors, constants_struct.precision_ylim, constants_struct.precision_bar_ylim, saved_folder);
 draw_line_for_models(recall_mean_across_frame_across_dataset, recall_errorci_across_frame_across_dataset, constants_struct.total_prediction_path_num, 'Recall', constants_struct.frame_list, constants_struct.chosen_frame_index, constants_struct.display_names, constants_struct.graph_colors, constants_struct.recall_ylim, constants_struct.recall_bar_ylim, saved_folder);
@@ -90,7 +104,7 @@ function draw_line_for_models(mean_across_frame_across_dataset, errorci_across_f
         errorci_dataset_across_frame(prediction_num, :, 1) = mean(errorci_across_frame_across_dataset(prediction_num, :, :, 1), 2);
         errorci_dataset_across_frame(prediction_num, :, 2) = mean(errorci_across_frame_across_dataset(prediction_num, :, :, 2), 2);
     end
-
+    mean_dataset_across_frame
     draw_line_with_error_extra_lines(mean_dataset_across_frame, errorci_dataset_across_frame, mean_across_frame_across_dataset, ...
     errorci_across_frame_across_dataset, 'across datasets and frames', metric_type, saved_folder, frame_list, graph_colors, ylim, display_names);
 

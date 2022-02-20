@@ -37,12 +37,12 @@ classdef GlobalConfig
         dataset_interval_list = [];
 
         dice_ylim = [0,0.8];
-        f1_ylim = [0, 0.5];
+        f1_ylim = [0.84, 0.95];
         recall_ylim = [0.86, 0.92];
         precision_ylim = [0.93, 0.985];
 
         dice_bar_ylim = [0.99,1];
-        f1_bar_ylim = [0.83, 0.94];
+        f1_bar_ylim = [0.9, 0.95];
         recall_bar_ylim = [0.86, 0.925];
         precision_bar_ylim = [0.935, 0.98];
 
@@ -76,10 +76,27 @@ classdef GlobalConfig
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_cryptic_all_VGG19_dropout_mm_patience_10_overfit/';
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_cryptic_all_heq_VGG19_dropout_mm_patience_10_overfit/';}
 
+%        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_cryptic_VGG19_dropout/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_cryptic_VGG19D_temporal_context_residual/';}
+
 %        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_unet/';
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_VGG19_dropout/';}
-        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_VGG19_dropout/';
-                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_single_micro_VGG19_dropout/'};
+%        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_unet/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_single_micro_unet/';}
+%        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_unet/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_unet_imagenet_pretrained/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_VGG19/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_VGG19_imagenet_pretrained/'}
+%        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_VGG19_dropout/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_single_micro_VGG19_dropout/'};
+%        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_single_micro_VGG19_dropout/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_single_micro_VGG19D_se/'};
+%        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_VGG19_dropout/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_single_micro_VGG19D/'};
+%        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_single_micro_VGG19_dropout/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_single_micro_VGG19D_temporal_attn_v3/'};
+%        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_single_micro_VGG19_dropout/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_single_micro_VGG19D_temporal_context_residual/'};
 
 %        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_VGG19_dropout_input64/';
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_VGG19_dropout_input80/';
@@ -95,12 +112,15 @@ classdef GlobalConfig
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_paxillin_TIRF_normalize_cropped_VGG19_dropout_patience_10/';};
 %        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_paxillin_WF_normalize/';
 %                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_paxillin_TIRF_normalize/';};
-%        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_paxillin_TIRF_normalize/';
-%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round2_paxillin_TIRF_normalize_2.5/';};
 
+
+        prediction_path_list = {'../../models/results/predict_wholeframe_round1_unet/';
+                                 '../../models/results/predict_wholeframe_round1_unet_marsnet/';
+                                 '../../models/results/predict_wholeframe_round1_unet_imagenet_pretrained_1024/';};
 %        prediction_path_list = {'../../models/results/predict_wholeframe_round1_unet/';
 %                                 '../../models/results/predict_wholeframe_round1_VGG16_no_pretrain/';
 %                                 '../../models/results/predict_wholeframe_round1_VGG19_no_pretrain/';
+%                                 '../../models/results/predict_wholeframe_round1_unet_imagenet_pretrained_marsnet/';
 %                                 '../../models/results/predict_wholeframe_round1_VGG16/';
 %                                 '../../models/results/predict_wholeframe_round1_VGG19/';
 %                                 '../../models/results/predict_wholeframe_round1_VGG16_batchnorm/';
@@ -108,13 +128,23 @@ classdef GlobalConfig
 %                                  '../../models/results/predict_wholeframe_round1_VGG16_dropout/';
 %                                  '../../models/results/predict_wholeframe_round1_VGG19_dropout/';
 %                                  '../../models/results/predict_wholeframe_round1_VGG19_batchnorm_dropout/'};
+
+
 %         prediction_path_list = {'../../models/results/predict_wholeframe_round1_unet/';
+%                                 '../../models/results/predict_wholeframe_round1_unet_imagenet_pretrained_marsnet/';
 %                                 '../../models/results/predict_wholeframe_round1_VGG16/';
 %                                 '../../models/results/predict_wholeframe_round1_VGG19/';
 %                                 '../../models/results/predict_wholeframe_round1_VGG16_dropout/';
 %                                 '../../models/results/predict_wholeframe_round1_VGG19_dropout/';
 %                                 '../../models/results/predict_wholeframe_round1_Res50V2/';
 %                                 '../../models/results/predict_wholeframe_round1_EFF_B7_no_preprocessing/'};
+
+%        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_unet/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_VGG19_no_pretrain/';
+%                                '/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_VGG19/'};
+%        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_spheroid_test_VGG19_upscaled/'};
+
+%        prediction_path_list = {'/media/bch_drive/Public/JunbongJang/Segmentation/models/results/predict_wholeframe_round1_organoid_VGG19_dropout_crop_even/'};
 %% --------------------------------------------------------------
 %        dice_folder_name = 'round1_specialist_unet_round1_generalist_unet_round1_specialist_VGG19_dropout_round1_generalist_VGG19_dropout';
 
@@ -129,19 +159,27 @@ classdef GlobalConfig
 
 %% --------------------------------------------------------------
 %        display_names = {'Specialist U-Net'; 'Generalist U-Net'; 'Specialist VGG19-U-Net'; 'Generalist VGG19-U-Net'};
-        display_names = {'VGG19D-U-Net'; 'single_micro VGG19D-U-Net'};
+%        display_names = {'U-Net'; 'U-Net pretrained'; 'VGG19'; 'VGG19 pretrained'};
+%        display_names = {'VGG19D-U-Net'; 'VGG19D-U-Net temporal'};
 
+%        display_names = {'cryptic VGG19D'; 'cryptic VGG19D temporal'};
 %        display_names = {'cryptic VGG19D'; 'cryptic VGG19D pat10'; 'cryptic VGG19D sm'; 'cryptic VGG19D mm pat10';'cryptic VGG19D mm pat10 overfit';'cryptic VGG19D overfit';'cryptic VGG16'};
 %        display_names = {'cryptic_all VGG19D pat10'; 'cryptic_all VGG19D mm pat10'; 'cryptic_all heq VGG19D mm pat10'};
 %        display_names = {'VGG19D-U-Net'; 'VGG19D-U-Net input256'};
 %        display_names = {'U-Net';'VGG19-U-Net Dropout'};
+        display_names = {'U-Net';'U-Net marsnet';'U-Net pretrained marsnet'};
 %        display_names = {'WF norm'; 'TIRF norm'};
 %        display_names = {'Teacher TIRF'; 'Student TIRF'};
 
+%        display_names = {'spheroid_unet'; 'spheroid_VGG19_no_pretrain'; 'spheroid_VGG19'};
+%        display_names = {'spheroid_VGG19_marsnet'};
+
 %        display_names = {'64';'80';'96';'128'; '192'; '256'};
+%        display_names = {'U-Net'; 'U-Net pretrained';};
 %        display_names = {'U-Net';
 %                         'VGG16P-U-Net';
 %                         'VGG19P-U-Net';
+%                         'U-Net P';
 %                         'VGG16-U-Net';
 %                         'VGG19-U-Net';
 %                         'VGG16B-U-Net';
@@ -149,6 +187,7 @@ classdef GlobalConfig
 %                         'VGG16D-U-Net';
 %                         'VGG19D-U-Net';
 %                         'VGG19D&B-U-Net'};
+
 %        display_names = {'U-Net no pretrain';
 %                         'VGG16-U-Net';
 %                         'VGG19-U-Net';
@@ -156,18 +195,27 @@ classdef GlobalConfig
 %                         'VGG19-U-Net dropout';
 %                         'Res50V2-U-Net';
 %                         'EFF-B7-U-Net'};
+%        display_names = {'U-Net NP';
+%                         'U-Net P';
+%                         'VGG16-U-Net';
+%                         'VGG19-U-Net';
+%                         'VGG16-U-Net dropout';
+%                         'VGG19-U-Net dropout';
+%                         'Res50V2-U-Net';
+%                         'EFF-B7-U-Net'};
+
+%        display_names = {'spheroid_test_VGG19_upscaled';};
 
 %% --------------------------------------------------------------
 % In the frame_list matrix,
 % each column corresponds to different number of traning frames and
 % each row separated by ; corresponds to the different models
-        frame_list = [2;2];
-%        frame_list = [10;10;10];
-%        frame_list = [2;2;2;2];
+%        frame_list = [1;1;1];
+%        frame_list = [2;2];
+%        frame_list = [10;10;10;10];
 
 %         frame_list = [34;34];
-%        frame_list =[10;10;10;10];
-%        frame_list =[10];
+        frame_list =[10;10;10];
 
 %        frame_list = [10;10;10;10;10;10;10];
 %        frame_list = [10;10;10;10;10;10];
@@ -179,14 +227,20 @@ classdef GlobalConfig
 %                      200];
 
 %        frame_list = [10;10;10;10;10;
-%                      10;10;10;10;10];
+%                      10;10;10;10;10;10];
+%        frame_list = [10;10;10;10;
+%                      10;10;10;10];
+
 %        frame_list = [1,2,6,10,22,34;
 %                     1,2,6,10,22,34;
 %                     1,2,6,10,22,34;
 %                     1,2,6,10,22,34;
 %                     1,2,6,10,22,34;
 %                     1,2,6,10,22,34;
+%                     1,2,6,10,22,34;
 %                     1,2,6,10,22,34];
+
+%        frame_list = [1];
 
 %% --------------------------------------------------------------
     end  % properties end
@@ -274,8 +328,10 @@ classdef GlobalConfig
                 elseif contains(prediction_path, 'cryptic_')
                     GlobalConfigObj.repeat_max = 1;
                     GlobalConfigObj.img_root_path = '/media/bch_drive/Public/JunbongJang/Segmentation/assets/Cryptic Lamellipodia/CellMask-05152014-Control-1/';
-                    GlobalConfigObj.mask_type = '/mask_cropped/';
-                    GlobalConfigObj.img_type = '/img_cropped/';
+%                    GlobalConfigObj.mask_type = '/mask_cropped/';
+%                    GlobalConfigObj.img_type = '/img_cropped/';
+                    GlobalConfigObj.mask_type = '/mask/';
+                    GlobalConfigObj.img_type = '/img/';
                     GlobalConfigObj.dataset_list = {'101018_part_E'; '101018_part_D'; '101018_part_C'; '101018_part_B'; '101018_part_A'; };
                     GlobalConfigObj.fold_name_list = {'ABCD';'ABCE'; 'ABDE'; 'ACDE'; 'BCDE'};
                     GlobalConfigObj.max_dist_pixel = 5;
@@ -293,6 +349,55 @@ classdef GlobalConfig
                                     [0.9290, 0.6940, 0.1250];
                                     [0.8500, 0.3250, 0.0980];
                                     [0.4940, 0.1840, 0.5560]];
+
+                elseif contains(prediction_path, 'organoid_')
+                    GlobalConfigObj.repeat_max = 1;
+                    GlobalConfigObj.img_root_path = '/media/bch_drive/Public/JunbongJang/Organoid/generated/segmentation_train/';
+                    GlobalConfigObj.mask_type = '/mask/';
+                    GlobalConfigObj.img_type = '/img_bright/';
+%                    GlobalConfigObj.dataset_list = {'Lu-17_48h_z_ex1'; 'Lu-17_48h_z_ex2'; 'Lu-17_48h_z_ex4';
+%                                                  'Lu-24_48h_z_ex1';'Lu-24_48h_z_ex2';'Lu-24_48h_z_ex3';'Lu-24_48h_z_ex4';
+%                                                  'Lu-24_724_z_ex1'; 'Lu-24_724_z_ex2'; 'Lu-24_724_z_ex4';
+%                                                  'Lu-28_724_z_ex2'; 'Lu-28_724_z_ex4'};
+%                    GlobalConfigObj.fold_name_list = {'A'; 'B'; 'C'; 'D'; 'E'; 'F'; 'G'; 'H'; 'I'; 'J'; 'K'; 'L'};
+                    GlobalConfigObj.dataset_list = { 'Lu-17_48h_z_ex4'};
+                    GlobalConfigObj.fold_name_list = {'C'};
+                    GlobalConfigObj.max_dist_pixel = 5;
+                    GlobalConfigObj.dataset_split_list = [length(GlobalConfigObj.dataset_list)];
+                    GlobalConfigObj.dataset_interval_list = [1];
+
+                elseif contains(prediction_path, 'spheroid_test')
+                    GlobalConfigObj.repeat_max = 1;
+                    GlobalConfigObj.img_root_path = '/media/bch_drive/Public/JunbongJang/Segmentation/assets/Spheroid/test/';
+                    GlobalConfigObj.mask_type = '/mask/';
+                    GlobalConfigObj.img_type = '/';
+                    GlobalConfigObj.dataset_list = {'Cdc42_5uM'; 'Cdc42_10uM'; 'DMSO'; 'DMSO_2'; 'FAK'; 'FAK_2';
+                                                    'Rac_5uM'; 'Rac_10uM'; 'Rac_20uM'; 'Rho_5uM'; 'Rho_10uM'; 'Rho_20uM'};
+                    GlobalConfigObj.fold_name_list = {'train'; 'train'; 'train'; 'train'; 'train'; 'train';
+                                                      'train'; 'train'; 'train'; 'train'; 'train'; 'train'; };
+                    GlobalConfigObj.max_dist_pixel = 3;
+
+                    % blue, dark gray, orange
+                    GlobalConfigObj.graph_colors = [[0, 0.4470, 0.7410]];
+                    GlobalConfigObj.dataset_split_list = [length(GlobalConfigObj.dataset_list)];
+                    GlobalConfigObj.dataset_interval_list = [1];
+
+
+                elseif contains(prediction_path, 'spheroid')
+                    GlobalConfigObj.repeat_max = 1;
+                    GlobalConfigObj.img_root_path = '/media/bch_drive/Public/JunbongJang/Segmentation/assets/Spheroid/';
+                    GlobalConfigObj.mask_type = '/mask/';
+                    GlobalConfigObj.img_type = '/img/';
+                    GlobalConfigObj.dataset_list = {'1'; '2'; '3'; '4'; '5'; '6'; '7'; '8'; '9'; '10'; '11'; '12'; '13'; '14'; '15'; '16'; '17'; '18'; '19'; '20'; '21'; '22'; '23'};
+                    GlobalConfigObj.fold_name_list = {'A'; 'B'; 'C'; 'D'; 'E'; 'F'; 'G'; 'H'; 'I'; 'J'; 'K'; 'L'; 'M'; 'N'; 'O'; 'P'; 'Q'; 'R'; 'S'; 'T'; 'U'; 'V'; 'W'};
+                    GlobalConfigObj.max_dist_pixel = 3;
+
+                    % blue, dark gray, orange
+                    GlobalConfigObj.graph_colors = [[0, 0.4470, 0.7410];
+                                                    [153,153,153]/255;
+                                                    [0.8500, 0.3250, 0.0980];];
+                    GlobalConfigObj.dataset_split_list = [length(GlobalConfigObj.dataset_list)];
+                    GlobalConfigObj.dataset_interval_list = [1];
 
                 elseif contains(prediction_path, '_paxillin_WF')
                     GlobalConfigObj.repeat_max = 1;
@@ -339,33 +444,47 @@ classdef GlobalConfig
                     GlobalConfigObj.img_root_path = '/media/bch_drive/Public/JunbongJang/Segmentation/assets/';
                     GlobalConfigObj.mask_type = '/mask_fixed/';
                     GlobalConfigObj.img_type = '/img/';
-%                    GlobalConfigObj.dataset_list = {'040119_PtK1_S01_01_phase_3_DMSO_nd_03'; '040119_PtK1_S01_01_phase_2_DMSO_nd_02'; '040119_PtK1_S01_01_phase_2_DMSO_nd_01'; '040119_PtK1_S01_01_phase_ROI2'; '040119_PtK1_S01_01_phase'};
-%                    GlobalConfigObj.fold_name_list = {'ABCD';'ABCE'; 'ABDE'; 'ACDE'; 'BCDE'};
-                    GlobalConfigObj.dataset_list = {'040119_PtK1_S01_01_phase_3_DMSO_nd_03'};
-                    GlobalConfigObj.fold_name_list = {'ABCD'};
+%                    GlobalConfigObj.dataset_list = {'040119_PtK1_S01_01_phase_3_DMSO_nd_03'};
+%                    GlobalConfigObj.fold_name_list = {'ABCD'};
+                    GlobalConfigObj.dataset_list = {'040119_PtK1_S01_01_phase_3_DMSO_nd_03'; '040119_PtK1_S01_01_phase_2_DMSO_nd_02'; '040119_PtK1_S01_01_phase_2_DMSO_nd_01'; '040119_PtK1_S01_01_phase_ROI2'; '040119_PtK1_S01_01_phase'};
+                    GlobalConfigObj.fold_name_list = {'ABCD';'ABCE'; 'ABDE'; 'ACDE'; 'BCDE'};
 %                    GlobalConfigObj.fold_name_list = {'A'; 'B'; 'C'; 'D'; 'E'};
                     GlobalConfigObj.max_dist_pixel = 3;
 
-                    % blue, red, green, yellow, orange, skyblue, violet
-%                    GlobalConfigObj.graph_colors = [[0, 0.4470, 0.7410];
-%                                    [0.6350, 0.0780, 0.1840];
-%                                    [0.4660, 0.6740, 0.1880];
-%                                    [0.9290, 0.6940, 0.1250];
-%                                    [0.8500, 0.3250, 0.0980];
-%                                    [0.3010, 0.7450, 0.9330];
-%                                    [0.4940, 0.1840, 0.5560]];
-
-                    % blue, pink, skyblue, red, green, light yellow, gray, yellow, orange, violet
+                    % blue, skyblue, red, green, yellow, orange, pink, violet
                     GlobalConfigObj.graph_colors = [[0, 0.4470, 0.7410];
-                                    [247,129,191]/255;
                                     [0.3010, 0.7450, 0.9330];
                                     [0.6350, 0.0780, 0.1840];
                                     [0.4660, 0.6740, 0.1880];
-                                    [255,255,153]/255;
-                                    [153,153,153]/255;
                                     [0.9290, 0.6940, 0.1250];
                                     [0.8500, 0.3250, 0.0980];
+                                    [247,129,191]/255;
                                     [0.4940, 0.1840, 0.5560]];
+
+                    % blue, pink, skyblue, red, green, light yellow, gray, yellow, orange, violet
+%                    GlobalConfigObj.graph_colors = [[0, 0.4470, 0.7410];
+%                                    [247,129,191]/255;
+%                                    [0.3010, 0.7450, 0.9330];
+%                                    [0.6350, 0.0780, 0.1840];
+%                                    [0.4660, 0.6740, 0.1880];
+%                                    [255,255,153]/255;
+%                                    [153,153,153]/255;
+%                                    [0.9290, 0.6940, 0.1250];
+%                                    [0.8500, 0.3250, 0.0980];
+%                                    [0.4940, 0.1840, 0.5560]];
+
+                    % blue, pink, darkgray, skyblue, red, green, light yellow, gray, yellow, orange, violet
+%                    GlobalConfigObj.graph_colors = [[0, 0.4470, 0.7410];
+%                                    [247,129,191]/255;
+%                                    [53,53,53]/255;
+%                                    [0.3010, 0.7450, 0.9330];
+%                                    [0.6350, 0.0780, 0.1840];
+%                                    [0.4660, 0.6740, 0.1880];
+%                                    [255,255,153]/255;
+%                                    [153,153,153]/255;
+%                                    [0.9290, 0.6940, 0.1250];
+%                                    [0.8500, 0.3250, 0.0980];
+%                                    [0.4940, 0.1840, 0.5560]];
 
                     % blue, yellow, pink, orange, green, red
 %                    GlobalConfigObj.graph_colors = [[0, 0.4470, 0.7410];
@@ -417,6 +536,7 @@ classdef GlobalConfig
             assert(GlobalConfigObj.total_prediction_path_num > 0)
             assert(size(GlobalConfigObj.prediction_path_list, 1) == size(GlobalConfigObj.display_names, 1))
             assert(size(GlobalConfigObj.dataset_list, 1) == size(GlobalConfigObj.fold_name_list, 1))
+            assert(GlobalConfigObj.chosen_frame_index <= size(GlobalConfigObj.frame_list, 2))
 
         end
 
@@ -462,7 +582,7 @@ classdef GlobalConfig
             upper_bound = (top_n+1)*0.005;
 
             if upper_offset_bool == 1
-                upper_bound_offset = (upper_bound-lower_bound)/4;
+                upper_bound_offset = (upper_bound-lower_bound)/6;
                 upper_bound = upper_bound + upper_bound_offset;
             end
 

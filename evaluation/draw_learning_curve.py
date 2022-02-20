@@ -22,6 +22,14 @@ matplotlib.rc('font', **font)
 
 
 def traning_curve_compare_two_models(color_list, list_max, frame_num, ylim_bottom_top):
+    '''
+    draw all training curves from each model for both models in one graph
+    :param color_list:
+    :param list_max:
+    :param frame_num:
+    :param ylim_bottom_top:
+    :return:
+    '''
     constants = UserParams('eval')
     constants.update_eval_config(0)
     save_folder = f'generated/training_curves/{constants.get_eval_folder_name()}'
@@ -35,10 +43,9 @@ def traning_curve_compare_two_models(color_list, list_max, frame_num, ylim_botto
 
         for strategy_index, (round_num, strategy_type) in enumerate(zip(constants.round_num, constants.strategy_type)):
             for model_name in constants.model_names:
-                print('------------------')
-                print(repeat_index, model_name, strategy_type)
+                # print('------------------')
+                # print(strategy_type, model_name, frame_num, repeat_index)
                 folder_path = '../models/results/history_round{}_{}'.format(round_num, strategy_type)
-
                 try:
                     data = np.load(
                         folder_path + '/history_frame{}_{}_repeat{}.npy'.format(frame_num, model_name, repeat_index),
@@ -54,7 +61,7 @@ def traning_curve_compare_two_models(color_list, list_max, frame_num, ylim_botto
                     line_loss, = ax.plot(loss_x_coord, data_dict[key][:list_max], label=key, color=color_list[strategy_index])
 
                     key = 'val_loss'
-                    ax.plot(loss_x_coord, data_dict[key][:list_max], linestyle='--', label=key, color=color_list[strategy_index])
+                    ax.plot(loss_x_coord, data_dict[key][:list_max], linestyle=':', label=key, color=color_list[strategy_index])
 
                     graph_line_dict[str(strategy_index)+'_loss'] = line_loss
                 except:
@@ -89,8 +96,8 @@ def traning_curve_compare_two_models_aggregate(color_list, list_max, frame_num, 
             for strategy_index, (round_num, strategy_type) in enumerate(zip(constants.round_num, constants.strategy_type)):
                 constants.update_eval_config(strategy_index)
                 for model_name in constants.model_names:
-                    print('------------------')
-                    print(repeat_index, model_name, strategy_type)
+                    # print('------------------')
+                    # print(repeat_index, model_name, strategy_type)
                     folder_path = '../models/results/history_round{}_{}'.format(round_num, strategy_type)
 
                     try:
@@ -132,7 +139,7 @@ def traning_curve_compare_two_models_aggregate(color_list, list_max, frame_num, 
         elif 'VGG19_dropout' in strategy_type:
             strategy_type = 'VGG19-U-Net Dropout'
         ax.plot(x_coord, avg_loss_list, label=strategy_type, color=color_list[strategy_index])
-        ax.plot(x_coord, avg_val_loss_list, linestyle='--', color=color_list[strategy_index])
+        ax.plot(x_coord, avg_val_loss_list, label='val_' + strategy_type, linestyle=':', color=color_list[strategy_index])
 
     ax.set_ylim(ylim_bottom_top)
     set_plot_aspect_ratio(ax)
@@ -140,7 +147,7 @@ def traning_curve_compare_two_models_aggregate(color_list, list_max, frame_num, 
     ax.set_xlabel('Epoch')
     plt.xticks(fontsize=10)
     plt.yticks(fontsize=10)
-    ax.legend(loc='upper right', frameon=False)
+    # ax.legend(loc='upper right', frameon=False)
 
     plt.tight_layout()
     f.savefig('{}/aggreagate_training_curve_frame{}.svg'.format(save_folder, frame_num))
@@ -206,29 +213,15 @@ def set_plot_aspect_ratio(input_ax):
     input_ax.set_aspect(abs((xright - xleft) / (ybottom - ytop)) * ratio)
 
 
-def test_open_data():
-    # strategy_type = 'single_micro_VGG19_dropout'
-    # model_names=['A', 'B', 'C', 'D', 'E']
-    strategy_type = 'VGG19_dropout'
-    model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
-    frame = 34
-    for model_name in model_names:
-        root_path = '../models/results/history_round1_{}/history_frame{}_{}_repeat0.npy'.format(strategy_type, frame, model_name)
-        data = np.load(root_path, allow_pickle=True, encoding="bytes")
-        data_dict = data.ravel()[0]
-        print('Total training in hours: ', sum(data_dict['times'])/3600)
-
-
-
 if __name__ == "__main__":
     # blue, orange, green, yellow, red, skyblue, violet
     # ['#0071bc', '#d85218', '#76ab2f', '#ecb01f', '#a1132e', '#4cbded', '#7d2e8d']
     color_list = ['#0071bc', '#d85218']
-    ylim_bottom_top = (0.01, 0.12)
-    list_max = 100
+    ylim_bottom_top = (0.01, 0.08)
+    list_max = 50 # 100
     frame_num = 2
 
     # traning_curve_compare_two_models(color_list, list_max, frame_num, ylim_bottom_top)
-    # traning_curve_compare_two_models_aggregate(color_list, list_max, frame_num, ylim_bottom_top)
+    traning_curve_compare_two_models_aggregate(color_list, list_max, frame_num, ylim_bottom_top)
     # training_curve_per_model(frame_num)
-    test_open_data()
+    # test_open_data()

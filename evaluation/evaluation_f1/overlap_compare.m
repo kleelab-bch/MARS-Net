@@ -85,8 +85,15 @@ end
 
 function new_image_name = convert_image_name(image_name, mask_name, image_format)
     % assume image code is the same between original image and mask image
-    seq_code = extractBetween(mask_name,length(mask_name)-7,length(mask_name)-4);
-    new_image_name = strjoin([extractBetween(image_name,1,length(image_name)-8), seq_code, image_format], '');
+    seq_code = extractBetween(mask_name,length(mask_name)-6,length(mask_name)-4);
+    if length(image_name) == 7
+        new_image_name = strjoin([seq_code, image_format],'');
+    elseif length(image_name) < 7
+        new_image_name = image_name
+        disp('------------------- check error')
+    else
+        new_image_name = strjoin([extractBetween(image_name,1,length(image_name)-7), seq_code, image_format], '');
+    end
 end
 
 
