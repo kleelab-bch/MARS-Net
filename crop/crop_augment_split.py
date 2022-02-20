@@ -38,7 +38,6 @@ def Training_dataset(constants, model_name, dataset_name, frame, repeat_index, i
             split_edgs = edges_train[split_lower_limit:split_upper_limit,:,:]
         print('split_imgs shape: ', split_imgs.shape)
 
-
         train, mask, edge = augment_data(split_imgs, split_msks, split_edgs, batch_size, augmentation_factor)
         print('train shape: ', train.shape, ' mask shape: ', mask.shape)
 
@@ -77,7 +76,8 @@ def Training_dataset(constants, model_name, dataset_name, frame, repeat_index, i
 if __name__ == "__main__":
     constants = UserParams('crop')
 
-    args = constants.get_crop_args()
+    args = constants.get_args()
+    augmentation_factor = 50
     print(args)
     for repeat_index in range(constants.REPEAT_MAX):
         for frame in constants.frame_list:
@@ -87,5 +87,5 @@ if __name__ == "__main__":
                     print('break:', repeat_index, frame, model_name)
                     break
                 for dataset_folder, dataset_name, img_folder, mask_folder in zip(constants.dataset_folders, constants.dataset_names, constants.img_folders, constants.mask_folders):
-                    Training_dataset(constants, model_name, dataset_name, frame, repeat_index, args.input_size, args.output_size, args.batch_size, args.augmentation_factor, img_folder, mask_folder, dataset_folder, constants.img_format, args.crop_mode, args.crop_patches)
+                    Training_dataset(constants, model_name, dataset_name, frame, repeat_index, args.input_size, args.output_size, args.crop_batch_size, augmentation_factor, img_folder, mask_folder, dataset_folder, constants.img_format, args.crop_mode, args.crop_patches)
             gc.collect()  # runs garbage collection to free memory

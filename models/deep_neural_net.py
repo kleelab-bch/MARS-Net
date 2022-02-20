@@ -1,3 +1,9 @@
+"""
+Author: Junbong Jang
+Date: 4/30/2020
+
+Store functions that define 2D Keras models
+"""
 import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.applications import ResNet50, ResNet50V2, DenseNet201, InceptionResNetV2
@@ -8,8 +14,10 @@ from tensorflow.keras.initializers import glorot_uniform
 from tensorflow.keras import regularizers
 import deep_neural_net_blocks as net_block
 from tensorflow.keras.utils import plot_model, get_file
+from debug_utils import log_function_call
 
 
+@log_function_call
 def VGG16(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path, encoder_weights='imagenet'):
     inputs = Input(shape=[3, img_rows, img_cols])
 
@@ -62,6 +70,7 @@ def VGG16(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path
     return model
 
 
+@log_function_call
 def VGG16_custom(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
     inputs = Input(shape=(3,img_rows, img_cols))
 
@@ -122,6 +131,7 @@ def VGG16_custom(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weigh
     return model
 
 
+@log_function_call
 def VGG16_dropout(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
     # https://towardsdatascience.com/unet-line-by-line-explanation-9b191c76baf5
     inputs = Input(shape=(3,img_rows, img_cols))
@@ -187,6 +197,7 @@ def VGG16_dropout(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weig
     return model
 
 
+@log_function_call
 def VGG16_l2(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
     inputs = Input(shape=(3,img_rows, img_cols))
 
@@ -242,6 +253,7 @@ def VGG16_l2(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_p
     return model
 
 
+@log_function_call
 def VGG16_dac(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
     inputs = Input(shape=(3,img_rows, img_cols))
 
@@ -299,6 +311,7 @@ def VGG16_dac(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_
     return model
 
 
+@log_function_call
 def VGG16_spp(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
     inputs = Input(shape=(3,img_rows, img_cols))
 
@@ -357,6 +370,7 @@ def VGG16_spp(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_
     return model
 
 
+@log_function_call
 def VGG16_movie(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
     inputs = Input(shape=(3, img_rows, img_cols))
 
@@ -413,6 +427,7 @@ def VGG16_movie(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weight
     return model
 
 
+@log_function_call
 def VGG16_batchnorm(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
     inputs = Input(shape=(3,img_rows, img_cols))
 
@@ -469,6 +484,7 @@ def VGG16_batchnorm(img_rows, img_cols, crop_margin, right_crop, bottom_crop, we
     return model
 
 
+@log_function_call
 def VGG16_instancenorm(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
     inputs = Input(shape=(3,img_rows, img_cols))
 
@@ -527,8 +543,9 @@ def VGG16_instancenorm(img_rows, img_cols, crop_margin, right_crop, bottom_crop,
 
 ## --------------------------------------------------------------------------------------
 
-
+@log_function_call
 def VGG19(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path, encoder_weights='imagenet'):
+    print('encoder_weights', encoder_weights)
     inputs = Input(shape=[3, img_rows, img_cols])
 
     # Create the feature extraction model
@@ -540,6 +557,121 @@ def VGG19(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path
         'block4_conv4',  # 512x16x16
         'block5_conv4'  # 512x8x8
     ]
+
+    layers = [base_model.get_layer(name).output for name in layer_names]
+
+    encoder_model = tf.keras.Model(inputs=base_model.input, outputs=layers)
+    plot_model(encoder_model, to_file='model_plots/encoder_VGG19.png', show_shapes=True, show_layer_names=True, dpi=144)
+
+    skips = encoder_model(inputs)
+
+    # decoder
+    up6 = concatenate([UpSampling2D(size=(2, 2))(skips[4]), skips[3]], axis=1)
+    conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(up6)
+    conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(conv6)
+
+    up7 = concatenate([UpSampling2D(size=(2, 2))(conv6), skips[2]], axis=1)
+    conv7 = Conv2D(256, (3, 3), activation='relu', padding='same')(up7)
+    conv7 = Conv2D(256, (3, 3), activation='relu', padding='same')(conv7)
+
+    up8 = concatenate([UpSampling2D(size=(2, 2))(conv7), skips[1]], axis=1)
+    conv8 = Conv2D(128, (3, 3), activation='relu', padding='same')(up8)
+    conv8 = Conv2D(128, (3, 3), activation='relu', padding='same')(conv8)
+
+    up9 = concatenate([UpSampling2D(size=(2, 2))(conv8), skips[0]], axis=1)
+    conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(up9)
+    conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(conv9)
+
+    conv10 = Conv2D(1, (1, 1), activation='sigmoid')(conv9)
+    if bottom_crop == 0:
+        conv10 = Cropping2D(cropping=((crop_margin, crop_margin), (crop_margin, crop_margin)))(
+            conv10)  # ((top_crop, bottom_crop), (left_crop, right_crop)) for training
+    elif bottom_crop > 0 and bottom_crop > 0 and right_crop > 0:
+        conv10 = Cropping2D(cropping=((crop_margin, bottom_crop), (crop_margin, right_crop)))(conv10)
+    else:
+        # remove reflected portion from the image for prediction
+        conv10 = Cropping2D(cropping=((0, bottom_crop), (0, right_crop)))(conv10)
+
+    model = Model(inputs=inputs, outputs=conv10)
+
+    if weights_path != '':
+        model.load_weights(weights_path, by_name=True)
+
+    return model
+
+
+@log_function_call
+def VGG19_imagenet_pretrained(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
+    inputs = Input(shape=[img_rows, img_cols, 3])
+
+    # Create the feature extraction model
+    base_model = tf.keras.applications.VGG19(input_shape=[img_rows, img_cols, 3], include_top=False, weights=None)
+    layer_names = [
+        'block1_conv2',  # 64x128x128
+        'block2_conv2',  # 128x64x64
+        'block3_conv4',  # 256x32x32
+        'block4_conv4',  # 512x16x16
+        'block5_conv4'  # 512x8x8
+    ]
+
+    layers = [base_model.get_layer(name).output for name in layer_names]
+
+    encoder_model = tf.keras.Model(inputs=base_model.input, outputs=layers)
+    plot_model(encoder_model, to_file='model_plots/encoder_VGG19.png', show_shapes=True, show_layer_names=True, dpi=144)
+
+    skips = encoder_model(inputs)
+
+    # upsampling model
+    up6 = concatenate([UpSampling2D(size=(2, 2))(skips[4]), skips[3]], axis=-1)
+    conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(up6)
+    conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(conv6)
+
+    up7 = concatenate([UpSampling2D(size=(2, 2))(conv6), skips[2]], axis=-1)
+    conv7 = Conv2D(256, (3, 3), activation='relu', padding='same')(up7)
+    conv7 = Conv2D(256, (3, 3), activation='relu', padding='same')(conv7)
+
+    up8 = concatenate([UpSampling2D(size=(2, 2))(conv7), skips[1]], axis=-1)
+    conv8 = Conv2D(128, (3, 3), activation='relu', padding='same')(up8)
+    conv8 = Conv2D(128, (3, 3), activation='relu', padding='same')(conv8)
+
+    up9 = concatenate([UpSampling2D(size=(2, 2))(conv8), skips[0]], axis=-1)
+    conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(up9)
+    conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(conv9)
+
+    conv10 = Conv2D(1, (1, 1), activation='sigmoid')(conv9)
+    if bottom_crop == 0:
+        conv10 = Cropping2D(cropping=((crop_margin, crop_margin), (crop_margin, crop_margin)))(
+            conv10)  # ((top_crop, bottom_crop), (left_crop, right_crop)) for training
+    else:
+        conv10 = Cropping2D(cropping=((0, bottom_crop), (0, right_crop)))(
+            conv10)  # remove reflected portion from the image for prediction
+
+    model = Model(inputs=inputs, outputs=conv10)
+
+    if weights_path != '':
+        model.load_weights(weights_path, by_name=True)
+
+    return model
+
+
+@log_function_call
+def VGG19_freeze(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path, encoder_weights='imagenet'):
+    print('encoder_weights', encoder_weights)
+    inputs = Input(shape=[3, img_rows, img_cols])
+
+    # Create the feature extraction model
+    base_model = tf.keras.applications.VGG19(input_shape=[3, img_rows, img_cols], include_top=False, weights=encoder_weights)
+    layer_names = [
+        'block1_conv2',  # 64x128x128
+        'block2_conv2',  # 128x64x64
+        'block3_conv4',  # 256x32x32
+        'block4_conv4',  # 512x16x16
+        'block5_conv4'  # 512x8x8
+    ]
+
+    for i in range(21):  # first 21 layers of the pre-trained VGG model
+        base_model.layers[i].trainable = False
+
     layers = [base_model.get_layer(name).output for name in layer_names]
 
     encoder_model = tf.keras.Model(inputs=base_model.input, outputs=layers)
@@ -580,6 +712,8 @@ def VGG19(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path
     return model
 
 
+
+@log_function_call
 def VGG19_batchnorm_dropout(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
     # mimic model in https://github.com/clguo/SA-UNet/blob/844808189526afaf06296ba6c135b9c0ba67d70a/SA_UNet.py
     inputs = Input(shape=(3, img_rows, img_cols))
@@ -652,6 +786,7 @@ def VGG19_batchnorm_dropout(img_rows, img_cols, crop_margin, right_crop, bottom_
     return model
 
 
+@log_function_call
 def VGG19_batchnorm(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path, encoder_weights='imagenet'):
     inputs = Input(shape=(3, img_rows, img_cols))
 
@@ -723,6 +858,91 @@ def VGG19_batchnorm(img_rows, img_cols, crop_margin, right_crop, bottom_crop, we
     return model
 
 
+@log_function_call
+def VGG19D_crop_first(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
+    inputs = Input(shape=[3, img_rows, img_cols])
+    # Block 1
+    x = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv1')(inputs)
+    block1_conv2 = Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv2')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(block1_conv2)
+    x = Dropout(0.25)(x)
+
+    # Block 2
+    x = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv1')(x)
+    block2_conv2 = Conv2D(128, (3, 3), activation='relu', padding='same', name='block2_conv2')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')(block2_conv2)
+    x = Dropout(0.5)(x)
+
+    # Block 3
+    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv1')(x)
+    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv2')(x)
+    x = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv3')(x)
+    block3_conv4 = Conv2D(256, (3, 3), activation='relu', padding='same', name='block3_conv4')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool')(block3_conv4)
+    x = Dropout(0.5)(x)
+
+    # Block 4
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv1')(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv2')(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv3')(x)
+    block4_conv4 = Conv2D(512, (3, 3), activation='relu', padding='same', name='block4_conv4')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool')(block4_conv4)
+    x = Dropout(0.5)(x)
+
+    # Block 5
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv1')(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv2')(x)
+    x = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv3')(x)
+    block5_conv4 = Conv2D(512, (3, 3), activation='relu', padding='same', name='block5_conv4')(x)
+
+
+    # upsampling model
+    up6 = concatenate([UpSampling2D(size=(2, 2))(block5_conv4), block4_conv4], axis=1)
+    up6 = Dropout(0.5)(up6)
+    conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(up6)
+    conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(conv6)
+
+    up7 = concatenate([UpSampling2D(size=(2, 2))(conv6), block3_conv4], axis=1)
+    up7 = Dropout(0.5)(up7)
+    conv7 = Conv2D(256, (3, 3), activation='relu', padding='same')(up7)
+    conv7 = Conv2D(256, (3, 3), activation='relu', padding='same')(conv7)
+
+    up8 = concatenate([UpSampling2D(size=(2, 2))(conv7), block2_conv2], axis=1)
+    up8 = Dropout(0.5)(up8)
+    conv8 = Conv2D(128, (3, 3), activation='relu', padding='same')(up8)
+    conv8 = Conv2D(128, (3, 3), activation='relu', padding='same')(conv8)
+
+    up9 = concatenate([UpSampling2D(size=(2, 2))(conv8), block1_conv2], axis=1)
+    up9 = Dropout(0.5)(up9)
+    conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(up9)
+    conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(conv9)
+
+    if bottom_crop == 0:
+        crop_conv = Cropping2D(cropping=((crop_margin, crop_margin), (crop_margin, crop_margin)))(conv9)  # ((top_crop, bottom_crop), (left_crop, right_crop)) for training
+    else:
+        crop_conv = Cropping2D(cropping=((0, bottom_crop), (0, right_crop)))(conv9)  # remove reflected portion from the image for prediction
+
+    conv10 = Conv2D(1, (1, 1), activation='sigmoid')(crop_conv)
+
+    model = Model(inputs=inputs, outputs=conv10)
+
+    # Load weights.
+    if weights_path == '':
+        WEIGHTS_PATH_NO_TOP = ('https://storage.googleapis.com/tensorflow/'
+                               'keras-applications/vgg19/'
+                               'vgg19_weights_tf_dim_ordering_tf_kernels_notop.h5')
+
+        weights_path = get_file(
+            'vgg19_weights_tf_dim_ordering_tf_kernels_notop.h5',
+            WEIGHTS_PATH_NO_TOP,
+            cache_subdir='models',
+            file_hash='253f8cb515780f3b799900260a226db6')
+    model.load_weights(weights_path, by_name=True)
+
+    return model
+
+
+@log_function_call
 def VGG19_dropout(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
     # https://github.com/tensorflow/tensorflow/blob/v2.3.1/tensorflow/python/keras/applications/vgg19.py#L45-L230
     inputs = Input(shape=[3, img_rows, img_cols])
@@ -806,6 +1026,175 @@ def VGG19_dropout(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weig
     return model
 
 
+@log_function_call
+def VGG19_dropout_gelu(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
+    # https://github.com/tensorflow/tensorflow/blob/v2.3.1/tensorflow/python/keras/applications/vgg19.py#L45-L230
+    inputs = Input(shape=[3, img_rows, img_cols])
+    # Block 1
+    x = Conv2D(64, (3, 3), activation=tf.keras.activations.gelu, padding='same', name='block1_conv1')(inputs)
+    block1_conv2 = Conv2D(64, (3, 3), activation=tf.keras.activations.gelu, padding='same', name='block1_conv2')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(block1_conv2)
+    x = Dropout(0.25)(x)
+
+    # Block 2
+    x = Conv2D(128, (3, 3), activation=tf.keras.activations.gelu, padding='same', name='block2_conv1')(x)
+    block2_conv2 = Conv2D(128, (3, 3), activation=tf.keras.activations.gelu, padding='same', name='block2_conv2')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')(block2_conv2)
+    x = Dropout(0.5)(x)
+
+    # Block 3
+    x = Conv2D(256, (3, 3), activation=tf.keras.activations.gelu, padding='same', name='block3_conv1')(x)
+    x = Conv2D(256, (3, 3), activation=tf.keras.activations.gelu, padding='same', name='block3_conv2')(x)
+    x = Conv2D(256, (3, 3), activation=tf.keras.activations.gelu, padding='same', name='block3_conv3')(x)
+    block3_conv4 = Conv2D(256, (3, 3), activation=tf.keras.activations.gelu, padding='same', name='block3_conv4')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool')(block3_conv4)
+    x = Dropout(0.5)(x)
+
+    # Block 4
+    x = Conv2D(512, (3, 3), activation=tf.keras.activations.gelu, padding='same', name='block4_conv1')(x)
+    x = Conv2D(512, (3, 3), activation=tf.keras.activations.gelu, padding='same', name='block4_conv2')(x)
+    x = Conv2D(512, (3, 3), activation=tf.keras.activations.gelu, padding='same', name='block4_conv3')(x)
+    block4_conv4 = Conv2D(512, (3, 3), activation=tf.keras.activations.gelu, padding='same', name='block4_conv4')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool')(block4_conv4)
+    x = Dropout(0.5)(x)
+
+    # Block 5
+    x = Conv2D(512, (3, 3), activation=tf.keras.activations.gelu, padding='same', name='block5_conv1')(x)
+    x = Conv2D(512, (3, 3), activation=tf.keras.activations.gelu, padding='same', name='block5_conv2')(x)
+    x = Conv2D(512, (3, 3), activation=tf.keras.activations.gelu, padding='same', name='block5_conv3')(x)
+    block5_conv4 = Conv2D(512, (3, 3), activation=tf.keras.activations.gelu, padding='same', name='block5_conv4')(x)
+
+
+    # upsampling model
+    up6 = concatenate([UpSampling2D(size=(2, 2))(block5_conv4), block4_conv4], axis=1)
+    up6 = Dropout(0.5)(up6)
+    conv6 = Conv2D(512, (3, 3), activation=tf.keras.activations.gelu, padding='same')(up6)
+    conv6 = Conv2D(512, (3, 3), activation=tf.keras.activations.gelu, padding='same')(conv6)
+
+    up7 = concatenate([UpSampling2D(size=(2, 2))(conv6), block3_conv4], axis=1)
+    up7 = Dropout(0.5)(up7)
+    conv7 = Conv2D(256, (3, 3), activation=tf.keras.activations.gelu, padding='same')(up7)
+    conv7 = Conv2D(256, (3, 3), activation=tf.keras.activations.gelu, padding='same')(conv7)
+
+    up8 = concatenate([UpSampling2D(size=(2, 2))(conv7), block2_conv2], axis=1)
+    up8 = Dropout(0.5)(up8)
+    conv8 = Conv2D(128, (3, 3), activation=tf.keras.activations.gelu, padding='same')(up8)
+    conv8 = Conv2D(128, (3, 3), activation=tf.keras.activations.gelu, padding='same')(conv8)
+
+    up9 = concatenate([UpSampling2D(size=(2, 2))(conv8), block1_conv2], axis=1)
+    up9 = Dropout(0.5)(up9)
+    conv9 = Conv2D(64, (3, 3), activation=tf.keras.activations.gelu, padding='same')(up9)
+    conv9 = Conv2D(64, (3, 3), activation=tf.keras.activations.gelu, padding='same')(conv9)
+
+    conv10 = Conv2D(1, (1, 1), activation='sigmoid')(conv9)
+    if bottom_crop == 0:
+        conv10 = Cropping2D(cropping=((crop_margin, crop_margin), (crop_margin, crop_margin)))(conv10)  # ((top_crop, bottom_crop), (left_crop, right_crop)) for training
+    else:
+        conv10 = Cropping2D(cropping=((0, bottom_crop), (0, right_crop)))(conv10)  # remove reflected portion from the image for prediction
+
+    model = Model(inputs=inputs, outputs=conv10)
+
+    # Load weights.
+    if weights_path == '':
+        WEIGHTS_PATH_NO_TOP = ('https://storage.googleapis.com/tensorflow/'
+                               'keras-applications/vgg19/'
+                               'vgg19_weights_tf_dim_ordering_tf_kernels_notop.h5')
+
+        weights_path = get_file(
+            'vgg19_weights_tf_dim_ordering_tf_kernels_notop.h5',
+            WEIGHTS_PATH_NO_TOP,
+            cache_subdir='models',
+            file_hash='253f8cb515780f3b799900260a226db6')
+    model.load_weights(weights_path, by_name=True)
+
+    return model
+
+
+@log_function_call
+def VGG19_dropout_swish(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
+    # https://github.com/tensorflow/tensorflow/blob/v2.3.1/tensorflow/python/keras/applications/vgg19.py#L45-L230
+    inputs = Input(shape=[3, img_rows, img_cols])
+    # Block 1
+    x = Conv2D(64, (3, 3), activation=tf.keras.activations.swish, padding='same', name='block1_conv1')(inputs)
+    block1_conv2 = Conv2D(64, (3, 3), activation=tf.keras.activations.swish, padding='same', name='block1_conv2')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block1_pool')(block1_conv2)
+    x = Dropout(0.25)(x)
+
+    # Block 2
+    x = Conv2D(128, (3, 3), activation=tf.keras.activations.swish, padding='same', name='block2_conv1')(x)
+    block2_conv2 = Conv2D(128, (3, 3), activation=tf.keras.activations.swish, padding='same', name='block2_conv2')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block2_pool')(block2_conv2)
+    x = Dropout(0.5)(x)
+
+    # Block 3
+    x = Conv2D(256, (3, 3), activation=tf.keras.activations.swish, padding='same', name='block3_conv1')(x)
+    x = Conv2D(256, (3, 3), activation=tf.keras.activations.swish, padding='same', name='block3_conv2')(x)
+    x = Conv2D(256, (3, 3), activation=tf.keras.activations.swish, padding='same', name='block3_conv3')(x)
+    block3_conv4 = Conv2D(256, (3, 3), activation=tf.keras.activations.swish, padding='same', name='block3_conv4')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block3_pool')(block3_conv4)
+    x = Dropout(0.5)(x)
+
+    # Block 4
+    x = Conv2D(512, (3, 3), activation=tf.keras.activations.swish, padding='same', name='block4_conv1')(x)
+    x = Conv2D(512, (3, 3), activation=tf.keras.activations.swish, padding='same', name='block4_conv2')(x)
+    x = Conv2D(512, (3, 3), activation=tf.keras.activations.swish, padding='same', name='block4_conv3')(x)
+    block4_conv4 = Conv2D(512, (3, 3), activation=tf.keras.activations.swish, padding='same', name='block4_conv4')(x)
+    x = MaxPooling2D((2, 2), strides=(2, 2), name='block4_pool')(block4_conv4)
+    x = Dropout(0.5)(x)
+
+    # Block 5
+    x = Conv2D(512, (3, 3), activation=tf.keras.activations.swish, padding='same', name='block5_conv1')(x)
+    x = Conv2D(512, (3, 3), activation=tf.keras.activations.swish, padding='same', name='block5_conv2')(x)
+    x = Conv2D(512, (3, 3), activation=tf.keras.activations.swish, padding='same', name='block5_conv3')(x)
+    block5_conv4 = Conv2D(512, (3, 3), activation=tf.keras.activations.swish, padding='same', name='block5_conv4')(x)
+
+
+    # upsampling model
+    up6 = concatenate([UpSampling2D(size=(2, 2))(block5_conv4), block4_conv4], axis=1)
+    up6 = Dropout(0.5)(up6)
+    conv6 = Conv2D(512, (3, 3), activation=tf.keras.activations.swish, padding='same')(up6)
+    conv6 = Conv2D(512, (3, 3), activation=tf.keras.activations.swish, padding='same')(conv6)
+
+    up7 = concatenate([UpSampling2D(size=(2, 2))(conv6), block3_conv4], axis=1)
+    up7 = Dropout(0.5)(up7)
+    conv7 = Conv2D(256, (3, 3), activation=tf.keras.activations.swish, padding='same')(up7)
+    conv7 = Conv2D(256, (3, 3), activation=tf.keras.activations.swish, padding='same')(conv7)
+
+    up8 = concatenate([UpSampling2D(size=(2, 2))(conv7), block2_conv2], axis=1)
+    up8 = Dropout(0.5)(up8)
+    conv8 = Conv2D(128, (3, 3), activation=tf.keras.activations.swish, padding='same')(up8)
+    conv8 = Conv2D(128, (3, 3), activation=tf.keras.activations.swish, padding='same')(conv8)
+
+    up9 = concatenate([UpSampling2D(size=(2, 2))(conv8), block1_conv2], axis=1)
+    up9 = Dropout(0.5)(up9)
+    conv9 = Conv2D(64, (3, 3), activation=tf.keras.activations.swish, padding='same')(up9)
+    conv9 = Conv2D(64, (3, 3), activation=tf.keras.activations.swish, padding='same')(conv9)
+
+    conv10 = Conv2D(1, (1, 1), activation='sigmoid')(conv9)
+    if bottom_crop == 0:
+        conv10 = Cropping2D(cropping=((crop_margin, crop_margin), (crop_margin, crop_margin)))(conv10)  # ((top_crop, bottom_crop), (left_crop, right_crop)) for training
+    else:
+        conv10 = Cropping2D(cropping=((0, bottom_crop), (0, right_crop)))(conv10)  # remove reflected portion from the image for prediction
+
+    model = Model(inputs=inputs, outputs=conv10)
+
+    # Load weights.
+    if weights_path == '':
+        WEIGHTS_PATH_NO_TOP = ('https://storage.googleapis.com/tensorflow/'
+                               'keras-applications/vgg19/'
+                               'vgg19_weights_tf_dim_ordering_tf_kernels_notop.h5')
+
+        weights_path = get_file(
+            'vgg19_weights_tf_dim_ordering_tf_kernels_notop.h5',
+            WEIGHTS_PATH_NO_TOP,
+            cache_subdir='models',
+            file_hash='253f8cb515780f3b799900260a226db6')
+    model.load_weights(weights_path, by_name=True)
+
+    return model
+
+
+@log_function_call
 def VGG19_dropout_feature_extractor(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
     # https://github.com/tensorflow/tensorflow/blob/v2.3.1/tensorflow/python/keras/applications/vgg19.py#L45-L230
     inputs = Input(shape=[3, img_rows, img_cols])
@@ -893,6 +1282,7 @@ def VGG19_dropout_feature_extractor(img_rows, img_cols, crop_margin, right_crop,
     return model
 
 
+@log_function_call
 def VGG19_dropout_dac(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
     inputs = Input(shape=[3, img_rows, img_cols])
     # Block 1
@@ -976,26 +1366,27 @@ def VGG19_dropout_dac(img_rows, img_cols, crop_margin, right_crop, bottom_crop, 
     return model
 
 
+@log_function_call
 def UNet(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
     inputs = Input((3, img_rows, img_cols))
-    conv1 = Conv2D(64, (3, 3), activation='relu', padding='same')(inputs)
-    conv1 = Conv2D(64, (3, 3), activation='relu', padding='same')(conv1)
+    conv1 = Conv2D(64, (3, 3), activation='relu', padding='same', name='conv1_1')(inputs)
+    conv1 = Conv2D(64, (3, 3), activation='relu', padding='same', name='conv1_2')(conv1)
     pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
 
-    conv2 = Conv2D(128, (3, 3), activation='relu', padding='same')(pool1)
-    conv2 = Conv2D(128, (3, 3), activation='relu', padding='same')(conv2)
+    conv2 = Conv2D(128, (3, 3), activation='relu', padding='same', name='conv2_1')(pool1)
+    conv2 = Conv2D(128, (3, 3), activation='relu', padding='same', name='conv2_2')(conv2)
     pool2 = MaxPooling2D(pool_size=(2, 2))(conv2)
 
-    conv3 = Conv2D(256, (3, 3), activation='relu', padding='same')(pool2)
-    conv3 = Conv2D(256, (3, 3), activation='relu', padding='same')(conv3)
+    conv3 = Conv2D(256, (3, 3), activation='relu', padding='same', name='conv3_1')(pool2)
+    conv3 = Conv2D(256, (3, 3), activation='relu', padding='same', name='conv3_2')(conv3)
     pool3 = MaxPooling2D(pool_size=(2, 2))(conv3)
 
-    conv4 = Conv2D(512, (3, 3), activation='relu', padding='same')(pool3)
-    conv4 = Conv2D(512, (3, 3), activation='relu', padding='same')(conv4)
+    conv4 = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv4_1')(pool3)
+    conv4 = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv4_2')(conv4)
     pool4 = MaxPooling2D(pool_size=(2, 2))(conv4)
 
-    conv5 = Conv2D(1024, (3, 3), activation='relu', padding='same')(pool4)
-    conv5 = Conv2D(1024, (3, 3), activation='relu', padding='same')(conv5)
+    conv5 = Conv2D(1024, (3, 3), activation='relu', padding='same', name='conv5_1')(pool4)
+    conv5 = Conv2D(1024, (3, 3), activation='relu', padding='same', name='conv5_2')(conv5)
 
     up6 = concatenate([UpSampling2D(size=(2, 2))(conv5), conv4], axis=1)
     conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(up6)
@@ -1027,6 +1418,59 @@ def UNet(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path)
     return model
 
 
+@log_function_call
+def UNet_imagenet_pretrained(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
+    inputs = Input((img_rows, img_cols, 3))
+    conv1 = Conv2D(64, (3, 3), activation='relu', padding='same', name='conv1_1')(inputs)
+    conv1 = Conv2D(64, (3, 3), activation='relu', padding='same', name='conv1_2')(conv1)
+    pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
+
+    conv2 = Conv2D(128, (3, 3), activation='relu', padding='same', name='conv2_1')(pool1)
+    conv2 = Conv2D(128, (3, 3), activation='relu', padding='same', name='conv2_2')(conv2)
+    pool2 = MaxPooling2D(pool_size=(2, 2))(conv2)
+
+    conv3 = Conv2D(256, (3, 3), activation='relu', padding='same', name='conv3_1')(pool2)
+    conv3 = Conv2D(256, (3, 3), activation='relu', padding='same', name='conv3_2')(conv3)
+    pool3 = MaxPooling2D(pool_size=(2, 2))(conv3)
+
+    conv4 = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv4_1')(pool3)
+    conv4 = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv4_2')(conv4)
+    pool4 = MaxPooling2D(pool_size=(2, 2))(conv4)
+
+    conv5 = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv5_1')(pool4)
+    conv5 = Conv2D(512, (3, 3), activation='relu', padding='same', name='conv5_2')(conv5)
+
+    up6 = concatenate([UpSampling2D(size=(2, 2))(conv5), conv4], axis=-1)
+    conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(up6)
+    conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(conv6)
+
+    up7 = concatenate([UpSampling2D(size=(2, 2))(conv6), conv3], axis=-1)
+    conv7 = Conv2D(256, (3, 3), activation='relu', padding='same')(up7)
+    conv7 = Conv2D(256, (3, 3), activation='relu', padding='same')(conv7)
+
+    up8 = concatenate([UpSampling2D(size=(2, 2))(conv7), conv2], axis=-1)
+    conv8 = Conv2D(128, (3, 3), activation='relu', padding='same')(up8)
+    conv8 = Conv2D(128, (3, 3), activation='relu', padding='same')(conv8)
+
+    up9 = concatenate([UpSampling2D(size=(2, 2))(conv8), conv1], axis=-1)
+    conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(up9)
+    conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(conv9)
+
+    conv10 = Conv2D(1, (1, 1), activation='sigmoid')(conv9)
+    if bottom_crop == 0:
+        conv10 = Cropping2D(cropping=((crop_margin, crop_margin),(crop_margin, crop_margin)))(conv10) # ((top_crop, bottom_crop), (left_crop, right_crop)) for training
+    else:
+        conv10 = Cropping2D(cropping=((0, bottom_crop),(0, right_crop)))(conv10)  # remove reflected portion from the image for prediction
+
+    model = Model(inputs=inputs, outputs=conv10)
+
+    if weights_path != '':
+        model.load_weights(weights_path, by_name=True)
+
+    return model
+
+
+@log_function_call
 def UNet_feature_extractor(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
     inputs = Input((3, img_rows, img_cols))
     conv1 = Conv2D(64, (3, 3), activation='relu', padding='same')(inputs)
@@ -1080,12 +1524,14 @@ def UNet_feature_extractor(img_rows, img_cols, crop_margin, right_crop, bottom_c
     return model
 
 ## --------------------------------------------------------------------------------------
-
+@log_function_call
 def ResNet50V2Keras(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
-    baseline_model = ResNet50V2(input_shape=(3, img_rows, img_cols), include_top=False, weights='imagenet')
+    inputs = Input((3, img_rows, img_cols))
+    conv1 = Conv2D(32, (1, 1), activation='relu', padding='same')(inputs)
+
+    baseline_model = ResNet50V2(input_tensor=inputs, include_top=False, weights='imagenet')
     conv5 = baseline_model.output
 
-    # activation_40,22,10,1
     up6 = concatenate([UpSampling2D(size=(2, 2))(conv5), baseline_model.get_layer(name='conv4_block5_out').output],
                       axis=1)
     conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(up6)
@@ -1105,8 +1551,11 @@ def ResNet50V2Keras(img_rows, img_cols, crop_margin, right_crop, bottom_crop, we
     conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(up9)
     conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(conv9)
 
-    up10 = Conv2D(64, 2, activation='relu', padding='same')(UpSampling2D(size=(2, 2))(conv9))
-    conv10 = Conv2D(1, (1, 1), activation='sigmoid')(up10)
+    up10 = concatenate([UpSampling2D(size=(2, 2))(conv9), conv1], axis=1)
+    conv10 = Conv2D(32, (3, 3), activation='relu', padding='same')(up10)
+    conv10 = Conv2D(32, (3, 3), activation='relu', padding='same')(conv10)
+
+    conv10 = Conv2D(1, (1, 1), activation='sigmoid')(conv10)
 
     if bottom_crop == 0:
         conv10 = Cropping2D(cropping=((crop_margin, crop_margin), (crop_margin, crop_margin)))(
@@ -1115,7 +1564,7 @@ def ResNet50V2Keras(img_rows, img_cols, crop_margin, right_crop, bottom_crop, we
         conv10 = Cropping2D(cropping=((0, bottom_crop), (0, right_crop)))(
             conv10)  # remove reflected portion from the image for prediction
 
-    model = Model(inputs=baseline_model.input, outputs=conv10, name='ResNet50V2')
+    model = Model(inputs=inputs, outputs=conv10, name='ResNet50V2')
 
     if weights_path != '':
         model.load_weights(weights_path, by_name=True)
@@ -1123,6 +1572,50 @@ def ResNet50V2Keras(img_rows, img_cols, crop_margin, right_crop, bottom_crop, we
     return model
 
 
+# @log_function_call
+# def ResNet50V2Keras(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
+#     baseline_model = ResNet50V2(input_shape=(3, img_rows, img_cols), include_top=False, weights='imagenet')
+#     conv5 = baseline_model.output
+#
+#     # activation_40,22,10,1
+#     up6 = concatenate([UpSampling2D(size=(2, 2))(conv5), baseline_model.get_layer(name='conv4_block5_out').output],
+#                       axis=1)
+#     conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(up6)
+#     conv6 = Conv2D(512, (3, 3), activation='relu', padding='same')(conv6)
+#
+#     up7 = concatenate([UpSampling2D(size=(2, 2))(conv6), baseline_model.get_layer(name='conv3_block3_out').output],
+#                       axis=1)
+#     conv7 = Conv2D(256, (3, 3), activation='relu', padding='same')(up7)
+#     conv7 = Conv2D(256, (3, 3), activation='relu', padding='same')(conv7)
+#
+#     up8 = concatenate([UpSampling2D(size=(2, 2))(conv7), baseline_model.get_layer(name='conv2_block2_out').output],
+#                       axis=1)
+#     conv8 = Conv2D(128, (3, 3), activation='relu', padding='same')(up8)
+#     conv8 = Conv2D(128, (3, 3), activation='relu', padding='same')(conv8)
+#
+#     up9 = concatenate([UpSampling2D(size=(2, 2))(conv8), baseline_model.get_layer(name='conv1_conv').output], axis=1)
+#     conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(up9)
+#     conv9 = Conv2D(64, (3, 3), activation='relu', padding='same')(conv9)
+#
+#     up10 = Conv2D(64, 2, activation='relu', padding='same')(UpSampling2D(size=(2, 2))(conv9))
+#     conv10 = Conv2D(1, (1, 1), activation='sigmoid')(up10)
+#
+#     if bottom_crop == 0:
+#         conv10 = Cropping2D(cropping=((crop_margin, crop_margin), (crop_margin, crop_margin)))(
+#             conv10)  # ((top_crop, bottom_crop), (left_crop, right_crop)) for training
+#     else:
+#         conv10 = Cropping2D(cropping=((0, bottom_crop), (0, right_crop)))(
+#             conv10)  # remove reflected portion from the image for prediction
+#
+#     model = Model(inputs=baseline_model.input, outputs=conv10, name='ResNet50V2')
+#
+#     if weights_path != '':
+#         model.load_weights(weights_path, by_name=True)
+#
+#     return model
+
+
+@log_function_call
 def InceptionResV2(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
     baseline_model = InceptionResNetV2(input_shape=(3, img_rows, img_cols), include_top=False, weights='imagenet')
 
@@ -1169,7 +1662,9 @@ def InceptionResV2(img_rows, img_cols, crop_margin, right_crop, bottom_crop, wei
     return model
 
 
+@log_function_call
 def ResBiT(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
+    # not used due to inability to load pertrained model
     import tensorflow_hub as hub
     baseline_model = hub.KerasLayer("https://tfhub.dev/google/bit/m-r152x4/1", input_shape=(3, img_rows, img_cols))
     conv5 = baseline_model.output
@@ -1212,6 +1707,7 @@ def ResBiT(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_pat
 
 
 # https://towardsdatascience.com/hitchhikers-guide-to-residual-networks-resnet-in-keras-385ec01ec8ff
+@log_function_call
 def ResNet50JJ(img_rows, img_cols, crop_margin, right_crop, bottom_crop, is_training, weights_path):
     # Define the input as a tensor with shape input_shape
     X_input = Input(shape=(3, img_rows, img_cols))
@@ -1284,6 +1780,7 @@ def ResNet50JJ(img_rows, img_cols, crop_margin, right_crop, bottom_crop, is_trai
     return model
 
 
+@log_function_call
 def DenseNet201Keras(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
     baseline_model = DenseNet201(input_shape=(3, img_rows, img_cols), include_top=False, weights='imagenet')
     conv5 = baseline_model.output
@@ -1323,6 +1820,7 @@ def DenseNet201Keras(img_rows, img_cols, crop_margin, right_crop, bottom_crop, w
     return model
 
 
+@log_function_call
 def EFF_B7(img_rows, img_cols, crop_margin, right_crop, bottom_crop, weights_path):
     # note that this is last channel
     inputs = Input(shape=[img_rows, img_cols, 3])

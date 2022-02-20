@@ -20,9 +20,10 @@ function draw_violinplot(data, saved_folder, metric_type, graph_colors)
     ylabel(metric_type, 'Interpreter', 'none');
     min_data = min(data,[],'all');
     max_data = max(data,[],'all');
-%    top_offset = (max_data-min_data)/6;
-    top_offset = (max_data-min_data)/20;
+    top_offset = (max_data-min_data)/6;
+%    top_offset = (max_data-min_data)/20;
     bottom_offset = (max_data-min_data)/20;
+    
     ylim([min_data-bottom_offset, max_data+top_offset]);
     if size(data,2) == 4
         xlim([0.4,size(data,2)+0.6]);

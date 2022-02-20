@@ -6,7 +6,7 @@ addpath('..');
 constants_struct = GlobalConfig().update_config('');
 repeat_index = 1
 first_model_index = 1;
-second_model_index = 2;
+second_model_index = 3;
 
 for data_index  = 1 : length(constants_struct.dataset_list)
     dataset_name = constants_struct.dataset_list{data_index, 1}

@@ -3,6 +3,8 @@ assets_expand/*
 models/results/history_*
 evaluation/npy-matlab-master
 evaluation/generated
+evaluation/evaluation_f1/results/*
+evaluation/evaludation_dice/dice_coeff_compare/*
 **/.ipynb_checkpoints
 **/*.avi
 **/*.gif
@@ -25,5 +27,7 @@ evaluation/generated
 **/*.rtf
 **/*.db
 **/*.pickle
+**/*.zip
+**/checkpoint*
 **/extended-berkeley-segmentation-benchmark-master-linux
 !.gitignore

@@ -74,9 +74,9 @@ def denoise_image(img, denoise_option, denoise_kernel_size):
         denoised_image = cv2.medianBlur(img,denoise_kernel_size)
     
     elif denoise_option=='guided':
-        r = 2; # try r=2, 4, or 8
-        eps = 0.4 * 0.4; # try eps=0.1^2, 0.2^2, 0.4^2
-        eps *= 255 * 255; # Because the intensity range of our images is [0, 255]
+        r = denoise_kernel_size # try r=2, 4, or 8
+        eps = 0.4 * 0.4 # try eps=0.1^2, 0.2^2, 0.4^2
+        eps *= 255 * 255 # Because the intensity range of our images is [0, 255]
         denoised_image = guidedFilter(img,img,r,eps)
     
     elif denoise_option=='gauss':

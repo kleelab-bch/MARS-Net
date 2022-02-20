@@ -7,20 +7,31 @@ function [values_across_frames, mean_across_frames, erroci_across_frames] = visu
 
     frame_counter = 1;
     for frame_num = frame_list
-        repeat_combined_list_values = [];
+        repeat_added_list_values = [];
+        repeat_appended_list_values = [];
+        total_repeat = 0;
         for repeat_index = 1 : repeat_max
 %            disp([frame_num, repeat_index])
             try
                 fpr_score = load([saved_folder, '/repeat', num2str(repeat_index), '/', ...
                                 display_names{prediction_num} ,'_', dataset_name, '_', fold_name, '/', ...
                                 '/Recall_Precision_F_score_frame', num2str(frame_num), '.mat']);
-                repeat_combined_list_values = [repeat_combined_list_values, fpr_score.(list_type)];
+                if isempty(repeat_added_list_values)
+                    repeat_added_list_values = fpr_score.(list_type);
+                    repeat_appended_list_values = fpr_score.(list_type);
+                else
+                    repeat_added_list_values = repeat_added_list_values + fpr_score.(list_type);
+                    repeat_appended_list_values = [repeat_appended_list_values, fpr_score.(list_type)];
+                end
+                total_repeat = total_repeat + 1;
             catch ME
-                disp(['visualize_across_frames skip ', num2str(frame_num), ' ', num2str(repeat_index)])
+                disp(['visualize_across_frames skip ', list_type, ' ', num2str(frame_num), ' ', num2str(repeat_index)]);
             end
         end
-        [mean_value, errci] = mean_errci(repeat_combined_list_values);
-        values_across_frames = [values_across_frames; repeat_combined_list_values];
+        % e.g. average 5 repeated values into one, e.g. 200 values will be reduced to 40 values
+        values_across_frames = [values_across_frames; repeat_added_list_values / total_repeat];
+        [mean_value, errci] = mean_errci(repeat_appended_list_values);
+
         mean_across_frames(1, frame_counter) = mean_value;
         erroci_across_frames(frame_counter, :) = errci(:);
 
