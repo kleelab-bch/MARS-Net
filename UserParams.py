@@ -224,7 +224,7 @@ class UserParams:
                     self.img_folders = ['/img/','/img/','/img/','/img/','/img/']
                     self.mask_folders = ['/mask_fixed/','/mask_fixed/','/mask_fixed/','/mask_fixed/','/mask_fixed/']
 
-                    self.frame_list = [2]
+                    self.frame_list = [6]
                     self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03', '040119_PtK1_S01_01_phase_2_DMSO_nd_02', '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2','040119_PtK1_S01_01_phase']
                     self.model_names = ['ABCD','ABCE', 'ABDE', 'ACDE', 'BCDE']
                     self.REPEAT_MAX = 1

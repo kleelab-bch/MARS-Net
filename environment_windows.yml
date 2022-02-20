@@ -1,0 +1,27 @@
+name: marsnet
+channels:
+  - defaults
+dependencies:
+  - pip=21.0.1
+  - python=3.6.13
+  - pip:
+    - absl-py==0.12.0
+    - grpcio==1.37.0
+    - h5py==2.10.0
+    - imageio==2.9.0
+    - importlib-metadata==3.10.0
+    - joblib==1.0.1
+    - keras-preprocessing==1.1.2
+    - matplotlib==3.3.4
+    - numba==0.53.1
+    - numpy==1.18.5
+    - opencv-contrib-python==4.5.1.48
+    - opencv-python==4.5.1.48
+    - pillow==8.2.0
+    - psutil==5.8.0
+    - scikit-image==0.17.2
+    - scikit-learn==0.24.1
+    - scipy==1.4.1
+    - tensorflow==2.3.0
+    - tqdm==4.60.0
+    - umap-learn==0.5.1
