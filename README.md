@@ -3,13 +3,13 @@
 [![Repo Size](https://img.shields.io/github/repo-size/kleelab-bch/MARS-Net?style=plastic)]()
 [![DOI](https://zenodo.org/badge/356401230.svg)](https://zenodo.org/badge/latestdoi/356401230)
 
-**Deep learning-based segmentation pipeline for profiling cellular morphodynamics from multiple types of live cell microscope**  
+**A deep learning-based segmentation pipeline for profiling cellular morphodynamics using multiple types of live cell microscopy**  
 by Junbong Jang, Chuangqi Wang, Xitong Zhang, Hee June Choi, Xiang Pan, Bolun Lin, Yudong Yu, Carly Whittle, Madison Ryan, Yenyu Chen, Kwonmoo Lee
 
-To learn more about MARS-Net, please read the [paper](https://www.biorxiv.org/content/10.1101/191858v3)
+To learn more about our pipeline (MARS-Net), please read the [paper](https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(21)00164-8)
 
-<div text-align="center">
-  <img width="300" src="./assets/MARS-Net_logo.png" alt="MARS-Net Logo">
+<div align="center">
+  <img width="400" src="./assets/MARS-Net_logo.png" alt="MARS-Net Logo">
 </div>  
 
 
@@ -63,20 +63,27 @@ Installation Time can vary based on user's download speed (Estimated Time: 1 hou
     * https://drive.google.com/drive/folders/1FLP0D-Y9-DHQmhC-LBZChdUSe6W5zyPw?usp=sharing
 
 ### Label Tool
-Tool to facilitate labelling raw images semi-automatically
+Facilitates labelling raw images semi-automatically and it is located in label_tool folder.
 
-1. To determine hysteresis thresholding for canny detector and kernel size for blurring, run
-    * label_tool/explore_edge_extraction_user_params.py
-1. Compare results in generated_explore_edge folder
-1. Write the optimal hyper parameters found from previous step in 
-    * label_tool/user_params.py
-1. To extract edge after choosing hyper parameters, run
-    * Python extract_edge.py 
-1. Manually Fix the generated edges
-    * The generated edges in generated_edge folder, connect fragmented edges and delete the wrong edges
+1. Specify the location of image files to label in user_params.py
+    * set dataset name to a_dataset variable and image folder path to img_root_path
+3. To determine the optimal hysteresis thresholding for canny detector and kernel size for blurring,
+    * python explore_edge_extraction_user_params.py
+    * Compare results in generated_explore_edge folder
+4. Then, set the best hyper parameters in user_params.py 
+    * canny_std_multiplier and denoise_kernel_size, 
+5. To extract edge,
+    * python extract_edge.py 
+    * The generated edge images are saved in generated_edge folder
+6. Manually fix the generated edge images
+    * Connect any fragmented edges and remove wrong edges in the image
     * We used [ImageJ](https://imagej.nih.gov/ij/download.html) or [GIMP](https://www.gimp.org/) for manual fix after overlaying edge over the original image
-1. Post processing to fill the edges
-    * python segment_edge.py will save results in generated_segmentation folder
+    * Replace any generated edge images with fixed edge images
+7. Post processing to fill the edge images
+    * python segment_edge.py 
+    * segment_edge.py script will ask for how many backgrounds to fill in your image and one pair of (x,y) coordinate in each background area.
+    * The post processed results are saved in generated_segmentation folder
+    * please move these labeled images into the assets folder to train the model.
 
 
 ### Deep Learning Model Training and Segmentaion

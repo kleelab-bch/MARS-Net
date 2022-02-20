@@ -1,4 +1,4 @@
-function draw_violinplot(data, saved_folder, metric_type, graph_colors, display_names)
+function draw_violinplot(data, saved_folder, metric_type, graph_colors)
     size(data)
     figure;
     output_fig_size = [1500, 850];
@@ -17,7 +17,7 @@ function draw_violinplot(data, saved_folder, metric_type, graph_colors, display_
 
 
     xticklabels({});
-    ylabel(metric_type);
+    ylabel(metric_type, 'Interpreter', 'none');
     min_data = min(data,[],'all');
     max_data = max(data,[],'all');
     top_offset = (max_data-min_data)/6;
@@ -31,8 +31,8 @@ function draw_violinplot(data, saved_folder, metric_type, graph_colors, display_
     axis square;
     box on;
     set(gca, 'fontsize', 10, 'fontname', 'Arial');
-
-    saveas(gcf, [saved_folder, '/violinplot_', metric_type, '.fig']);
-    print([saved_folder, '/violinplot_', metric_type, '.svg'],'-dsvg',['-r',num2str(fig_res)]);
+    
+    saveas(gcf, join([saved_folder, '/violinplot_', metric_type, '.fig'], ''));
+    print(join([saved_folder, '/violinplot_', metric_type, '.svg'], ''),'-dsvg',['-r',num2str(fig_res)]);
     close;
 end
