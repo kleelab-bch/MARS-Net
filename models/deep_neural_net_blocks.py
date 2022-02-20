@@ -228,19 +228,19 @@ def downsample_batch(input_tensor, filters, size, name='', apply_batchnorm=True,
     return x
 
 
-def downsample_instance(input_tensor, filters, size, name='', apply_instancenorm=True):
-    import tensorflow_addons as tfa
-    if name == '':
-        x = Conv2D(filters, size, padding='same', use_bias=False)(input_tensor)
-    else:    
-        x = Conv2D(filters, size, name=name, padding='same')(input_tensor)
-
-    if apply_instancenorm:
-        x = tfa.layers.InstanceNormalization(axis=1)(x)
-
-    x = ReLU()(x)
-
-    return x
+# def downsample_instance(input_tensor, filters, size, name='', apply_instancenorm=True):
+#     import tensorflow_addons as tfa
+#     if name == '':
+#         x = Conv2D(filters, size, padding='same', use_bias=False)(input_tensor)
+#     else:
+#         x = Conv2D(filters, size, name=name, padding='same')(input_tensor)
+#
+#     if apply_instancenorm:
+#         x = tfa.layers.InstanceNormalization(axis=1)(x)
+#
+#     x = ReLU()(x)
+#
+#     return x
     
 
 # referenced from https://github.com/Guzaiwang/CE-Net/blob/master/networks/cenet.py

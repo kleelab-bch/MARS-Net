@@ -189,8 +189,8 @@ def train_model(constants, model_index, frame, repeat_index):
     print('Num of layers: ', len(model.layers))
     # print('FLOPS: ', get_flops())  # run this after model compilation
     # check_loaded_weights(constants)
-    if repeat_index == 0:
-        plot_model(model, to_file='model_plots/model_round{}_{}_train.png'.format(constants.round_num, constants.strategy_type), show_shapes=True, show_layer_names=True, dpi=144)
+    # if repeat_index == 0:
+    #     plot_model(model, to_file='model_plots/model_round{}_{}_train.png'.format(constants.round_num, constants.strategy_type), show_shapes=True, show_layer_names=True, dpi=144)
 
     # ------------ Fit the Model ------------
     print('Fit Model...', args.patience)

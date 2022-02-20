@@ -1,3 +1,13 @@
+'''
+Author Junbong Jang
+Date 3/14/2021
+
+Crop and augment images and save them as .npz files
+Original Cropping method used for MARS-Net paper.
+For newer version, refer to "crop.py"
+'''
+
+
 import gc
 import numpy as np
 import time

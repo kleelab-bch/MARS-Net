@@ -21,7 +21,7 @@ This demo allows users to see the segmentation performance of MARS-Net and U-Net
 To test MARS-Net pipeline from the scratch in a user's local machine, the user needs to satisfy software requirements and train the models before segmenting movies.  
 
 ## Software Requirements
-MARS-Net pipeline has been tested on Ubuntu 16.04 with anaconda v4.5.11 and Python v3.6
+MARS-Net pipeline has been tested on Windows 10, Ubuntu 16.04, and Ubuntu 18.04 with anaconda v4.5.11 and Python v3.6
 
 * For evaluation and visualization, we used
     * MATLAB 2019b
@@ -41,8 +41,12 @@ The pipeline consists of label tool, segmentation modeling, and morphodynamics p
 Installation Time can vary based on user's download speed (Estimated Time: 1 hour)  
 1. Download MARS-Net pipeline from Github repository and install its software requirements.
 1. Setup Anaconda environment
-    * conda env create --name marsnet --file environment.yml
-    * conda activate marsnet
+    * In Linux OS
+      * >conda env create --name marsnet --file environment_linux.yml
+    * In Windows 10
+      * >conda env create --name marsnet --file environment_windows.yml
+    * >conda activate marsnet
+    * >pip install tensorflow-addons
 1. Before running the pipeline, please specify the following parameters in UserParams.py
     * strategy_type (The type of deep learning model. e.g. specialist_unet, or generalist_VGG19_dropout)
     * dataset_folders  (location where your images and mask are stored)
@@ -73,7 +77,7 @@ Facilitates labelling raw images semi-automatically and it is located in label_t
 4. Then, set the best hyper parameters in user_params.py 
     * canny_std_multiplier and denoise_kernel_size, 
 5. To extract edge,
-    * python extract_edge.py 
+    * >python extract_edge.py 
     * The generated edge images are saved in generated_edge folder
 6. Manually fix the generated edge images
     * Connect any fragmented edges and remove wrong edges in the image
@@ -89,12 +93,12 @@ Facilitates labelling raw images semi-automatically and it is located in label_t
 ### Deep Learning Model Training and Segmentaion
 This section is for training deep learning models from scratch and segmenting the live cell movies 
 * Put your live cell movies into the assets folder. Our pipeline assumes leave-one-movie-out cross validation so please provide multiple movies.
-* To crop patches, run
-    * crop/crop_augment_split.py
-* To Train, run
-    * models/train_mars.py
-* To segment live cell movies, run
-    * models/prediction.py
+* To crop patches
+    * >python crop/crop_augment_split.py
+* To train on the cropped patches
+    * >python models/train_mars.py
+* To segment live cell movies
+    * >python models/prediction.py
 
 ### Evaluation and Visualization
 This section is for replicating our evaluation results including bar graphs, line graphs, and violin plots.  
@@ -107,6 +111,9 @@ This section is for replicating our evaluation results including bar graphs, lin
     * img_root_path
 * Download [NPY Reader](https://github.com/kwikteam/npy-matlab) and add the folder to MATLAB path.
 * Download [Correspondence Algorithm](https://github.com/davidstutz/extended-berkeley-segmentation-benchmark) and add the folder to MATLAB path.
+* Open MATLAB to run the scripts. 
+  * If a user prefers to run them in the terminal, type the following command after replacing ##### with the actual script name
+    * >matlab -nodisplay -nosplash -nodesktop -r "run('#####.m');exit;"
 * Before visualizing the evaluated results, calculate F1, precision and recall from the segmented movies, run
     * evaluation/evaluation_f1/run_overlap_mask_prediction.m
 * To draw bar graphs and line graphs across different training frames, run
@@ -118,21 +125,24 @@ This section is for replicating our evaluation results including bar graphs, lin
 
 <!-- end of the list -->
 Unlike MATLAB code above, learning curves and bubble plots are drawn using Python
-* To draw learning curve, run
-    * evaluation/draw_learning_curve.py
-* To draw bubble plot, run
+* To draw learning curve
+    * >python evaluation/draw_learning_curve.py
+* To draw bubble plot, open the following jupyter notebook and run all cells
     * evaluation/bubble_training_curve.ipynb
 <!-- end of the list -->
 
-To draw activation maps and replicate SEG-Grad-CAM results, run
-* SegGradCAM/main.py
+To draw activation maps and replicate SEG-Grad-CAM results
+* >python SegGradCAM/main.py
 
 
 ### Morphodynamics Profiling
-* For single cell cropping the segmented movie, run
-    * rotate_crop_img.py
+* For single cell cropping of the segmented movie
+  * Post process the segmented images to binarize them and fill small holes in MATLAB
+    * process_predicted.m
+  * Rotate and crop the image in a way that a single cell is within the cropped window
+    * >python img_proc/rotate_crop_img.py
 * Download [Windowing and Protrusion package](https://github.com/DanuserLab/Windowing-Protrusion)
-* Add directory and sub directory of the downloaded package to the MATLAB path 
-* Type movieSelectorGUI in the command window in MATLAB
+* In MATLAB, add directory and subdirectory of the downloaded package to the MATLAB path 
+* Type movieSelectorGUI in the MATLAB command window
 * Create new movie and perform windowing on the segmented movie from the previous step.
 * For details, refer to [Windowing and Protrusion package](https://github.com/DanuserLab/Windowing-Protrusion) Github page.
