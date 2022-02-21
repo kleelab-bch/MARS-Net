@@ -34,7 +34,7 @@ class UserParams:
         # ['mDia_raw_unet', 'mDia_raw_VGG19_dropout']
         # ['paxillin_TIRF_normalize_cropped_unet_patience_10', 'paxillin_TIRF_normalize_cropped_VGG19_dropout_patience_10']
         # 'FNA_VGG19_MTL_cls0_reg0_aut0_seg1_input256_patience_10' # 'spheroid_test_VGG19_minmax_normalize' # 'FNA_VGG19_MTL_cls1_reg0_aut0_seg0.75_input256' # 'FNA_VGG19_MTL_auto_reg_aut_input256_patience_10' # 'FNA_CV_VGG19_MTL_auto_input256' # 'unet_encoder_classifier' # 'FNA_CV_VGG19_MTL_auto_reg_aut_input256' # 'FNA_VGG19_classifier_input256' #'FNA_CV_VGG19_classifier_binary_input256' # 'spheroid_VGG19_freeze' #'single_micro_small_unet' # 'cryptic_VGG19D_temporal_context_residual' # 'single_micro_VGG19D_temporal_context_residual' # 'cryptic_VGG19D_temporal_distributed_v2' # 'organoid_VGG19_dropout_crop_even' # 'cryptic_VGG19_dropout_mm_patience_10'
-        self.strategy_type = 'VGG19_dropout'
+        self.strategy_type = 'Multi_VGG19D'
         self.self_training_type = None
         self.dataset_folders = '../assets/'
         self.img_format = '.png'
@@ -408,6 +408,17 @@ class UserParams:
                         self.model_names = ['All']
                     self.REPEAT_MAX = 1
 
+                elif 'Multi_VGG19D' in str(self.strategy_type) or 'Single_Unet' in str(self.strategy_type):
+                    self.dataset_folders = ['../assets/']
+                    self.img_folders = ['/img_all/']
+                    self.mask_folders = ['/mask_fixed/']
+
+                    self.frame_list = [2]
+                    self.dataset_names = ['040119_PtK1_S01_01_phase_2_DMSO_nd_02']
+                    self.model_names = ['D']
+                    self.REPEAT_MAX = 1
+
+
                 elif 'multi_micro' in str(self.strategy_type):
                     # if mode == 'train':  # don't crop since I manually move cropped files, commented in 3/15/2021
                     self.dataset_folders = ['../assets/','../assets/','../assets/','../assets/','../assets/',
@@ -608,12 +619,6 @@ class UserParams:
                                     'Paxilin-HaloTMR-TIRF6', 'Paxilin-HaloTMR-TIRF7', 'Paxilin-HaloTMR-TIRF8']
                     self.model_names = ['ABCDE', 'ABCDF', 'ABCEF', 'ABDEF', 'ACDEF', 'BCDEF']
 
-                    # self.frame_list = [22]
-                    # self.dataset_names = ['Paxilin-HaloTMR-TIRF5']
-                    # self.model_names = ['ABCEF']
-                    # self.REPEAT_MAX = 1
-                    # self.img_folder = '/img_all/'
-
                     if "_cropped" in str(self.strategy_type):
                         self.img_folder = '/img_cropped/'
                         self.mask_folder = '/mask_cropped/'
@@ -657,19 +662,6 @@ class UserParams:
                                           '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2',
                                           '040119_PtK1_S01_01_phase']
                     self.model_names = ['ABCD', 'ABCE', 'ABDE', 'ACDE', 'BCDE']
-                    self.REPEAT_MAX = 1
-
-                elif self.strategy_type == 2:
-                    self.dataset_names = ['040119_PtK1_S01_01_phase_2_DMSO_nd_02', '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2','040119_PtK1_S01_01_phase']
-                    self.frame_list = [2]
-                    self.model_names = ['ABCD']
-                    self.REPEAT_MAX = 1
-
-                elif self.strategy_type == 2.5:
-                    self.img_folder = '/img_all/'
-                    self.dataset_names = ['040119_PtK1_S01_01_phase_2_DMSO_nd_02', '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2','040119_PtK1_S01_01_phase']
-                    self.frame_list = [1]
-                    self.model_names = ['ABCD']
                     self.REPEAT_MAX = 1
 
             elif self.round_num == 2:
