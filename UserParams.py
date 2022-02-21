@@ -8,7 +8,7 @@
 import os
 from models.model_utils import get_available_gpu, find_param_after_string
 # tensorflow import must come after os.environ gpu setting
-os.environ["CUDA_VISIBLE_DEVICES"] = '1'  # get_available_gpu()
+os.environ["CUDA_VISIBLE_DEVICES"] = '0'  # get_available_gpu()
 import argparse
 import numpy as np
 import random
@@ -651,7 +651,7 @@ class UserParams:
                     self.img_folders = ['/img/', '/img/', '/img/', '/img/', '/img/']
                     self.mask_folders = ['/mask_fixed/', '/mask_fixed/', '/mask_fixed/', '/mask_fixed/', '/mask_fixed/']
 
-                    self.frame_list = [10] # [1,2,6,10,22,34]
+                    self.frame_list = [2] # [1,2,6,10,22,34]
                     self.dataset_names = ['040119_PtK1_S01_01_phase_3_DMSO_nd_03',
                                           '040119_PtK1_S01_01_phase_2_DMSO_nd_02',
                                           '040119_PtK1_S01_01_phase_2_DMSO_nd_01', '040119_PtK1_S01_01_phase_ROI2',
@@ -789,7 +789,7 @@ class UserParams:
             input_size = 128
             crop_patches = 200
             crop_batch_size = 128
-            train_batch_size = 64
+            train_batch_size = 64  # reduce this batch_size if GPU memory error occurs
 
         output_size = input_size - 60
 

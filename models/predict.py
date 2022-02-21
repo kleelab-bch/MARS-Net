@@ -86,7 +86,7 @@ def prediction(constants, frame, model_index, repeat_index):
     # with strategy.scope():
     model = build_model_predict(constants, frame, repeat_index, model_name, image_rows, image_cols, orig_rows, orig_cols)
     print('model layers: ', len(model.layers))
-    plot_model(model, to_file='model_plots/model_round{}_{}_predict.png'.format(constants.round_num, constants.strategy_type), show_shapes=True, show_layer_names=True, dpi=144)
+    # plot_model(model, to_file='model_plots/model_round{}_{}_predict.png'.format(constants.round_num, constants.strategy_type), show_shapes=True, show_layer_names=True, dpi=144)
 
     # ------------------ Prediction ------------------------------
     if "FNA" in str(constants.strategy_type):

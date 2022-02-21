@@ -9,11 +9,11 @@ addpath('evaluation_dice')
 constants_struct = GlobalConfig().update_config('');
 
 %% For comparing two model at one specific frame
-chosen_first_model_index = 6;
-chosen_second_model_index = 10;
-%for prediction_counter = 1:length(constants_struct.prediction_path_list)-1
-%    chosen_first_model_index = prediction_counter
-%    chosen_second_model_index = chosen_first_model_index + 1
+%chosen_first_model_index = 6;
+%chosen_second_model_index = 10;
+for prediction_counter = 1:length(constants_struct.prediction_path_list)-1
+    chosen_first_model_index = prediction_counter
+    chosen_second_model_index = chosen_first_model_index + 1
     name_pair = [constants_struct.display_names{chosen_first_model_index}, '_', constants_struct.display_names{chosen_second_model_index}]
     root_save_path = [constants_struct.root_path, 'generated/violin_compare/', constants_struct.concat_display_names(), '/', name_pair, '/'];
     first_model_constants = constants_struct.update_config(constants_struct.prediction_path_list{chosen_first_model_index});
@@ -201,4 +201,4 @@ chosen_second_model_index = 10;
                      data_repeat_combined_second_model_precision - data_repeat_combined_first_model_precision, ...
                      data_repeat_combined_second_model_recall - data_repeat_combined_first_model_recall, ...
                      constants_struct.violin_diff_ylim, saved_path, 'Performance Difference', 'Model Comparison');
-%end
+end
