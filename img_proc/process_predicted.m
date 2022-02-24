@@ -1,10 +1,16 @@
 % Author Junbong Jang
 % Date: March 2020
 
-dataset = {'040119_PtK1_S01_01_phase_3_DMSO_nd_03'; '040119_PtK1_S01_01_phase_2_DMSO_nd_02'; '040119_PtK1_S01_01_phase_2_DMSO_nd_01'; '040119_PtK1_S01_01_phase_ROI2'; '040119_PtK1_S01_01_phase'};
-model_names = {'ABCD';'ABCE'; 'ABDE'; 'ACDE'; 'BCDE'};
-root_path_list = {'../models/results/predict_wholeframe_round1_unet/'; '../models/results/predict_wholeframe_round1_VGG19_dropout/';};
-frame_list = {'1','2','6','10','22','34'};
+
+dataset = {'040119_PtK1_S01_01_phase_3_DMSO_nd_03';};
+model_names = {'ABCD';};
+root_path_list = {'C:\Users\Jun\Documents\PycharmProjects\MARS-Net\models\results\predict_wholeframe_round1_VGG19_dropout\';};
+frame_list = {'2'};
+
+%dataset = {'040119_PtK1_S01_01_phase_3_DMSO_nd_03'; '040119_PtK1_S01_01_phase_2_DMSO_nd_02'; '040119_PtK1_S01_01_phase_2_DMSO_nd_01'; '040119_PtK1_S01_01_phase_ROI2'; '040119_PtK1_S01_01_phase'};
+%model_names = {'ABCD';'ABCE'; 'ABDE'; 'ACDE'; 'BCDE'};
+%root_path_list = {'../models/results/predict_wholeframe_round1_unet/'; '../models/results/predict_wholeframe_round1_VGG19_dropout/';};
+%frame_list = {'1','2','6','10','22','34'};
 
 %dataset= {'1121-1'; '1121-3'; '1121-4'; '1121-5'; '1121-6'};
 %model_names = {'ABCD';'ABCE'; 'ABDE'; 'ACDE'; 'BCDE'};
@@ -46,12 +52,12 @@ frame_list = {'1','2','6','10','22','34'};
 %frame_list = {'22'};
 
 
-dataset = {'Cdc42_5uM'; 'Cdc42_10uM'; 'DMSO'; 'DMSO_2'; 'FAK'; 'FAK_2';
-           'Rac_5uM'; 'Rac_10uM'; 'Rac_20uM'; 'Rho_5uM'; 'Rho_10uM'; 'Rho_20uM'}
-model_names = {'train'; 'train'; 'train'; 'train'; 'train'; 'train';
-               'train'; 'train'; 'train'; 'train'; 'train'; 'train'}
-root_path_list = {'../models/results/predict_wholeframe_round1_spheroid_test_VGG19_marsnet/'};
-frame_list = {'1'};
+% dataset = {'Cdc42_5uM'; 'Cdc42_10uM'; 'DMSO'; 'DMSO_2'; 'FAK'; 'FAK_2';
+%            'Rac_5uM'; 'Rac_10uM'; 'Rac_20uM'; 'Rho_5uM'; 'Rho_10uM'; 'Rho_20uM'}
+% model_names = {'train'; 'train'; 'train'; 'train'; 'train'; 'train';
+%                'train'; 'train'; 'train'; 'train'; 'train'; 'train'}
+% root_path_list = {'../models/results/predict_wholeframe_round1_spheroid_test_VGG19_marsnet/'};
+% frame_list = {'1'};
 
 repeat_index = 0;
 for root_path_index = 1 : length(root_path_list)
@@ -59,16 +65,16 @@ for root_path_index = 1 : length(root_path_list)
         for frame_index = 1 : length(frame_list)
             frame_num = frame_list{frame_index};
             root_path = root_path_list{root_path_index};
-            disp(['@@@', root_path, ' ', num2str(data_index), ' ', frame_num])
+            disp([ root_path, ' ', num2str(data_index), ' ', num2str(frame_num)])
             model_name = model_names{data_index, 1};
 
-            mask_path = [root_path, dataset{data_index, 1}, '/frame', frame_num, '_', model_name, '_repeat' num2str(repeat_index), '/'];
-%            mask_path = [root_path, dataset{data_index, 1}, '/predict_generalist_VGG19_dropout/'];
+%             mask_path = [root_path, dataset{data_index, 1}, '/frame', num2str(frame_num), '_', model_name, '_repeat' num2str(repeat_index), '\']
+           mask_path = [root_path, '/frame', num2str(frame_num), '_', model_name, '_repeat' num2str(repeat_index), '\']
             filesStructure = dir(fullfile(mask_path, '*.png'));
             allFileNames = {filesStructure(:).name};
 
-            generate_path = [root_path, dataset{data_index, 1}, '/processed_frame', frame_num, '_', model_name, '_repeat' num2str(repeat_index), '/'];
-%            generate_path = [root_path, dataset{data_index, 1}, '/processed_predict_generalist_VGG19_dropout/'];
+%             generate_path = [root_path, dataset{data_index, 1}, '/processed_frame', num2str(frame_num), '_', model_name, '_repeat' num2str(repeat_index), '/']
+           generate_path = [root_path, '/processed_frame', num2str(frame_num), '_', model_name, '_repeat' num2str(repeat_index), '/']
 
             mkdir(generate_path);
             for k = 1 : length(allFileNames)
@@ -88,17 +94,16 @@ function process_image(I, save_path)
 %    I_binary = imbinarize(I)
     I_binary = im2bw(I, 0.196);
     [row, col] = size(I_binary);
-    imwrite(I_binary*255, save_path)
 
     % remove floating artifacts
-%    artifact_percentage = ceil(row * col * 0.05);
-%    I_final = bwareaopen(I_binary, artifact_percentage);
-%    I_final = imfill(I_final,'holes'); % fill hole
+    artifact_percentage = ceil(row * col * 0.05);
+    I_final = bwareaopen(I_binary, artifact_percentage);
+    I_final = imfill(I_final,'holes'); % fill hole
 
 %   The following image processing can fill up correct background to be foreground so use with caution
-%    fill_hole_percentage = ceil(row * col * 0.20);
-%    I_final = bwareaopen(~I_final, fill_hole_percentage);
-%    I_final = imfill(~I_final,'holes');
+   fill_hole_percentage = ceil(row * col * 0.001);
+   I_final = bwareaopen(~I_final, fill_hole_percentage);
+   I_final = imfill(~I_final,'holes');
 
-%    imwrite(I_final*255, save_path)
+   imwrite(I_final*255, save_path)
 end
