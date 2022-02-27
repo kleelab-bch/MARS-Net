@@ -23,7 +23,7 @@ This demo allows users to see the segmentation performance of MARS-Net and U-Net
 To test MARS-Net pipeline from the scratch in a user's local machine, the user needs to satisfy software requirements and train the models before segmenting movies.  
 
 ## Software Requirements
-MARS-Net pipeline has been tested on Windows 10, Ubuntu 16.04, and Ubuntu 18.04 with anaconda v4.5.11 and Python v3.6
+MARS-Net pipeline has been tested on Windows 10 and Ubuntu 16.04, 18.04 and 20.04 with anaconda v4.5.11 and Python v3.6
 
 * For evaluation and visualization, we used
     * MATLAB 2019b
