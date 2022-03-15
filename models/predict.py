@@ -2,7 +2,7 @@
 Author Junbong Jang
 Date 3/14/2021
 
-To predict using trained models
+To predict using trained models for leave-one-movie-out cross validation
 '''
 
 import sys

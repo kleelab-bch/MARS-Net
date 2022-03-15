@@ -115,7 +115,7 @@ def build_model_predict(constants, frame, repeat_index, model_name, image_rows, 
         model = UNet_feature_extractor(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
     elif "unet_imagenet_pretrained" in str(constants.strategy_type):
         model = UNet_imagenet_pretrained(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
-    elif "unet" in str(constants.strategy_type):
+    elif "unet" in str(constants.strategy_type) or "Unet" in str(constants.strategy_type):
         model = UNet(image_rows, image_cols, 0, image_cols-orig_cols, image_rows-orig_rows, weights_path=weights_path)
 
     return model

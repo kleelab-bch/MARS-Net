@@ -34,7 +34,7 @@ class UserParams:
         # ['mDia_raw_unet', 'mDia_raw_VGG19_dropout']
         # ['paxillin_TIRF_normalize_cropped_unet_patience_10', 'paxillin_TIRF_normalize_cropped_VGG19_dropout_patience_10']
         # 'FNA_VGG19_MTL_cls0_reg0_aut0_seg1_input256_patience_10' # 'spheroid_test_VGG19_minmax_normalize' # 'FNA_VGG19_MTL_cls1_reg0_aut0_seg0.75_input256' # 'FNA_VGG19_MTL_auto_reg_aut_input256_patience_10' # 'FNA_CV_VGG19_MTL_auto_input256' # 'unet_encoder_classifier' # 'FNA_CV_VGG19_MTL_auto_reg_aut_input256' # 'FNA_VGG19_classifier_input256' #'FNA_CV_VGG19_classifier_binary_input256' # 'spheroid_VGG19_freeze' #'single_micro_small_unet' # 'cryptic_VGG19D_temporal_context_residual' # 'single_micro_VGG19D_temporal_context_residual' # 'cryptic_VGG19D_temporal_distributed_v2' # 'organoid_VGG19_dropout_crop_even' # 'cryptic_VGG19_dropout_mm_patience_10'
-        self.strategy_type = 'Multi_VGG19D'
+        self.strategy_type = 'Single_Unet'
         self.self_training_type = None
         self.dataset_folders = '../assets/'
         self.img_format = '.png'
