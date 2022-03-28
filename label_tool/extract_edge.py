@@ -148,8 +148,9 @@ def visualize_two_images_side_by_side(img, overlaid_img, save_path):
     
     
 if __name__ == "__main__":
-    
-    if not os.path.exists(user_params.saved_edge_path):
+
+    if not os.path.exists(user_params.saved_edge_path)
+        print("Saved edge folder does not exist.. Creating folder \"", user_params.saved_edge_path, "\"to save images into")
         os.makedirs(user_params.saved_edge_path)
         
     # get all of dataset's images
