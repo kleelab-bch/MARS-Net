@@ -23,7 +23,7 @@ from cv2.ximgproc import guidedFilter
 # import bm3d
 
 import user_params
-from visualization_helper import *
+from visualization_helper import overlay_edge_over_img
     
     
 # ------------ Image Processing Algorithms -------------------------

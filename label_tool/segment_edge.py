@@ -19,7 +19,6 @@ from PIL import Image
 from scipy import ndimage
 
 from cv2.ximgproc import guidedFilter
-import bm3d
 
 import user_params
 from visualization_helper import *
