@@ -92,7 +92,7 @@ def concatenate_split_crops(constants, concatenate_dataset, model_name, dataset_
 def get_concatenate_one_movie(constants, model_index, frame, repeat_index):
     print('get_concatenate_one_movie')
     model_name = constants.model_names[model_index]
-    return concatenate_split_crops({}, model_name, constants.dataset_names[model_index], frame, repeat_index)
+    return concatenate_split_crops(constants, {}, model_name, constants.dataset_names[model_index], frame, repeat_index)
 
 
 # concatenate all datasets except for the dataset index matching current model index

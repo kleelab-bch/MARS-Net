@@ -5,10 +5,10 @@
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)
 ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
 
-**A deep learning-based segmentation pipeline for profiling cellular morphodynamics using multiple types of live cell microscopy**  
+**[A deep learning-based segmentation pipeline for profiling cellular morphodynamics using multiple types of live cell microscopy](https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(21)00164-8)**  
 by Junbong Jang, Chuangqi Wang, Xitong Zhang, Hee June Choi, Xiang Pan, Bolun Lin, Yudong Yu, Carly Whittle, Madison Ryan, Yenyu Chen, Kwonmoo Lee
 
-To learn more about our pipeline (MARS-Net), please read the [paper](https://www.cell.com/cell-reports-methods/fulltext/S2667-2375(21)00164-8)
+For a more detailed step-by-step guideline of our pipeline (MARS-Net), please read our [STAR Protocol](https://star-protocols.cell.com/protocols/1729) 
 
 <div align="center">
   <img width="400" src="./assets/MARS-Net_logo.png" alt="MARS-Net Logo">
@@ -42,7 +42,7 @@ The pipeline consists of label tool, segmentation modeling, and morphodynamics p
 ### Installation
 Installation Time can vary based on user's download speed (Estimated Time: 1 hour)  
 1. Download MARS-Net pipeline from Github repository and install its software requirements.
-1. Setup Anaconda environment
+1. Setup Anaconda environment (or build and run Docker using our Dockerfile)
     * In Linux OS
       * >conda env create --name marsnet --file environment_linux.yml
     * In Windows 10
