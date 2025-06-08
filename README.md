@@ -102,6 +102,8 @@ This section is for training deep learning models from scratch and segmenting th
 * To segment live cell movies
     * >python models/prediction.py
 
+To use our pretrained U-Net or VGG19D models, download them from this Google Drive link: https://drive.google.com/drive/folders/1nUidpJDhDQrAkW6lNh4idJezi1E2sym3?usp=sharing
+
 ### Evaluation and Visualization
 This section is for replicating our evaluation results including bar graphs, line graphs, and violin plots.  
 
