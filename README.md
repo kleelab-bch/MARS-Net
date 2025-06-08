@@ -63,10 +63,10 @@ Installation Time can vary based on user's download speed (Estimated Time: 1 hou
 1. Store movie datasets in the directories specified in UserParams.py.   
    Each folder must contain images and their corresponding masks of one movie.
 
-### Example Data
+### Example Data and Trained Weights
 * phase contrast movie with its labeled mask is in repository's assets folder.  
-* single-microscopy-type U-Net and multiple-microscopy-type VGG19D-U-Net trained on 2 frames per movie in leave-one-movie-out cross validation
-    * https://drive.google.com/drive/folders/1FLP0D-Y9-DHQmhC-LBZChdUSe6W5zyPw?usp=sharing
+* single-microscopy-type U-Net and multiple-microscopy-type VGG19D-U-Net weights trained on 2 frames per movie in leave-one-movie-out cross validation
+    * https://drive.google.com/drive/folders/1nUidpJDhDQrAkW6lNh4idJezi1E2sym3?usp=sharing
 
 ### Label Tool
 Facilitates labelling raw images semi-automatically and it is located in label_tool folder.
@@ -102,7 +102,7 @@ This section is for training deep learning models from scratch and segmenting th
 * To segment live cell movies
     * >python models/prediction.py
 
-To use our pretrained U-Net or VGG19D models, download them from this Google Drive link: https://drive.google.com/drive/folders/1nUidpJDhDQrAkW6lNh4idJezi1E2sym3?usp=sharing
+To use our trained U-Net or VGG19D weights, download them from this Google Drive link: https://drive.google.com/drive/folders/1nUidpJDhDQrAkW6lNh4idJezi1E2sym3?usp=sharing
 
 ### Evaluation and Visualization
 This section is for replicating our evaluation results including bar graphs, line graphs, and violin plots.  
